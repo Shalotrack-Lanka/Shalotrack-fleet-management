@@ -29,6 +29,11 @@ class DashboardController extends Controller
             // Step 2 — get dashboard data (vehicles + live locations in one call)
             $dashboard = $this->api->getDashboard($customerId);
             $data = $dashboard['data'] ?? $dashboard;
+// Ensure vehicles is always an array
+if (isset($data['vehicles']) && !is_array($data['vehicles'])) {
+    $data['vehicles'] = [];
+}
+$data['vehicles'] = $data['vehicles'] ?? [];
 
             return view('dashboard.index', [
                 'dashboard' => $data,
