@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Session;
  * Rules:
  * - Controllers NEVER build HTTP requests directly — only call this service.
  * - The Firebase token is ALWAYS read from the encrypted server-side session.
- * - Never read the token from the incoming browser request.
  * - All errors are caught here and surfaced as consistent exceptions.
  */
 class ShalotrackApiService
@@ -30,7 +29,7 @@ class ShalotrackApiService
     }
 
     // -------------------------------------------------------------------------
-    // Profile
+    // Customer / Profile
     // -------------------------------------------------------------------------
 
     public function getMyProfile(): array
@@ -38,13 +37,32 @@ class ShalotrackApiService
         return $this->get('/api/Customers/me');
     }
 
+    public function updateProfile(string $customerId, array $data): array
+    {
+        return $this->put("/api/Customers/{$customerId}", $data);
+    }
+
+    // -------------------------------------------------------------------------
+    // Dashboard
+    // -------------------------------------------------------------------------
+
+    /**
+     * GET /api/Customers/{customerId}/dashboard
+     * Returns DashboardResponseDto — vehicles with live location, status, heading.
+     * This is the single call that powers the dashboard page.
+     */
+    public function getDashboard(string $customerId): array
+    {
+        return $this->get("/api/Customers/{$customerId}/dashboard");
+    }
+
     // -------------------------------------------------------------------------
     // Vehicles
     // -------------------------------------------------------------------------
 
-    public function getMyVehicles(): array
+    public function getVehiclesByCustomer(string $customerId): array
     {
-        return $this->get('/api/Vehicles/my');
+        return $this->get("/api/Vehicles/customer/{$customerId}");
     }
 
     public function getVehicle(string $vehicleId): array
@@ -73,11 +91,11 @@ class ShalotrackApiService
 
     public function getVehicleLocation(string $vehicleId): array
     {
-        return $this->get("/api/CurrentLocations/{$vehicleId}");
+        return $this->get("/api/CurrentLocations/vehicle/{$vehicleId}");
     }
 
     // -------------------------------------------------------------------------
-    // Device Assignments (Link / Unlink GPS Device)
+    // Device Assignments
     // -------------------------------------------------------------------------
 
     public function linkDevice(array $data): array
@@ -171,41 +189,31 @@ class ShalotrackApiService
 
     private function get(string $path, array $query = []): array
     {
-        $response = $this->client()
-            ->get($this->baseUrl . $path, $query);
-
+        $response = $this->client()->get($this->baseUrl . $path, $query);
         return $this->handle($response, 'GET', $path);
     }
 
     private function post(string $path, array $data = []): array
     {
-        $response = $this->client()
-            ->post($this->baseUrl . $path, $data);
-
+        $response = $this->client()->post($this->baseUrl . $path, $data);
         return $this->handle($response, 'POST', $path);
     }
 
     private function put(string $path, array $data = []): array
     {
-        $response = $this->client()
-            ->put($this->baseUrl . $path, $data);
-
+        $response = $this->client()->put($this->baseUrl . $path, $data);
         return $this->handle($response, 'PUT', $path);
     }
 
     private function patch(string $path, array $data = []): array
     {
-        $response = $this->client()
-            ->patch($this->baseUrl . $path, $data);
-
+        $response = $this->client()->patch($this->baseUrl . $path, $data);
         return $this->handle($response, 'PATCH', $path);
     }
 
     private function delete(string $path): void
     {
-        $response = $this->client()
-            ->delete($this->baseUrl . $path);
-
+        $response = $this->client()->delete($this->baseUrl . $path);
         $this->handle($response, 'DELETE', $path);
     }
 
@@ -220,9 +228,7 @@ class ShalotrackApiService
         return Http::withToken($token)
             ->timeout($this->timeout)
             ->acceptJson()
-            ->withHeaders([
-                'Content-Type' => 'application/json',
-            ]);
+            ->withHeaders(['Content-Type' => 'application/json']);
     }
 
     /**
@@ -242,7 +248,6 @@ class ShalotrackApiService
             'body'   => $body,
         ]);
 
-        // Map C# API status codes to meaningful exceptions
         match (true) {
             $status === 401 => throw new \Exception('UNAUTHENTICATED', 401),
             $status === 403 => throw new \Exception('FORBIDDEN', 403),
