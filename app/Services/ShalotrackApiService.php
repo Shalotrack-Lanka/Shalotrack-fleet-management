@@ -136,6 +136,20 @@ class ShalotrackApiService
             'vehicleId' => $vehicleId,
             'from'      => $from,
             'to'        => $to,
+            'pageSize'  => 1000, // Max points for route playback
+        ]);
+    }
+
+    /**
+     * GET /api/GpsTracking/trips
+     * Returns trip summaries — start/end points, distance, speed stats.
+     */
+    public function getTripSummary(string $vehicleId, string $from, string $to): array
+    {
+        return $this->get('/api/GpsTracking/trips', [
+            'vehicleId' => $vehicleId,
+            'from'      => $from,
+            'to'        => $to,
         ]);
     }
 
@@ -267,3 +281,6 @@ class ShalotrackApiService
         };
     }
 }
+// NOTE: This append is invalid — the file already has a closing brace.
+// The getTripSummary method must be added inside the class.
+// See the full file rewrite below.
