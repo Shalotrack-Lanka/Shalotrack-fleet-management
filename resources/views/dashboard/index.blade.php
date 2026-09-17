@@ -182,4 +182,6 @@
 
         setTimeout(() => window.location.reload(), 30000);
     </script>
+
+    
 @endpush
