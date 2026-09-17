@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Trip History — ShaloTrack Fleet')
-@section('page-title', 'Trip History')
+@section('title', 'Dashboard — ShaloTrack Fleet')
+@section('page-title', 'Dashboard')
 
 @push('head')
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -12,395 +12,176 @@
     @if($error)
         <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-3">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
             {{ $error }}
+            <button onclick="window.location.reload()" class="ml-auto text-red-600 underline text-sm">Retry</button>
         </div>
     @endif
 
-    @if(empty($vehicles))
-        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-16 text-center">
-            <svg class="w-16 h-16 text-gray-200 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
-            </svg>
-            <p class="text-gray-400 font-medium mb-2">No GPS-enabled vehicles</p>
-            <p class="text-gray-300 text-sm mb-6">Link a GPS device to a vehicle to view trip history.</p>
-            <a href="/vehicles" class="px-6 py-2.5 bg-[#FA6908] text-white text-sm font-semibold rounded-lg hover:bg-orange-600 transition">
-                Go to Vehicles
-            </a>
-        </div>
-    @else
+    @if($dashboard)
 
-        {{-- Filter bar --}}
-        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-6">
-            <div class="flex flex-wrap items-end gap-4">
-
-                {{-- Vehicle selector --}}
-                <div class="flex-1 min-w-48">
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Vehicle</label>
-                    <select id="vehicle-select"
-                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent">
-                        <option value="">Select a vehicle</option>
-                        @foreach($vehicles as $vehicle)
-                            <option value="{{ $vehicle['vehicleId'] }}">{{ $vehicle['vehicleNumber'] }} — {{ $vehicle['make'] }} {{ $vehicle['model'] }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                {{-- Date from --}}
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">From</label>
-                    <input type="datetime-local" id="date-from"
-                           value="{{ now()->startOfDay()->format('Y-m-d\TH:i') }}"
-                           class="px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent" />
-                </div>
-
-                {{-- Date to --}}
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">To</label>
-                    <input type="datetime-local" id="date-to"
-                           value="{{ now()->format('Y-m-d\TH:i') }}"
-                           class="px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent" />
-                </div>
-
-                <button onclick="loadTrips()"
-                        id="load-btn"
-                        class="px-5 py-2 bg-[#FA6908] hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition">
-                    Load History
-                </button>
+        {{-- Stats row --}}
+        <div class="grid grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <p class="text-sm text-gray-500 mb-1">Total Vehicles</p>
+                <p class="text-3xl font-bold text-[#021F4A]">{{ $dashboard['vehicleCount'] ?? 0 }}</p>
             </div>
-            <p id="filter-error" class="text-red-600 text-sm mt-3 hidden"></p>
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <p class="text-sm text-gray-500 mb-1">Online</p>
+                <p class="text-3xl font-bold text-green-600">{{ $dashboard['onlineVehicles'] ?? 0 }}</p>
+            </div>
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <p class="text-sm text-gray-500 mb-1">Offline</p>
+                <p class="text-3xl font-bold text-gray-400">{{ $dashboard['offlineVehicles'] ?? 0 }}</p>
+            </div>
         </div>
 
-        {{-- Main content: map + trip list --}}
+        {{-- Map + Vehicle list --}}
         <div class="grid grid-cols-3 gap-6">
 
-            {{-- Map (2/3) --}}
-            <div class="col-span-2 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+            {{-- Live map --}}
+            <div class="col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                    <h3 class="font-semibold text-gray-800">Route Map</h3>
-                    <div class="flex items-center gap-4 text-xs text-gray-400">
-                        <span class="flex items-center gap-1">
-                            <span class="w-3 h-1 bg-[#FA6908] rounded inline-block"></span> Route
-                        </span>
-                        <span class="flex items-center gap-1">
-                            <span class="w-3 h-3 bg-green-500 rounded-full inline-block"></span> Start
-                        </span>
-                        <span class="flex items-center gap-1">
-                            <span class="w-3 h-3 bg-red-500 rounded-full inline-block"></span> End
-                        </span>
-                    </div>
+                    <h3 class="font-semibold text-gray-800">Live Map</h3>
+                    <span class="text-xs text-gray-400">Auto-refreshes every 30s</span>
                 </div>
                 <div id="map" class="w-full" style="height: 500px;"></div>
-
-                {{-- Playback scrubber (hidden until route loaded) --}}
-                <div id="playback-bar" class="hidden px-6 py-4 border-t border-gray-100">
-                    <div class="flex items-center gap-4">
-                        <button id="play-btn" onclick="togglePlay()"
-                                class="w-8 h-8 flex items-center justify-center bg-[#FA6908] text-white rounded-full hover:bg-orange-600 transition flex-shrink-0">
-                            <svg id="play-icon" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M8 5v14l11-7z"/>
-                            </svg>
-                            <svg id="pause-icon" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-                            </svg>
-                        </button>
-                        <div class="flex-1">
-                            <input type="range" id="scrubber" min="0" value="0"
-                                   oninput="scrubTo(this.value)"
-                                   class="w-full accent-[#FA6908]" />
-                        </div>
-                        <div class="text-xs text-gray-500 min-w-32 text-right" id="scrubber-time">—</div>
-                    </div>
-                    <div class="flex items-center gap-6 mt-2 text-xs text-gray-500">
-                        <span>Speed: <strong id="current-speed" class="text-gray-800">—</strong> km/h</span>
-                        <span>Heading: <strong id="current-heading" class="text-gray-800">—</strong>°</span>
-                    </div>
-                </div>
             </div>
 
-            {{-- Trip list (1/3) --}}
-            <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+            {{-- Vehicle list --}}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-100">
-                    <h3 class="font-semibold text-gray-800">Trips</h3>
+                    <h3 class="font-semibold text-gray-800">Vehicles</h3>
                 </div>
 
-                {{-- Loading state --}}
-                <div id="trips-loading" class="hidden p-6 text-center">
-                    <div class="w-8 h-8 border-4 border-[#FA6908] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-                    <p class="text-gray-400 text-sm">Loading trips...</p>
-                </div>
+                @if(empty($dashboard['vehicles']))
+                    <div class="p-6 text-center">
+                        <p class="text-gray-400 text-sm">No vehicles found.</p>
+                        <a href="/vehicles" class="mt-3 inline-block text-[#FA6908] text-sm font-medium hover:underline">
+                            Add a vehicle →
+                        </a>
+                    </div>
+                @else
+                    <div class="divide-y divide-gray-50 overflow-y-auto" style="max-height: 500px;">
+                        @foreach($dashboard['vehicles'] as $vehicle)
+                            <div class="px-5 py-4 hover:bg-gray-50 transition cursor-pointer"
+                                 onclick="focusVehicle('{{ $vehicle['vehicleId'] }}', {{ $vehicle['latitude'] ?? 'null' }}, {{ $vehicle['longitude'] ?? 'null' }})">
 
-                {{-- Empty state --}}
-                <div id="trips-empty" class="p-6 text-center">
-                    <p class="text-gray-400 text-sm">Select a vehicle and date range, then click Load History.</p>
-                </div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <p class="font-semibold text-gray-800 text-sm">
+                                        {{ $vehicle['vehicleNumber'] }}
+                                        @if($vehicle['isShared'] ?? false)
+                                            <span class="ml-1 text-xs text-blue-500">(shared)</span>
+                                        @endif
+                                        @if($vehicle['isDemo'] ?? false)
+                                            <span class="ml-1 text-xs text-purple-500">(demo)</span>
+                                        @endif
+                                    </p>
+                                    @if($vehicle['online'] ?? false)
+                                        <span class="flex items-center gap-1 text-xs text-green-600 font-medium">
+                                            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>Online
+                                        </span>
+                                    @else
+                                        <span class="flex items-center gap-1 text-xs text-gray-400">
+                                            <span class="w-2 h-2 bg-gray-300 rounded-full"></span>Offline
+                                        </span>
+                                    @endif
+                                </div>
 
-                {{-- Trip list --}}
-                <div id="trips-list" class="divide-y divide-gray-50 overflow-y-auto hidden" style="max-height: 530px;"></div>
+                                <p class="text-xs text-gray-400">{{ $vehicle['make'] }} {{ $vehicle['model'] }}</p>
 
-                {{-- Stats summary --}}
-                <div id="trips-stats" class="hidden px-5 py-4 border-t border-gray-100 bg-gray-50 text-xs text-gray-500 space-y-1">
-                    <div class="flex justify-between">
-                        <span>Total trips</span>
-                        <strong id="stat-trips" class="text-gray-800">—</strong>
+                                @if($vehicle['online'] ?? false)
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        {{ round($vehicle['speed'] ?? 0) }} km/h
+                                        · {{ ($vehicle['ignition'] ?? false) ? 'Ignition on' : 'Ignition off' }}
+                                    </p>
+                                @elseif($vehicle['lastUpdate'] ?? null)
+                                    <p class="text-xs text-gray-400 mt-1">
+                                        Last seen: {{ \Carbon\Carbon::parse($vehicle['lastUpdate'])->diffForHumans() }}
+                                    </p>
+                                @endif
+                            </div>
+                        @endforeach
                     </div>
-                    <div class="flex justify-between">
-                        <span>Total distance</span>
-                        <strong id="stat-distance" class="text-gray-800">—</strong>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Max speed</span>
-                        <strong id="stat-maxspeed" class="text-gray-800">—</strong>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Avg speed</span>
-                        <strong id="stat-avgspeed" class="text-gray-800">—</strong>
-                    </div>
-                </div>
+                @endif
             </div>
         </div>
 
+    @elseif(!$error)
+        <div class="text-center py-20">
+            <p class="text-gray-400 text-sm">No data available. Please refresh.</p>
+        </div>
     @endif
 
 @endsection
 
 @push('scripts')
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-    const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const vehicles = @json($dashboard['vehicles'] ?? []);
 
-    // ---- Leaflet map ----
-    const map = L.map('map', { center: [7.8731, 80.7718], zoom: 8 });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors', maxZoom: 19,
-    }).addTo(map);
-
-    let routeLayer   = null;
-    let startMarker  = null;
-    let endMarker    = null;
-    let playMarker   = null;
-    let allPoints    = [];
-    let playIndex    = 0;
-    let playTimer    = null;
-    let isPlaying    = false;
-
-    // ---- Load trips ----
-    async function loadTrips() {
-        const vehicleId = document.getElementById('vehicle-select').value;
-        const from      = document.getElementById('date-from').value;
-        const to        = document.getElementById('date-to').value;
-        const errEl     = document.getElementById('filter-error');
-
-        errEl.classList.add('hidden');
-
-        if (!vehicleId) { errEl.textContent = 'Please select a vehicle.'; errEl.classList.remove('hidden'); return; }
-        if (!from || !to) { errEl.textContent = 'Please select a date range.'; errEl.classList.remove('hidden'); return; }
-        if (new Date(from) >= new Date(to)) { errEl.textContent = 'From date must be before To date.'; errEl.classList.remove('hidden'); return; }
-
-        // Show loading
-        document.getElementById('trips-loading').classList.remove('hidden');
-        document.getElementById('trips-empty').classList.add('hidden');
-        document.getElementById('trips-list').classList.add('hidden');
-        document.getElementById('trips-stats').classList.add('hidden');
-        document.getElementById('load-btn').disabled = true;
-        document.getElementById('load-btn').textContent = 'Loading...';
-
-        clearMap();
-
-        try {
-            // Fetch both in parallel
-            const [pointsRes, summaryRes] = await Promise.all([
-                fetch(`/trips/${vehicleId}/points?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
-                    credentials: 'include', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF }
-                }),
-                fetch(`/trips/${vehicleId}/summary?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, {
-                    credentials: 'include', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF }
-                }),
-            ]);
-
-            const pointsData  = await pointsRes.json();
-            const summaryData = await summaryRes.json();
-
-            document.getElementById('trips-loading').classList.add('hidden');
-            document.getElementById('load-btn').disabled = false;
-            document.getElementById('load-btn').textContent = 'Load History';
-
-            // Render route on map
-            if (pointsData.success && pointsData.data?.length > 0) {
-                renderRoute(pointsData.data);
-            }
-
-            // Render trip list
-            if (summaryData.success && summaryData.data) {
-                renderTripList(summaryData.data);
-            } else {
-                document.getElementById('trips-empty').classList.remove('hidden');
-                document.getElementById('trips-empty').querySelector('p').textContent = 'No trips found for this period.';
-            }
-
-        } catch (e) {
-            document.getElementById('trips-loading').classList.add('hidden');
-            document.getElementById('load-btn').disabled = false;
-            document.getElementById('load-btn').textContent = 'Load History';
-            errEl.textContent = 'Failed to load trip data. Please try again.';
-            errEl.classList.remove('hidden');
-        }
-    }
-
-    // ---- Render route on map ----
-    function renderRoute(points) {
-        allPoints = points;
-
-        const latlngs = points.map(p => [parseFloat(p.latitude), parseFloat(p.longitude)]);
-
-        // Draw polyline
-        routeLayer = L.polyline(latlngs, { color: '#FA6908', weight: 3, opacity: 0.8 }).addTo(map);
-        map.fitBounds(routeLayer.getBounds(), { padding: [40, 40] });
-
-        // Start marker (green)
-        startMarker = L.circleMarker(latlngs[0], {
-            radius: 8, color: '#16A34A', fillColor: '#16A34A', fillOpacity: 1, weight: 2
-        }).bindPopup('Start').addTo(map);
-
-        // End marker (red)
-        endMarker = L.circleMarker(latlngs[latlngs.length - 1], {
-            radius: 8, color: '#DC2626', fillColor: '#DC2626', fillOpacity: 1, weight: 2
-        }).bindPopup('End').addTo(map);
-
-        // Playback marker (car icon)
-        playMarker = L.circleMarker(latlngs[0], {
-            radius: 6, color: '#021F4A', fillColor: '#021F4A', fillOpacity: 1, weight: 2
-        }).addTo(map);
-
-        // Setup scrubber
-        const scrubber = document.getElementById('scrubber');
-        scrubber.max   = points.length - 1;
-        scrubber.value = 0;
-        document.getElementById('playback-bar').classList.remove('hidden');
-        updateScrubberDisplay(0);
-    }
-
-    // ---- Render trip list from summary ----
-    function renderTripList(data) {
-        const trips = data.trips ?? [];
-        const list  = document.getElementById('trips-list');
-        list.innerHTML = '';
-
-        if (trips.length === 0) {
-            document.getElementById('trips-empty').classList.remove('hidden');
-            document.getElementById('trips-empty').querySelector('p').textContent = 'No trips found for this period.';
-            return;
-        }
-
-        trips.forEach((trip, i) => {
-            const start    = new Date(trip.startTime);
-            const end      = new Date(trip.endTime);
-            const duration = Math.round(parseFloat(trip.durationMinutes));
-            const distance = parseFloat(trip.distanceKm).toFixed(1);
-            const maxSpeed = Math.round(parseFloat(trip.maxSpeed));
-            const avgSpeed = Math.round(parseFloat(trip.avgSpeed));
-
-            const div = document.createElement('div');
-            div.className = 'px-5 py-4 hover:bg-gray-50 transition cursor-pointer';
-            div.innerHTML = `
-                <div class="flex items-center justify-between mb-1">
-                    <p class="font-semibold text-gray-800 text-sm">Trip ${i + 1}${trip.inProgress ? ' <span class="text-xs text-orange-500">(in progress)</span>' : ''}</p>
-                    <span class="text-xs text-gray-400">${distance} km</span>
-                </div>
-                <p class="text-xs text-gray-400">${start.toLocaleTimeString()} → ${end.toLocaleTimeString()}</p>
-                <p class="text-xs text-gray-500 mt-1">${duration} min · Max ${maxSpeed} km/h · Avg ${avgSpeed} km/h</p>
-            `;
-            div.onclick = () => focusTripOnMap(trip);
-            list.appendChild(div);
+        const map = L.map('map', {
+            center: [7.8731, 80.7718],
+            zoom: 8,
         });
 
-        list.classList.remove('hidden');
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19,
+        }).addTo(map);
 
-        // Stats
-        const totalDist  = trips.reduce((s, t) => s + parseFloat(t.distanceKm), 0).toFixed(1);
-        const maxSpeedAll = Math.max(...trips.map(t => parseFloat(t.maxSpeed)));
-        const avgSpeedAll = (trips.reduce((s, t) => s + parseFloat(t.avgSpeed), 0) / trips.length).toFixed(0);
-
-        document.getElementById('stat-trips').textContent    = trips.length;
-        document.getElementById('stat-distance').textContent = `${totalDist} km`;
-        document.getElementById('stat-maxspeed').textContent = `${Math.round(maxSpeedAll)} km/h`;
-        document.getElementById('stat-avgspeed').textContent = `${avgSpeedAll} km/h`;
-        document.getElementById('trips-stats').classList.remove('hidden');
-    }
-
-    // ---- Focus on trip start/end on map ----
-    function focusTripOnMap(trip) {
-        if (!trip.startLatitude || !trip.startLongitude) return;
-        const lat = parseFloat(trip.startLatitude);
-        const lng = parseFloat(trip.startLongitude);
-        map.setView([lat, lng], 14, { animate: true });
-    }
-
-    // ---- Scrubber ----
-    function scrubTo(index) {
-        if (!allPoints.length) return;
-        index = parseInt(index);
-        playIndex = index;
-        const p   = allPoints[index];
-        const lat = parseFloat(p.latitude);
-        const lng = parseFloat(p.longitude);
-        playMarker.setLatLng([lat, lng]);
-        updateScrubberDisplay(index);
-    }
-
-    function updateScrubberDisplay(index) {
-        const p = allPoints[index];
-        if (!p) return;
-        const t = new Date(p.eventTime);
-        document.getElementById('scrubber-time').textContent    = t.toLocaleTimeString();
-        document.getElementById('current-speed').textContent    = Math.round(parseFloat(p.speed ?? 0));
-        document.getElementById('current-heading').textContent  = Math.round(parseFloat(p.heading ?? 0));
-        document.getElementById('scrubber').value               = index;
-    }
-
-    // ---- Playback ----
-    function togglePlay() {
-        if (isPlaying) {
-            pausePlayback();
-        } else {
-            startPlayback();
+        function makeIcon(online) {
+            return L.divIcon({
+                className: '',
+                html: `<div style="width:36px;height:36px;background:${online ? '#FA6908' : '#9CA3AF'};border:3px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;">
+                    <svg width="18" height="18" fill="white" viewBox="0 0 24 24">
+                        <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+                    </svg>
+                </div>`,
+                iconSize: [36, 36],
+                iconAnchor: [18, 18],
+                popupAnchor: [0, -20],
+            });
         }
-    }
 
-    function startPlayback() {
-        if (!allPoints.length) return;
-        if (playIndex >= allPoints.length - 1) playIndex = 0;
-        isPlaying = true;
-        document.getElementById('play-icon').classList.add('hidden');
-        document.getElementById('pause-icon').classList.remove('hidden');
-        playTimer = setInterval(() => {
-            if (playIndex >= allPoints.length - 1) {
-                pausePlayback();
-                return;
-            }
-            playIndex++;
-            scrubTo(playIndex);
-        }, 100); // 100ms between points = fast playback
-    }
+        const markers = {};
+        const bounds  = [];
 
-    function pausePlayback() {
-        isPlaying = false;
-        clearInterval(playTimer);
-        document.getElementById('play-icon').classList.remove('hidden');
-        document.getElementById('pause-icon').classList.add('hidden');
-    }
+        vehicles.forEach(v => {
+            if (!v.latitude || !v.longitude) return;
+            const lat = parseFloat(v.latitude);
+            const lng = parseFloat(v.longitude);
+            if (isNaN(lat) || isNaN(lng)) return;
 
-    // ---- Clear map layers ----
-    function clearMap() {
-        if (routeLayer)  { map.removeLayer(routeLayer);  routeLayer  = null; }
-        if (startMarker) { map.removeLayer(startMarker); startMarker = null; }
-        if (endMarker)   { map.removeLayer(endMarker);   endMarker   = null; }
-        if (playMarker)  { map.removeLayer(playMarker);  playMarker  = null; }
-        allPoints = [];
-        pausePlayback();
-        playIndex = 0;
-        document.getElementById('playback-bar').classList.add('hidden');
-    }
-</script>
+            const marker = L.marker([lat, lng], { icon: makeIcon(v.online) })
+                .bindPopup(`
+                    <div style="min-width:160px">
+                        <p style="font-weight:600;margin-bottom:4px">${v.vehicleNumber}</p>
+                        <p style="font-size:12px;color:#6B7280">${v.make} ${v.model}</p>
+                        <p style="font-size:12px;margin-top:4px;color:${v.online ? '#16A34A' : '#9CA3AF'}">${v.online ? '● Online' : '○ Offline'}</p>
+                        ${v.online ? `<p style="font-size:12px;color:#374151">${Math.round(v.speed)} km/h</p>` : ''}
+                    </div>
+                `)
+                .addTo(map);
+
+            markers[v.vehicleId] = marker;
+            bounds.push([lat, lng]);
+        });
+
+        if (bounds.length > 0) {
+            map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+        }
+
+        function focusVehicle(vehicleId, lat, lng) {
+            if (!lat || !lng) return;
+            map.setView([parseFloat(lat), parseFloat(lng)], 15, { animate: true });
+            if (markers[vehicleId]) markers[vehicleId].openPopup();
+        }
+
+        setTimeout(() => window.location.reload(), 30000);
+    </script>
+
+    
 @endpush
