@@ -15,7 +15,7 @@ class DashboardController extends Controller
     {
         try {
             // Step 1 — get the customer's own profile to retrieve customerId
-            $profile = $this->api->getMyProfile();
+            $profile    = $this->api->getMyProfile();
             $customerId = $profile['data']['customerId'] ?? null;
 
             if (!$customerId) {
@@ -27,13 +27,16 @@ class DashboardController extends Controller
             }
 
             // Step 2 — get dashboard data (vehicles + live locations in one call)
-            $dashboard = $this->api->getDashboard($customerId);
-            $data = $dashboard['data'] ?? $dashboard;
-// Ensure vehicles is always an array
-if (isset($data['vehicles']) && !is_array($data['vehicles'])) {
-    $data['vehicles'] = [];
-}
-$data['vehicles'] = $data['vehicles'] ?? [];
+            $response = $this->api->getDashboard($customerId);
+
+            // Unwrap the API envelope — C# API wraps data in { data: {...} }
+            $data = $response['data'] ?? $response;
+
+            // Guarantee vehicles is always an array regardless of API shape
+            $data['vehicles']        = is_array($data['vehicles'] ?? null)        ? $data['vehicles']        : [];
+            $data['vehicleCount']    = $data['vehicleCount']    ?? count($data['vehicles']);
+            $data['onlineVehicles']  = $data['onlineVehicles']  ?? 0;
+            $data['offlineVehicles'] = $data['offlineVehicles'] ?? 0;
 
             return view('dashboard.index', [
                 'dashboard' => $data,
@@ -42,9 +45,11 @@ $data['vehicles'] = $data['vehicles'] ?? [];
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Dashboard: Failed to load', ['error' => $e->getMessage()]);
+            Log::error('Dashboard: Failed to load', [
+                'error' => $e->getMessage(),
+                'code'  => $e->getCode(),
+            ]);
 
-            // If the API returns 401, the Firebase token has expired
             if ($e->getCode() === 401) {
                 Session::flush();
                 return redirect('/login?expired=1');

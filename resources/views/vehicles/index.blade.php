@@ -18,7 +18,7 @@
 
     {{-- Header row --}}
     <div class="flex items-center justify-between mb-6">
-        <p class="text-sm text-gray-500">{{ count($vehicles) }} vehicle(s) registered</p>
+        <p class="text-sm text-gray-500">{{ count($vehicles ?? []) }} vehicle(s) registered</p>
         @if($customerId)
             <button onclick="openAddModal()"
                     class="flex items-center gap-2 px-4 py-2 bg-[#FA6908] hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition">
@@ -41,12 +41,7 @@
             </svg>
             <p class="text-gray-400 font-medium mb-2">No vehicles yet</p>
             <p class="text-gray-300 text-sm mb-6">Add your first vehicle to start tracking.</p>
-            @if($customerId)
-                <button onclick="openAddModal()"
-                        class="px-6 py-2.5 bg-[#FA6908] text-white text-sm font-semibold rounded-lg hover:bg-orange-600 transition">
-                    Add Your First Vehicle
-                </button>
-            @endif
+            
         </div>
     @else
         {{-- Vehicle grid --}}
