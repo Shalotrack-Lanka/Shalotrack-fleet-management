@@ -34,7 +34,9 @@ Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(func
     Route::post('/vehicles/{id}/unlink-device',   [VehicleController::class, 'unlinkDevice']);
 
     // Trip History
-    Route::get('/trips',    [TripController::class, 'index'])->name('trips');
+    Route::get('/trips',                              [TripController::class, 'index'])->name('trips');
+    Route::get('/trips/{vehicleId}/points',           [TripController::class, 'points']);
+    Route::get('/trips/{vehicleId}/summary',          [TripController::class, 'summary']);
 
     // Alerts
     Route::get('/alerts',              [AlertController::class, 'index'])->name('alerts');
