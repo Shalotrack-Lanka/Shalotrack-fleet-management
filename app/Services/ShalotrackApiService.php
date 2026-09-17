@@ -11,11 +11,8 @@ use Illuminate\Support\Facades\Session;
  * ShalotrackApiService
  *
  * Single responsibility: all outbound HTTP calls to the C# API.
- *
- * Rules:
- * - Controllers NEVER build HTTP requests directly — only call this service.
- * - The Firebase token is ALWAYS read from the encrypted server-side session.
- * - All errors are caught here and surfaced as consistent exceptions.
+ * Token is always read from the encrypted server-side session.
+ * Controllers never build HTTP requests directly.
  */
 class ShalotrackApiService
 {
@@ -46,11 +43,6 @@ class ShalotrackApiService
     // Dashboard
     // -------------------------------------------------------------------------
 
-    /**
-     * GET /api/Customers/{customerId}/dashboard
-     * Returns DashboardResponseDto — vehicles with live location, status, heading.
-     * This is the single call that powers the dashboard page.
-     */
     public function getDashboard(string $customerId): array
     {
         return $this->get("/api/Customers/{$customerId}/dashboard");
@@ -86,6 +78,46 @@ class ShalotrackApiService
     }
 
     // -------------------------------------------------------------------------
+    // GPS Devices
+    // -------------------------------------------------------------------------
+
+    /**
+     * Customer-facing IMEI lookup.
+     * Physical possession of the IMEI is the authorization.
+     * Returns { deviceId, imei, ... } or 404.
+     */
+    public function lookupDeviceByImei(string $imei): array
+    {
+        return $this->get("/api/GpsDevices/lookup/{$imei}");
+    }
+
+    // -------------------------------------------------------------------------
+    // Device Assignments (Link / Unlink)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Link a GPS device to a vehicle.
+     * Requires: { VehicleId: guid, DeviceId: guid }
+     * DeviceId is obtained by calling lookupDeviceByImei() first.
+     */
+    public function assignDevice(string $vehicleId, string $deviceId): array
+    {
+        return $this->post('/api/DeviceAssignments/assign', [
+            'VehicleId' => $vehicleId,
+            'DeviceId'  => $deviceId,
+        ]);
+    }
+
+    /**
+     * Unlink a GPS device from a vehicle.
+     * Requires the assignment ID (from the vehicle's device assignment record).
+     */
+    public function unassignDevice(string $assignmentId): array
+    {
+        return $this->patch("/api/DeviceAssignments/{$assignmentId}/unassign");
+    }
+
+    // -------------------------------------------------------------------------
     // Current Locations
     // -------------------------------------------------------------------------
 
@@ -95,26 +127,26 @@ class ShalotrackApiService
     }
 
     // -------------------------------------------------------------------------
-    // Device Assignments
-    // -------------------------------------------------------------------------
-
-    public function linkDevice(array $data): array
-    {
-        return $this->post('/api/DeviceAssignments', $data);
-    }
-
-    public function unlinkDevice(string $assignmentId): void
-    {
-        $this->delete("/api/DeviceAssignments/{$assignmentId}");
-    }
-
-    // -------------------------------------------------------------------------
     // GPS Tracking (Trip History)
     // -------------------------------------------------------------------------
 
     public function getTripHistory(string $vehicleId, string $from, string $to): array
     {
         return $this->get('/api/GpsTracking', [
+            'vehicleId' => $vehicleId,
+            'from'      => $from,
+            'to'        => $to,
+            'pageSize'  => 1000, // Max points for route playback
+        ]);
+    }
+
+    /**
+     * GET /api/GpsTracking/trips
+     * Returns trip summaries — start/end points, distance, speed stats.
+     */
+    public function getTripSummary(string $vehicleId, string $from, string $to): array
+    {
+        return $this->get('/api/GpsTracking/trips', [
             'vehicleId' => $vehicleId,
             'from'      => $from,
             'to'        => $to,
@@ -217,23 +249,15 @@ class ShalotrackApiService
         $this->handle($response, 'DELETE', $path);
     }
 
-    /**
-     * Build the HTTP client with the Firebase token from session.
-     * Token is NEVER sourced from the incoming browser request.
-     */
     private function client()
     {
         $token = Session::get('firebase_token');
-
         return Http::withToken($token)
             ->timeout($this->timeout)
             ->acceptJson()
             ->withHeaders(['Content-Type' => 'application/json']);
     }
 
-    /**
-     * Handle API response — map errors to exceptions consistently.
-     */
     private function handle(Response $response, string $method, string $path): array
     {
         if ($response->successful()) {
@@ -257,3 +281,6 @@ class ShalotrackApiService
         };
     }
 }
+// NOTE: This append is invalid — the file already has a closing brace.
+// The getTripSummary method must be added inside the class.
+// See the full file rewrite below.
