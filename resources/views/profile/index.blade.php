@@ -30,7 +30,7 @@
                         <p class="text-sm text-gray-400">{{ $profile['phoneNumber'] ?? '—' }}</p>
                         <span class="inline-block mt-1 text-xs px-2 py-0.5 rounded-full
                             {{ strtolower($profile['accountStatus'] ?? '') === 'active' ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-500' }}">
-                            {{ ucfirst(strtolower($profile['accountStatus'] ?? 'Unknown')) }}
+                            {{ match((int)($profile['accountStatus'] ?? 0)) { 0 => 'Active', 1 => 'Suspended', 2 => 'Inactive', default => 'Unknown' } }}
                         </span>
                     </div>
                 </div>
