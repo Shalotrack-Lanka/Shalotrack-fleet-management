@@ -236,8 +236,9 @@
                 });
 
                 if (response.ok || response.redirected) {
-                    // Laravel redirects to /dashboard on success
-                    window.location.href = '/dashboard';
+                    const data = await response.json().catch(() => ({}));
+                    // Use redirect from server if provided, otherwise default to dashboard
+                    window.location.href = data.redirect ?? '/dashboard';
                 } else {
                     const data = await response.json().catch(() => ({}));
                     showError('otp-error', data.message ?? 'Authentication failed. Please try again.');

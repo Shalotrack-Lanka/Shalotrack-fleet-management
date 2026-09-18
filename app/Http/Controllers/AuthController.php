@@ -84,23 +84,33 @@ class AuthController extends Controller
             'phone' => $payload['phone_number'] ?? null,
         ]);
 
-        if ($request->expectsJson()) {
-            return response()->json(['success' => true]);
-        }
-
         // Check if this Firebase account has a customer profile yet.
         // New users coming from the web portal won't have one — send them
         // to registration. Existing users go straight to the dashboard.
+        // This check MUST happen before the expectsJson() return so the
+        // JS client gets the correct redirect URL.
+        $hasProfile = true;
         try {
             $apiService = app(\App\Services\ShalotrackApiService::class);
             $apiService->getMyProfile();
-            return redirect('/dashboard');
         } catch (\Exception $e) {
-            if ($e->getCode() === 404) {
-                return redirect('/register');
+            Log::info('FirebaseAuth: Profile check', [
+                'code'    => $e->getCode(),
+                'message' => $e->getMessage(),
+            ]);
+            if ((int) $e->getCode() === 404) {
+                $hasProfile = false;
             }
-            return redirect('/dashboard');
         }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success'  => true,
+                'redirect' => $hasProfile ? '/dashboard' : '/register',
+            ]);
+        }
+
+        return $hasProfile ? redirect('/dashboard') : redirect('/register');
     }
 
     /**
