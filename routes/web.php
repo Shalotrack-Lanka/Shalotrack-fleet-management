@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Session;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\DashboardController;
@@ -20,6 +21,12 @@ Route::post('/logout',[AuthController::class, 'logout'])->name('logout');
 // Registration — accessible only when session exists but no profile yet
 Route::get('/register',  [RegisterController::class, 'show'])->name('register');
 Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
+
+// Used from the register page — clears session and goes to login
+Route::get('/logout-and-login', function () {
+    Session::flush();
+    return redirect('/login');
+})->name('logout.login');
 
 // ---- Protected ----
 Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(function () {
