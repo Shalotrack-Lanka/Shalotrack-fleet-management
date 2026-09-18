@@ -34,6 +34,11 @@ class ShalotrackApiService
         return $this->get('/api/Customers/me');
     }
 
+    public function createProfile(array $data): array
+    {
+        return $this->post('/api/Customers', $data);
+    }
+
     public function updateProfile(string $customerId, array $data): array
     {
         return $this->put("/api/Customers/{$customerId}", $data);
