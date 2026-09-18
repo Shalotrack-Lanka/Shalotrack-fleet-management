@@ -12,6 +12,9 @@ use App\Http\Controllers\AlertController;
 use App\Http\Controllers\GeofenceController;
 use App\Http\Controllers\SharingController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\EmergencyContactController;
+use App\Http\Controllers\SavedPlaceController;
+use App\Http\Controllers\VehicleStatsController;
 
 // ---- Public ----
 Route::get('/', fn() => view('landing'))->name('home');
@@ -75,4 +78,18 @@ Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(func
     // Profile
     Route::get('/profile',  [ProfileController::class, 'index'])->name('profile');
     Route::put('/profile',  [ProfileController::class, 'update']);
+
+    // Emergency Contacts
+    Route::get('/emergency-contacts',       [EmergencyContactController::class, 'index'])->name('emergency-contacts');
+    Route::post('/emergency-contacts',      [EmergencyContactController::class, 'store']);
+    Route::delete('/emergency-contacts/{id}', [EmergencyContactController::class, 'destroy']);
+
+    // Saved Places
+    Route::get('/saved-places',         [SavedPlaceController::class, 'index'])->name('saved-places');
+    Route::post('/saved-places',        [SavedPlaceController::class, 'store']);
+    Route::delete('/saved-places/{id}', [SavedPlaceController::class, 'destroy']);
+
+    // Vehicle Statistics
+    Route::get('/stats',           [VehicleStatsController::class, 'index'])->name('stats');
+    Route::get('/stats/{id}',      [VehicleStatsController::class, 'show']);
 });
