@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\TripController;
@@ -13,7 +14,7 @@ use App\Http\Controllers\SharingController;
 use App\Http\Controllers\ProfileController;
 
 // ---- Public ----
-Route::get('/',       fn() => redirect('/login'));
+Route::get('/', fn() => view('landing'))->name('home');
 Route::get('/login',  [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout',[AuthController::class, 'logout'])->name('logout');
@@ -23,6 +24,10 @@ Route::get('/register',  [RegisterController::class, 'show'])->name('register');
 Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
 
 // Used from the register page — clears session and goes to login
+// Email verification
+Route::get('/email/verify',         [EmailVerificationController::class, 'show'])->name('email.verify');
+Route::post('/email/mark-verified', [EmailVerificationController::class, 'markVerified'])->name('email.mark-verified');
+
 Route::get('/logout-and-login', function () {
     Session::flush();
     return redirect('/login');
