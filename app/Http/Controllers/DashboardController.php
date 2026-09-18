@@ -26,6 +26,10 @@ class DashboardController extends Controller
                 ]);
             }
 
+            // Cache customer name in session for topbar display
+            Session::put('customer_name', $profile['data']['fullName'] ?? null);
+            Session::put('customer_id',   $profile['data']['customerId'] ?? null);
+
             // Step 2 — get dashboard data (vehicles + live locations in one call)
             $response = $this->api->getDashboard($customerId);
 
