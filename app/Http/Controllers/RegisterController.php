@@ -81,7 +81,11 @@ class RegisterController extends Controller
 
             Log::info('RegisterController: Profile created', ['phone' => $phone]);
 
-            return redirect('/dashboard');
+            // Store email in session for the verification page
+            Session::put('pending_verification_email', $validated['email']);
+            Session::put('email_verified', false);
+
+            return redirect('/email/verify');
 
         } catch (\Exception $e) {
             Log::error('RegisterController: Failed', [
