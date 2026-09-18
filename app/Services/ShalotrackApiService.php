@@ -157,13 +157,16 @@ class ShalotrackApiService
     // Alerts
     // -------------------------------------------------------------------------
 
-    public function getMyAlerts(): array
+    public function getMyAlerts(int $page = 1, int $pageSize = 20, ?string $vehicleId = null): array
     {
-        return $this->get('/api/Alerts/my');
+        $params = ['page' => $page, 'pageSize' => $pageSize];
+        if ($vehicleId) $params['vehicleId'] = $vehicleId;
+        return $this->get('/api/Alerts', $params);
     }
 
     public function markAlertRead(string $alertId): array
     {
+        // alertId is a long (int64) in the C# API
         return $this->patch("/api/Alerts/{$alertId}/read");
     }
 
