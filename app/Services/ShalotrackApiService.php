@@ -305,6 +305,3 @@ class ShalotrackApiService
         };
     }
 }
-// NOTE: This append is invalid — the file already has a closing brace.
-// The getTripSummary method must be added inside the class.
-// See the full file rewrite below.
