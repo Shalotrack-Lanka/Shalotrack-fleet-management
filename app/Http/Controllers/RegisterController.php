@@ -84,11 +84,18 @@ class RegisterController extends Controller
             return redirect('/dashboard');
 
         } catch (\Exception $e) {
-            Log::error('RegisterController: Failed', ['error' => $e->getMessage()]);
+            Log::error('RegisterController: Failed', [
+                'error' => $e->getMessage(),
+                'code'  => $e->getCode(),
+            ]);
 
-            return back()->withErrors([
-                'general' => 'Failed to create your profile. Please try again.',
-            ])->withInput();
+            $message = match ($e->getCode()) {
+                409     => 'An account with this phone number or email already exists. Please log in instead.',
+                422     => 'Please check your details and try again.',
+                default => 'Failed to create your profile. Please try again.',
+            };
+
+            return back()->withErrors(['general' => $message])->withInput();
         }
     }
 }
