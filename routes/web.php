@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\TripController;
@@ -15,6 +16,10 @@ Route::get('/',       fn() => redirect('/login'));
 Route::get('/login',  [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout',[AuthController::class, 'logout'])->name('logout');
+
+// Registration — accessible only when session exists but no profile yet
+Route::get('/register',  [RegisterController::class, 'show'])->name('register');
+Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
 
 // ---- Protected ----
 Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(function () {
