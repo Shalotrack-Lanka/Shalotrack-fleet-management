@@ -240,6 +240,53 @@ class ShalotrackApiService
     }
 
     // -------------------------------------------------------------------------
+    // Emergency Contacts
+    // -------------------------------------------------------------------------
+
+    public function getEmergencyContacts(): array
+    {
+        return $this->get('/api/EmergencyContacts');
+    }
+
+    public function createEmergencyContact(array $data): array
+    {
+        return $this->post('/api/EmergencyContacts', $data);
+    }
+
+    public function deleteEmergencyContact(string $contactId): void
+    {
+        $this->delete("/api/EmergencyContacts/{$contactId}");
+    }
+
+    // -------------------------------------------------------------------------
+    // Saved Places
+    // -------------------------------------------------------------------------
+
+    public function getSavedPlaces(): array
+    {
+        return $this->get('/api/SavedPlaces');
+    }
+
+    public function createSavedPlace(array $data): array
+    {
+        return $this->post('/api/SavedPlaces', $data);
+    }
+
+    public function deleteSavedPlace(string $placeId): void
+    {
+        $this->delete("/api/SavedPlaces/{$placeId}");
+    }
+
+    // -------------------------------------------------------------------------
+    // Vehicle Statistics
+    // -------------------------------------------------------------------------
+
+    public function getVehicleStats(string $vehicleId, string $period = 'week'): array
+    {
+        return $this->get("/api/VehicleStats/{$vehicleId}", ['period' => $period]);
+    }
+
+    // -------------------------------------------------------------------------
     // Internal HTTP helpers
     // -------------------------------------------------------------------------
 
