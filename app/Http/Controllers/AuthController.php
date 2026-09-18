@@ -88,7 +88,19 @@ class AuthController extends Controller
             return response()->json(['success' => true]);
         }
 
-        return redirect('/dashboard');
+        // Check if this Firebase account has a customer profile yet.
+        // New users coming from the web portal won't have one — send them
+        // to registration. Existing users go straight to the dashboard.
+        try {
+            $apiService = app(\App\Services\ShalotrackApiService::class);
+            $apiService->getMyProfile();
+            return redirect('/dashboard');
+        } catch (\Exception $e) {
+            if ($e->getCode() === 404) {
+                return redirect('/register');
+            }
+            return redirect('/dashboard');
+        }
     }
 
     /**
