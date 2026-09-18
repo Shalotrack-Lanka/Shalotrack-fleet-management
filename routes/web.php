@@ -49,10 +49,11 @@ Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(func
     Route::delete('/geofences/{id}',  [GeofenceController::class, 'destroy']);
 
     // Sharing
-    Route::get('/sharing',               [SharingController::class, 'index'])->name('sharing');
-    Route::post('/sharing',              [SharingController::class, 'store']);
-    Route::post('/sharing/{id}/accept',  [SharingController::class, 'accept']);
-    Route::delete('/sharing/{id}',       [SharingController::class, 'destroy']);
+    Route::get('/sharing',                [SharingController::class, 'index'])->name('sharing');
+    Route::post('/sharing',               [SharingController::class, 'store']);
+    Route::post('/sharing/{id}/accept',   [SharingController::class, 'accept']);
+    Route::post('/sharing/{id}/decline',  [SharingController::class, 'decline']);
+    Route::delete('/sharing/{id}',        [SharingController::class, 'destroy']);
 
     // Profile
     Route::get('/profile',  [ProfileController::class, 'index'])->name('profile');
