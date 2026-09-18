@@ -198,19 +198,35 @@ class ShalotrackApiService
     // Vehicle Sharing
     // -------------------------------------------------------------------------
 
-    public function getMyShares(): array
+    public function getMyShares(?string $vehicleId = null): array
     {
-        return $this->get('/api/VehicleShares/my');
+        $params = $vehicleId ? ['vehicleId' => $vehicleId] : [];
+        return $this->get('/api/VehicleShares/my-shares', $params);
     }
 
-    public function createShare(array $data): array
+    public function getSharedWithMe(): array
     {
-        return $this->post('/api/VehicleShares', $data);
+        return $this->get('/api/VehicleShares/shared-with-me');
     }
 
-    public function acceptShare(string $shareId): array
+    public function getPendingInvites(): array
     {
-        return $this->patch("/api/VehicleShares/{$shareId}/accept");
+        return $this->get('/api/VehicleShares/pending-invites');
+    }
+
+    public function inviteShare(string $vehicleId, string $phoneNumber): array
+    {
+        return $this->post('/api/VehicleShares/invite', [
+            'VehicleId'   => $vehicleId,
+            'PhoneNumber' => $phoneNumber,
+        ]);
+    }
+
+    public function respondToShare(string $shareId, bool $accept): array
+    {
+        return $this->post("/api/VehicleShares/{$shareId}/respond", [
+            'Accept' => $accept,
+        ]);
     }
 
     public function revokeShare(string $shareId): void
