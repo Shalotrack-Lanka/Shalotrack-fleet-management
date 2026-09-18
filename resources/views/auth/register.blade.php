@@ -24,15 +24,18 @@
 
             <h2 class="text-xl font-semibold text-gray-800 mb-1">Complete your profile</h2>
             <p class="text-gray-500 text-sm mb-6">
-                Welcome! You're registered with
+                Welcome! You're signed in with
                 <strong class="text-gray-700">{{ $phone }}</strong>.
-                Fill in your details to continue.
+                Fill in your details to get started.
             </p>
 
-            {{-- Errors --}}
+            {{-- Error banner --}}
             @if($errors->any())
-                <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                    {{ $errors->first() }}
+                <div class="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-start gap-2">
+                    <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>{{ $errors->first() }}</span>
                 </div>
             @endif
 
@@ -43,24 +46,33 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
                     <input type="text" name="fullName" value="{{ old('fullName') }}"
                            placeholder="John Silva"
-                           class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition"
-                           required />
+                           class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition @error('fullName') border-red-400 @enderror"
+                           required autofocus />
+                    @error('fullName')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
                     <input type="email" name="email" value="{{ old('email') }}"
                            placeholder="john@example.com"
-                           class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition"
+                           class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition @error('email') border-red-400 @enderror"
                            required />
+                    @error('email')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">NIC Number *</label>
                     <input type="text" name="nicNumber" value="{{ old('nicNumber') }}"
                            placeholder="200271901539 or 880123456V"
-                           class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition font-mono"
+                           class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition font-mono @error('nicNumber') border-red-400 @enderror"
                            required />
+                    @error('nicNumber')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div>
@@ -76,11 +88,18 @@
                         Create Account
                     </button>
                 </div>
-
-                <p class="text-center text-xs text-gray-400">
-                    By creating an account you agree to ShaloTrack's terms of service.
-                </p>
             </form>
+
+            {{-- Login link --}}
+            <div class="mt-6 pt-5 border-t border-gray-100 text-center">
+                <p class="text-sm text-gray-500">
+                    Already have an account?
+                    <a href="/logout-and-login" class="text-[#FA6908] font-medium hover:underline">
+                        Sign in with a different number
+                    </a>
+                </p>
+            </div>
+
         </div>
 
         <p class="text-center text-blue-200 text-xs mt-6">
