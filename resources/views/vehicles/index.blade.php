@@ -56,8 +56,10 @@
                             <p class="font-bold text-gray-800">{{ $vehicle['vehicleNumber'] }}</p>
                             <p class="text-xs text-gray-400 mt-0.5">{{ $vehicle['make'] }} {{ $vehicle['model'] }} · {{ $vehicle['year'] }}</p>
                         </div>
-                        {{-- GPS device badge --}}
-                        @if($vehicle['hasGpsDevice'] ?? false)
+                        {{-- Demo badge takes precedence; GPS badge shown otherwise --}}
+                        @if($vehicle['isDemoVehicle'] ?? false)
+                            <span class="text-xs text-[#FA6908] bg-orange-50 border border-orange-200 px-2 py-1 rounded-full font-semibold">Demo</span>
+                        @elseif($vehicle['hasGpsDevice'] ?? false)
                             <span class="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full font-medium">
                                 <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
                                 GPS Linked
@@ -101,28 +103,35 @@
                            class="flex-1 text-center py-1.5 text-sm text-[#021F4A] font-medium hover:text-[#FA6908] transition">
                             View Details
                         </a>
-                        <button onclick="openEditModal({{ json_encode($vehicle) }})"
-                                class="flex-1 text-center py-1.5 text-sm text-gray-600 font-medium hover:text-[#FA6908] transition">
-                            Edit
-                        </button>
-                        @if($vehicle['hasGpsDevice'] ?? false)
-                            <button onclick="openUnlinkModal('{{ $vehicle['vehicleId'] }}', '{{ $vehicle['vehicleNumber'] }}')"
-                                    class="flex-1 text-center py-1.5 text-sm text-gray-600 font-medium hover:text-red-500 transition">
-                                Unlink GPS
-                            </button>
+                        @if($vehicle['isDemoVehicle'] ?? false)
+                            {{-- Demo vehicle: read-only — no Edit, Link/Unlink GPS, or Delete --}}
+                            <span class="flex-1 text-center py-1.5 text-xs text-gray-400 italic select-none">
+                                Read-only demo
+                            </span>
                         @else
-                            <button onclick="openLinkModal('{{ $vehicle['vehicleId'] }}', '{{ $vehicle['vehicleNumber'] }}')"
-                                    class="flex-1 text-center py-1.5 text-sm text-[#FA6908] font-medium hover:text-orange-700 transition">
-                                Link GPS
+                            <button onclick="openEditModal({{ json_encode($vehicle) }})"
+                                    class="flex-1 text-center py-1.5 text-sm text-gray-600 font-medium hover:text-[#FA6908] transition">
+                                Edit
+                            </button>
+                            @if($vehicle['hasGpsDevice'] ?? false)
+                                <button onclick="openUnlinkModal('{{ $vehicle['vehicleId'] }}', '{{ $vehicle['vehicleNumber'] }}')"
+                                        class="flex-1 text-center py-1.5 text-sm text-gray-600 font-medium hover:text-red-500 transition">
+                                    Unlink GPS
+                                </button>
+                            @else
+                                <button onclick="openLinkModal('{{ $vehicle['vehicleId'] }}', '{{ $vehicle['vehicleNumber'] }}')"
+                                        class="flex-1 text-center py-1.5 text-sm text-[#FA6908] font-medium hover:text-orange-700 transition">
+                                    Link GPS
+                                </button>
+                            @endif
+                            <button onclick="confirmDelete('{{ $vehicle['vehicleId'] }}', '{{ $vehicle['vehicleNumber'] }}')"
+                                    class="py-1.5 px-2 text-gray-300 hover:text-red-500 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
                             </button>
                         @endif
-                        <button onclick="confirmDelete('{{ $vehicle['vehicleId'] }}', '{{ $vehicle['vehicleNumber'] }}')"
-                                class="py-1.5 px-2 text-gray-300 hover:text-red-500 transition">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                        </button>
                     </div>
                 </div>
             @endforeach
