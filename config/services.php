@@ -18,4 +18,8 @@ return [
         'app_id'      => env('FIREBASE_APP_ID'),
     ],
 
+    'google_maps' => [
+        'api_key' => env('GOOGLE_MAPS_API_KEY'),
+    ],
+
 ];

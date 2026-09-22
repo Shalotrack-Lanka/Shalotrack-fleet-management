@@ -319,6 +319,16 @@ class ShalotrackApiService
         return $this->get("/api/VehicleStats/{$vehicleId}", ['period' => $period]);
     }
 
+    /**
+     * Custom date-range stats — mirrors Android's getVehicleStatsForRange().
+     * $from / $to are ISO-8601 date strings validated by the controller before
+     * they reach here; we pass them verbatim as the API expects them.
+     */
+    public function getVehicleStatsForRange(string $vehicleId, string $from, string $to): array
+    {
+        return $this->get("/api/VehicleStats/{$vehicleId}", ['from' => $from, 'to' => $to]);
+    }
+
     // -------------------------------------------------------------------------
     // Internal HTTP helpers
     // -------------------------------------------------------------------------

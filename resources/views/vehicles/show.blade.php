@@ -92,7 +92,9 @@
                 <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                     <h3 class="font-semibold text-gray-800">Live Location</h3>
                     @if($vehicle['hasGpsDevice'] ?? false)
-                        <span class="text-xs text-gray-400" id="last-update-label">Loading...</span>
+                        <span class="flex items-center gap-1.5 text-xs text-gray-400" id="last-update-label">
+                            <span class="w-2 h-2 bg-gray-300 rounded-full" id="status-dot"></span>Connecting…
+                        </span>
                     @else
                         <span class="text-xs text-gray-400">No GPS device linked</span>
                     @endif
@@ -108,9 +110,14 @@
 
 @push('scripts')
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+{{-- Microsoft SignalR client --}}
+<script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
 <script>
-    const vehicleId   = '{{ $vehicle["vehicleId"] ?? "" }}';
+    const vehicleId   = '{{ $vehicle["vehicleId"] ?? "" }}'.toLowerCase();
     const hasGps      = {{ ($vehicle['hasGpsDevice'] ?? false) ? 'true' : 'false' }};
+    const vehicleNum  = '{{ addslashes($vehicle["vehicleNumber"] ?? "") }}';
+    const vehicleMake = '{{ addslashes($vehicle["make"] ?? "") }}';
+    const vehicleMod  = '{{ addslashes($vehicle["model"] ?? "") }}';
     const CSRF        = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
     const map = L.map('map', { center: [7.8731, 80.7718], zoom: 8 });
@@ -136,65 +143,174 @@
         });
     }
 
+    function updateStatusLabel(state, extraText) {
+        const label = document.getElementById('last-update-label');
+        const dot   = document.getElementById('status-dot');
+        if (!label || !dot) return;
+
+        if (state === 'live') {
+            dot.className  = 'w-2 h-2 bg-green-500 rounded-full animate-pulse';
+            label.className = 'flex items-center gap-1.5 text-xs text-green-600 font-medium';
+            label.innerHTML = `<span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>${extraText || 'Live'}`;
+        } else if (state === 'reconnecting') {
+            label.className = 'flex items-center gap-1.5 text-xs text-amber-500 font-medium';
+            label.innerHTML = `<span class="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>Reconnecting…`;
+        } else if (state === 'fallback') {
+            label.className = 'flex items-center gap-1.5 text-xs text-gray-500';
+            label.innerHTML = `<span class="w-2 h-2 bg-gray-400 rounded-full"></span>${extraText || 'Polling…'}`;
+        } else {
+            label.className = 'flex items-center gap-1.5 text-xs text-gray-400';
+            label.innerHTML = `<span class="w-2 h-2 bg-gray-300 rounded-full"></span>${extraText || 'Unavailable'}`;
+        }
+    }
+
+    function applyLocation(lat, lng, speed, ignitionStatus) {
+        const popupHtml = `
+            <div style="min-width:160px">
+                <p style="font-weight:600">${vehicleNum}</p>
+                <p style="font-size:12px;color:#6B7280">${vehicleMake} ${vehicleMod}</p>
+                <p style="font-size:12px;margin-top:4px">${Math.round(speed ?? 0)} km/h · ${ignitionStatus ? 'Ignition on' : 'Ignition off'}</p>
+            </div>`;
+
+        if (marker) {
+            marker.setLatLng([lat, lng]);
+            marker.setIcon(makeIcon(true));
+            marker.getPopup()?.setContent(popupHtml);
+        } else {
+            marker = L.marker([lat, lng], { icon: makeIcon(true) })
+                .bindPopup(popupHtml)
+                .addTo(map);
+            map.setView([lat, lng], 15);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // HTTP fallback: called when SignalR is not connected.
+    // Same endpoint as before, now only used as a safety net.
+    // -------------------------------------------------------------------------
+    let fallbackInterval = null;
+
     async function loadLocation() {
         if (!hasGps || !vehicleId) return;
-
         try {
             const res  = await fetch(`/api/CurrentLocations/vehicle/${vehicleId}`, {
                 credentials: 'include',
                 headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF },
             });
-
-            // Location data comes from C# API via Laravel proxy
-            // Fetch directly from the API using session token via /api/signalr-token approach
-            // For now we fetch the page's API proxy endpoint
             if (!res.ok) {
-                document.getElementById('last-update-label').textContent = 'Location unavailable';
+                updateStatusLabel('offline', 'Location unavailable');
                 return;
             }
-
             const json = await res.json();
             const loc  = json?.data ?? json;
-
             if (!loc?.latitude || !loc?.longitude) {
-                document.getElementById('last-update-label').textContent = 'No location data yet';
+                updateStatusLabel('offline', 'No location data yet');
                 return;
             }
-
-            const lat = parseFloat(loc.latitude);
-            const lng = parseFloat(loc.longitude);
-            const online = true; // If we got data, device was recently active
-
-            if (marker) {
-                marker.setLatLng([lat, lng]);
-            } else {
-                marker = L.marker([lat, lng], { icon: makeIcon(online) })
-                    .bindPopup(`
-                        <div style="min-width:160px">
-                            <p style="font-weight:600">{{ $vehicle['vehicleNumber'] ?? '' }}</p>
-                            <p style="font-size:12px;color:#6B7280">{{ ($vehicle['make'] ?? '') . ' ' . ($vehicle['model'] ?? '') }}</p>
-                            <p style="font-size:12px;margin-top:4px">${Math.round(loc.speed ?? 0)} km/h · ${loc.ignitionStatus ? 'Ignition on' : 'Ignition off'}</p>
-                        </div>
-                    `)
-                    .addTo(map);
-                map.setView([lat, lng], 15);
-            }
-
+            applyLocation(parseFloat(loc.latitude), parseFloat(loc.longitude), loc.speed, loc.ignitionStatus);
             if (loc.lastUpdate) {
-                const d = new Date(loc.lastUpdate);
-                document.getElementById('last-update-label').textContent = 'Updated ' + d.toLocaleTimeString();
+                const t = new Date(loc.lastUpdate);
+                updateStatusLabel('fallback', 'Polled ' + t.toLocaleTimeString());
             }
-
         } catch (e) {
-            document.getElementById('last-update-label').textContent = 'Location unavailable';
+            updateStatusLabel('offline', 'Location unavailable');
         }
     }
 
-    if (hasGps) {
-        loadLocation();
-        setInterval(loadLocation, 15000);
-    } else {
-        // Show Sri Lanka center with no-GPS message
+    function startFallbackPoll() {
+        if (fallbackInterval) return;
+        loadLocation(); // Immediate fetch
+        fallbackInterval = setInterval(loadLocation, 60000); // Then every 60s
+    }
+
+    function stopFallbackPoll() {
+        if (fallbackInterval) {
+            clearInterval(fallbackInterval);
+            fallbackInterval = null;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // SignalR real-time connection
+    // -------------------------------------------------------------------------
+    if (hasGps && vehicleId) {
+        (async function initSignalR() {
+            // 1. Obtain Firebase JWT from the session-backed token endpoint.
+            let token;
+            try {
+                const res  = await fetch('/api/signalr-token', { credentials: 'include' });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const json = await res.json();
+                token = json.token;
+                if (!token) throw new Error('empty token');
+            } catch (err) {
+                console.warn('[SignalR] Token fetch failed — starting HTTP fallback', err);
+                updateStatusLabel('fallback', 'Polling…');
+                startFallbackPoll();
+                return;
+            }
+
+            // 2. Build connection.
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl('https://api.shalotrack.com/hubs/location', {
+                    accessTokenFactory: () => token,
+                })
+                .withAutomaticReconnect([2000, 5000, 10000, 30000])
+                .configureLogging(signalR.LogLevel.Warning)
+                .build();
+
+            // 3. Register handler BEFORE start() so no message is missed.
+            connection.on('LocationUpdated', (data) => {
+                // Guard: only process updates for this specific vehicle.
+                const incomingId = (data.vehicleId || '').toLowerCase();
+                if (incomingId !== vehicleId) return;
+
+                const lat = parseFloat(data.latitude);
+                const lng = parseFloat(data.longitude);
+                if (isNaN(lat) || isNaN(lng)) return;
+
+                applyLocation(lat, lng, data.speed, data.ignitionStatus);
+
+                const lastUpdate = data.lastUpdate
+                    ? 'Updated ' + new Date(data.lastUpdate).toLocaleTimeString()
+                    : 'Live';
+                updateStatusLabel('live', lastUpdate);
+            });
+
+            // 4. Lifecycle hooks.
+            connection.onreconnecting(() => {
+                updateStatusLabel('reconnecting');
+                startFallbackPoll(); // Poll while reconnecting
+            });
+
+            connection.onreconnected(async () => {
+                stopFallbackPoll();
+                updateStatusLabel('live', 'Reconnected');
+                try {
+                    await connection.invoke('JoinVehicleGroup', vehicleId);
+                } catch (e) {
+                    console.warn('[SignalR] JoinVehicleGroup failed on reconnect', e);
+                }
+            });
+
+            connection.onclose(() => {
+                updateStatusLabel('fallback', 'Polling (reconnect failed)');
+                startFallbackPoll();
+            });
+
+            // 5. Start.
+            try {
+                await connection.start();
+                await connection.invoke('JoinVehicleGroup', vehicleId);
+                updateStatusLabel('live', 'Live');
+            } catch (err) {
+                console.error('[SignalR] Connection failed:', err);
+                updateStatusLabel('fallback', 'Polling…');
+                startFallbackPoll();
+            }
+        })();
+    } else if (!hasGps) {
+        // No GPS device linked — show a placeholder
         L.popup({ closeButton: false })
             .setLatLng([7.8731, 80.7718])
             .setContent('<p style="text-align:center;color:#9CA3AF;font-size:13px">No GPS device linked to this vehicle.</p>')
