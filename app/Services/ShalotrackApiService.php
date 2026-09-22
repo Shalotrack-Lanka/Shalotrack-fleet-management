@@ -240,6 +240,39 @@ class ShalotrackApiService
     }
 
     // -------------------------------------------------------------------------
+    // Complaints
+    // -------------------------------------------------------------------------
+
+    public function getMyComplaints(): array
+    {
+        return $this->get('/api/Complaints/mine');
+    }
+
+    public function getComplaint(string $complaintId): array
+    {
+        return $this->get("/api/Complaints/{$complaintId}");
+    }
+
+    /**
+     * @param int $category ComplaintCategory ordinal: DeviceIssue=0, Billing=1, AppBug=2, Other=3
+     */
+    public function fileComplaint(string $vehicleId, int $category, string $description): array
+    {
+        return $this->post('/api/Complaints', [
+            'vehicleId'   => $vehicleId,
+            'category'    => $category,
+            'description' => $description,
+        ]);
+    }
+
+    public function replyToComplaint(string $complaintId, string $message): array
+    {
+        return $this->post("/api/Complaints/{$complaintId}/reply", [
+            'message' => $message,
+        ]);
+    }
+
+    // -------------------------------------------------------------------------
     // Emergency Contacts
     // -------------------------------------------------------------------------
 

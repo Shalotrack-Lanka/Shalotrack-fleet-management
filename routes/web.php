@@ -11,6 +11,7 @@ use App\Http\Controllers\TripController;
 use App\Http\Controllers\AlertController;
 use App\Http\Controllers\GeofenceController;
 use App\Http\Controllers\SharingController;
+use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\EmergencyContactController;
 use App\Http\Controllers\SavedPlaceController;
@@ -74,6 +75,12 @@ Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(func
     Route::post('/sharing/{id}/accept',   [SharingController::class, 'accept']);
     Route::post('/sharing/{id}/decline',  [SharingController::class, 'decline']);
     Route::delete('/sharing/{id}',        [SharingController::class, 'destroy']);
+
+    // Complaints
+    Route::get('/complaints',              [ComplaintController::class, 'index'])->name('complaints');
+    Route::get('/complaints/{id}',         [ComplaintController::class, 'show'])->name('complaints.show');
+    Route::post('/complaints',             [ComplaintController::class, 'store']);
+    Route::post('/complaints/{id}/reply',  [ComplaintController::class, 'reply']);
 
     // Profile
     Route::get('/profile',  [ProfileController::class, 'index'])->name('profile');
