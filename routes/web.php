@@ -58,6 +58,8 @@ Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(func
     Route::get('/trips',                              [TripController::class, 'index'])->name('trips');
     Route::get('/trips/{vehicleId}/points',           [TripController::class, 'points']);
     Route::get('/trips/{vehicleId}/summary',          [TripController::class, 'summary']);
+    Route::get('/trips/{vehicleId}/report',           [TripController::class, 'report']);
+    Route::get('/trips/{vehicleId}/report',           [TripController::class, 'report']);
 
     // Alerts
     Route::get('/alerts',              [AlertController::class, 'index'])->name('alerts');
