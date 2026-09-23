@@ -409,7 +409,7 @@
             </nav>
             
             {{-- Bottom Spacer --}}
-            <div class="px-4 py-4 border-t border-blue-900 space-y-1">
+            <div class="px-4 py-4 border-blue-900 space-y-1">
                  <!-- Empty container to keep sidebar layout intact after removing profile and logout -->
             </div>
             
@@ -469,7 +469,7 @@
         </main>
     </div>
 
-    
+
     @stack('scripts')
 </body>
 
