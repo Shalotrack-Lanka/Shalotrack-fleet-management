@@ -1,358 +1,794 @@
 @extends('layouts.app')
 
-@section('title', 'Vehicle Sharing — ShaloTrack Fleet')
-@section('page-title', 'Vehicle Sharing')
+@section('title', 'Vehicle Sharing')
 
 @section('content')
+<style>
+    /* ── Page shell ── */
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 28px;
+    }
 
+    .page-title {
+        font-size: 22px;
+        font-weight: 800;
+        color: #021F4A;
+    }
+
+    .page-subtitle {
+        font-size: 13px;
+        color: #6B7280;
+        margin-top: 2px;
+    }
+
+    /* ── Error banner ── */
+    .err-banner {
+        background: #FFF5F5;
+        border: 1px solid #FECACA;
+        border-left: 4px solid #DC2626;
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-size: 13px;
+        color: #991B1B;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* ── Section cards ── */
+    .section-card {
+        background: #ffffff;
+        border: 1px solid #E5E7EB;
+        border-radius: 14px;
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .section-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 24px 14px;
+        border-bottom: 1px solid #F3F4F6;
+    }
+
+    .section-head-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .section-icon svg {
+        width: 17px;
+        height: 17px;
+    }
+
+    .section-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #021F4A;
+    }
+
+    .section-count {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 20px;
+    }
+
+    /* ── Table ── */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #9CA3AF;
+        padding: 10px 24px;
+        text-align: left;
+        background: #FAFAFA;
+        border-bottom: 1px solid #F3F4F6;
+    }
+
+    td {
+        padding: 14px 24px;
+        font-size: 13px;
+        color: #374151;
+        border-bottom: 1px solid #F9FAFB;
+        vertical-align: middle;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    tr:hover td {
+        background: #FAFAFA;
+    }
+
+    .vehicle-cell {
+        font-weight: 700;
+        color: #021F4A;
+    }
+
+    .vehicle-sub {
+        font-size: 11px;
+        font-weight: 400;
+        color: #9CA3AF;
+        margin-top: 1px;
+    }
+
+    /* ── Status badges ── */
+    .badge {
+        display: inline-block;
+        padding: 3px 9px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+    }
+
+    .badge-pending {
+        background: #FEF3C7;
+        color: #92400E;
+    }
+
+    .badge-accepted {
+        background: #D1FAE5;
+        color: #065F46;
+    }
+
+    .badge-declined {
+        background: #FEE2E2;
+        color: #991B1B;
+    }
+
+    .badge-revoked {
+        background: #F3F4F6;
+        color: #6B7280;
+    }
+
+    /* ── Action buttons ── */
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 12px;
+        border-radius: 7px;
+        font-size: 12px;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        transition: opacity 0.15s, transform 0.1s;
+        text-decoration: none;
+    }
+
+    .btn-action:hover {
+        opacity: 0.82;
+    }
+
+    .btn-action:active {
+        transform: scale(0.97);
+    }
+
+    .btn-action svg {
+        width: 13px;
+        height: 13px;
+        flex-shrink: 0;
+    }
+
+    .btn-accept {
+        background: #D1FAE5;
+        color: #065F46;
+    }
+
+    .btn-decline {
+        background: #FEE2E2;
+        color: #991B1B;
+    }
+
+    .btn-revoke {
+        background: #FEE2E2;
+        color: #991B1B;
+    }
+
+    .action-gap {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    /* ── Empty state ── */
+    .empty-row td {
+        padding: 36px 24px;
+        text-align: center;
+        color: #9CA3AF;
+        font-size: 13px;
+    }
+
+    /* ── Invite modal ── */
+    .modal-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 31, 74, 0.55);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-backdrop.open {
+        display: flex;
+    }
+
+    .modal {
+        background: #ffffff;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 420px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+    }
+
+    .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 24px 16px;
+        border-bottom: 1px solid #F3F4F6;
+    }
+
+    .modal-title {
+        font-size: 16px;
+        font-weight: 800;
+        color: #021F4A;
+    }
+
+    .modal-close {
+        background: #F3F4F6;
+        border: none;
+        border-radius: 7px;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #6B7280;
+    }
+
+    .modal-close:hover {
+        background: #E5E7EB;
+    }
+
+    .modal-body {
+        padding: 20px 24px;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        color: #6B7280;
+        margin-bottom: 6px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #D1D5DB;
+        border-radius: 8px;
+        font-size: 13px;
+        color: #021F4A;
+        outline: none;
+        transition: border-color 0.15s;
+    }
+
+    .form-control:focus {
+        border-color: #FA6908;
+        box-shadow: 0 0 0 3px rgba(250, 105, 8, 0.1);
+    }
+
+    .modal-footer {
+        display: flex;
+        gap: 10px;
+        padding: 0 24px 20px;
+    }
+
+    .btn-primary {
+        flex: 1;
+        padding: 10px;
+        background: #021F4A;
+        color: #fff;
+        border: none;
+        border-radius: 9px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity 0.15s;
+    }
+
+    .btn-primary:hover {
+        opacity: 0.88;
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .btn-secondary-modal {
+        flex: 1;
+        padding: 10px;
+        background: #F3F4F6;
+        color: #374151;
+        border: none;
+        border-radius: 9px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .modal-err {
+        background: #FFF5F5;
+        border: 1px solid #FECACA;
+        border-radius: 7px;
+        padding: 10px 12px;
+        font-size: 12px;
+        color: #991B1B;
+        margin-bottom: 16px;
+        display: none;
+    }
+
+    /* ── Top-right invite button ── */
+    .btn-invite {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 18px;
+        background: #FA6908;
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity 0.15s;
+    }
+
+    .btn-invite:hover {
+        opacity: 0.88;
+    }
+
+    .btn-invite svg {
+        width: 15px;
+        height: 15px;
+    }
+</style>
+
+{{-- CSRF for fetch calls --}}
+@php $CSRF = csrf_token(); @endphp
+
+<div class="page-header">
+    <div>
+        <div class="page-title">Vehicle Sharing</div>
+        <div class="page-subtitle">Share your vehicles with family or colleagues, and view vehicles shared with you</div>
+    </div>
+    <button class="btn-invite" onclick="openModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 5v14M5 12h14" />
+        </svg>
+        Share a vehicle
+    </button>
+</div>
+
+{{-- Error banner --}}
 @if($error)
-<div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-3">
-    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+<div class="err-banner">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
     </svg>
     {{ $error }}
 </div>
 @endif
 
-{{-- Pending invites banner --}}
-@if(!empty($pendingInvites))
-<div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-    <p class="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-        </svg>
-        You have {{ count($pendingInvites) }} pending invite(s)
-    </p>
-    <div class="space-y-3">
-        @foreach($pendingInvites as $invite)
-        <div class="flex items-center justify-between bg-white rounded-lg px-4 py-3 border border-blue-100"
-            id="invite-{{ $invite['shareId'] }}">
-            <div>
-                <p class="text-sm font-semibold text-gray-800">{{ $invite['vehicleNumber'] }}</p>
-                <p class="text-xs text-gray-400">
-                    {{ $invite['make'] }} {{ $invite['model'] }} ·
-                    Shared by {{ $invite['otherPartyName'] ?? $invite['otherPartyPhoneNumber'] }}
-                </p>
+{{-- ── SECTION 1: Pending invites for me ── --}}
+@php $pendingCount = count($pendingInvites); @endphp
+<div class="section-card">
+    <div class="section-head">
+        <div class="section-head-left">
+            <div class="section-icon" style="background:#FEF3C7;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#92400E" stroke-width="2">
+                    <path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 6v4l3 3" />
+                </svg>
             </div>
-            <div class="flex gap-2">
-                <button onclick="respondInvite('{{ $invite['shareId'] }}', true)"
-                    class="px-3 py-1.5 text-xs bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition">
-                    Accept
-                </button>
-                <button onclick="respondInvite('{{ $invite['shareId'] }}', false)"
-                    class="px-3 py-1.5 text-xs border border-gray-200 text-gray-600 font-semibold rounded-lg hover:bg-gray-50 transition">
-                    Decline
-                </button>
+            <div>
+                <div class="section-title">Pending invites</div>
             </div>
         </div>
-        @endforeach
+        @if($pendingCount > 0)
+        <span class="badge badge-pending">{{ $pendingCount }} waiting</span>
+        @endif
     </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Vehicle</th>
+                <th>Shared by</th>
+                <th>Invited</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($pendingInvites as $invite)
+            <tr id="invite-row-{{ $invite['shareId'] }}">
+                <td>
+                    <div class="vehicle-cell">{{ $invite['vehicleNumber'] ?? '—' }}</div>
+                    <div class="vehicle-sub">{{ trim(($invite['make'] ?? '') . ' ' . ($invite['model'] ?? '')) ?: '—' }}</div>
+                </td>
+                <td>{{ $invite['otherPartyName'] ?? '—' }}</td>
+                <td>{{ isset($invite['invitedAt']) ? \Carbon\Carbon::parse($invite['invitedAt'])->setTimezone('Asia/Colombo')->format('d M Y, g:i A') : '—' }}</td>
+                <td>
+                    <div class="action-gap">
+                        <button class="btn-action btn-accept" onclick="respondInvite('{{ $invite['shareId'] }}', true)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Accept
+                        </button>
+                        <button class="btn-action btn-decline" onclick="respondInvite('{{ $invite['shareId'] }}', false)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                            Decline
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            @empty
+            <tr class="empty-row">
+                <td colspan="4">No pending invites</td>
+            </tr>
+            @endforelse
+        </tbody>
+    </table>
 </div>
-@endif
 
-<div class="grid grid-cols-2 gap-6">
-
-    {{-- Vehicles I'm sharing (owner) --}}
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h3 class="font-semibold text-gray-800">Vehicles I'm Sharing</h3>
-            <button onclick="openInviteModal()"
-                class="flex items-center gap-1.5 px-3 py-1.5 bg-[#FA6908] text-white text-xs font-semibold rounded-lg hover:bg-orange-600 transition">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+{{-- ── SECTION 2: Shared with me (accepted) ── --}}
+<div class="section-card">
+    <div class="section-head">
+        <div class="section-head-left">
+            <div class="section-icon" style="background:#D1FAE5;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#065F46" stroke-width="2">
+                    <path d="M1 3h15v13H1zM16 8l4 3-4 3" />
                 </svg>
-                Invite
+            </div>
+            <div>
+                <div class="section-title">Shared with me</div>
+            </div>
+        </div>
+        <span class="badge badge-accepted">{{ count($sharedWithMe) }} active</span>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Vehicle</th>
+                <th>Owner</th>
+                <th>Since</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($sharedWithMe as $share)
+            <tr>
+                <td>
+                    <div class="vehicle-cell">{{ $share['vehicleNumber'] ?? '—' }}</div>
+                    <div class="vehicle-sub">{{ trim(($share['make'] ?? '') . ' ' . ($share['model'] ?? '')) ?: '—' }}</div>
+                </td>
+                <td>{{ $share['otherPartyName'] ?? '—' }}</td>
+                <td>{{ isset($share['respondedAt']) ? \Carbon\Carbon::parse($share['respondedAt'])->setTimezone('Asia/Colombo')->format('d M Y') : '—' }}</td>
+                <td><span class="badge badge-accepted">Active</span></td>
+            </tr>
+            @empty
+            <tr class="empty-row">
+                <td colspan="4">No vehicles have been shared with you yet</td>
+            </tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
+
+{{-- ── SECTION 3: Shares I created ── --}}
+<div class="section-card">
+    <div class="section-head">
+        <div class="section-head-left">
+            <div class="section-icon" style="background:#EDE9FE;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#5B21B6" stroke-width="2">
+                    <circle cx="18" cy="5" r="3" />
+                    <circle cx="6" cy="12" r="3" />
+                    <circle cx="18" cy="19" r="3" />
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+            </div>
+            <div>
+                <div class="section-title">My shares</div>
+            </div>
+        </div>
+        <span class="badge" style="background:#EDE9FE;color:#5B21B6;">{{ count($myShares) }} total</span>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Vehicle</th>
+                <th>Shared with</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($myShares as $share)
+            @php
+            $status = strtolower($share['status'] ?? 'pending');
+            $badgeClass = match($status) {
+            'accepted' => 'badge-accepted',
+            'declined' => 'badge-declined',
+            'revoked' => 'badge-revoked',
+            default => 'badge-pending',
+            };
+            @endphp
+            <tr id="share-row-{{ $share['shareId'] }}">
+                <td>
+                    <div class="vehicle-cell">{{ $share['vehicleNumber'] ?? '—' }}</div>
+                    <div class="vehicle-sub">{{ trim(($share['make'] ?? '') . ' ' . ($share['model'] ?? '')) ?: '—' }}</div>
+                </td>
+                <td>{{ $share['otherPartyName'] ?? '—' }}</td>
+                <td>{{ $share['otherPartyPhoneNumber'] ?? '—' }}</td>
+                <td><span class="badge {{ $badgeClass }}">{{ ucfirst($status) }}</span></td>
+                <td>
+                    @if($status !== 'revoked')
+                    <button class="btn-action btn-revoke" onclick="revokeShare('{{ $share['shareId'] }}')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                        Revoke
+                    </button>
+                    @else
+                    <span style="font-size:12px;color:#9CA3AF;">Revoked</span>
+                    @endif
+                </td>
+            </tr>
+            @empty
+            <tr class="empty-row">
+                <td colspan="5">You haven't shared any vehicles yet</td>
+            </tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
+
+{{-- ── Invite modal ── --}}
+<div class="modal-backdrop" id="invite-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">Share a vehicle</span>
+            <button class="modal-close" onclick="closeModal()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
             </button>
         </div>
+        <div class="modal-body">
+            <div class="modal-err" id="modal-err"></div>
 
-        @if(empty($myShares))
-        <div class="p-8 text-center">
-            <p class="text-gray-400 text-sm">You haven't shared any vehicles yet.</p>
-            <p class="text-gray-300 text-xs mt-1">Invite someone by their phone number.</p>
-        </div>
-        @else
-        <div class="divide-y divide-gray-50">
-            @foreach($myShares as $share)
-            <div class="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition"
-                id="share-{{ $share['shareId'] }}">
-                <div>
-                    <p class="text-sm font-semibold text-gray-800">{{ $share['vehicleNumber'] }}</p>
-                    <p class="text-xs text-gray-400">{{ $share['make'] }} {{ $share['model'] }}</p>
-                    <p class="text-xs text-gray-500 mt-0.5">
-                        Shared with: <strong>{{ $share['otherPartyName'] ?? $share['otherPartyPhoneNumber'] }}</strong>
-                    </p>
-                    <p class="text-xs mt-0.5">
-                        @php $status = strtolower($share['status'] ?? ''); @endphp
-                        @if($status === 'accepted')
-                        <span class="text-green-600">● Accepted</span>
-                        @elseif($status === 'pending')
-                        <span class="text-amber-500">● Pending</span>
-                        @else
-                        <span class="text-gray-400">● {{ ucfirst($status) }}</span>
-                        @endif
-                    </p>
+            <div class="form-group">
+                <label class="form-label" for="invite-vehicle">Vehicle</label>
+                <select class="form-control" id="invite-vehicle">
+                    <option value="">— Select a vehicle —</option>
+                    @foreach($vehicles as $v)
+                    <option value="{{ $v['vehicleId'] }}">
+                        {{ $v['vehicleNumber'] }} — {{ trim(($v['make'] ?? '') . ' ' . ($v['model'] ?? '')) }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="invite-phone">Recipient's phone number</label>
+                <input type="tel"
+                    class="form-control"
+                    id="invite-phone"
+                    placeholder="e.g. 0771234567"
+                    maxlength="15">
+                <div style="font-size:11px;color:#9CA3AF;margin-top:4px;">
+                    The person must already have the ShaloTrack app installed.
                 </div>
-                <button onclick="confirmRevoke('{{ $share['shareId'] }}', '{{ addslashes($share['vehicleNumber']) }}', '{{ addslashes($share['otherPartyName'] ?? $share['otherPartyPhoneNumber']) }}')"
-                    class="text-xs text-gray-400 hover:text-red-500 transition px-2 py-1">
-                    Revoke
-                </button>
-            </div>
-            @endforeach
-        </div>
-        @endif
-    </div>
-
-    {{-- Vehicles shared with me --}}
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-100">
-            <h3 class="font-semibold text-gray-800">Shared With Me</h3>
-        </div>
-
-        @if(empty($sharedWithMe))
-        <div class="p-8 text-center">
-            <p class="text-gray-400 text-sm">No vehicles shared with you yet.</p>
-            <p class="text-gray-300 text-xs mt-1">When someone shares a vehicle, it appears here.</p>
-        </div>
-        @else
-        <div class="divide-y divide-gray-50">
-            @foreach($sharedWithMe as $share)
-            <div class="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition">
-                <div>
-                    <p class="text-sm font-semibold text-gray-800">{{ $share['vehicleNumber'] }}</p>
-                    <p class="text-xs text-gray-400">{{ $share['make'] }} {{ $share['model'] }}</p>
-                    <p class="text-xs text-gray-500 mt-0.5">
-                        Owner: <strong>{{ $share['otherPartyName'] ?? $share['otherPartyPhoneNumber'] }}</strong>
-                    </p>
-                    <p class="text-xs text-green-600 mt-0.5">● Active</p>
-                </div>
-                <a href="/dashboard" class="text-xs text-[#FA6908] hover:underline">View on map →</a>
-            </div>
-            @endforeach
-        </div>
-        @endif
-    </div>
-</div>
-
-{{-- INVITE MODAL --}}
-<div id="invite-modal" class="fixed inset-0 z-50 hidden">
-    <div class="absolute inset-0 bg-black/40" onclick="closeInviteModal()"></div>
-    <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                <h3 class="font-semibold text-gray-800">Invite to View Vehicle</h3>
-                <button onclick="closeInviteModal()" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            <div class="px-6 py-5 space-y-4">
-                <p class="text-sm text-gray-500">The invited person must have a ShaloTrack account. They'll receive an invite to view this vehicle's live location.</p>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Vehicle</label>
-                    <select id="invite-vehicle" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent">
-                        <option value="">Select a vehicle</option>
-                        @foreach($vehicles as $vehicle)
-                        <option value="{{ $vehicle['vehicleId'] }}">
-                            {{ $vehicle['vehicleNumber'] }} — {{ $vehicle['make'] }} {{ $vehicle['model'] }}
-                        </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Phone Number</label>
-                    <div class="flex rounded-lg border border-gray-200 overflow-hidden focus-within:ring-2 focus-within:ring-[#FA6908]">
-                        <span class="px-3 py-2 bg-gray-50 text-gray-500 text-sm border-r border-gray-200">🇱🇰 +94</span>
-                        <input type="tel" id="invite-phone" placeholder="071 234 5678"
-                            class="flex-1 px-3 py-2 text-sm outline-none" />
-                    </div>
-                </div>
-                <p id="invite-error" class="text-red-600 text-sm hidden"></p>
-            </div>
-            <div class="px-6 py-4 border-t border-gray-100 flex gap-3">
-                <button onclick="closeInviteModal()"
-                    class="flex-1 py-2 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50">Cancel</button>
-                <button id="invite-btn" onclick="submitInvite()"
-                    class="flex-1 py-2 bg-[#FA6908] text-white text-sm font-semibold rounded-lg hover:bg-orange-600">Send Invite</button>
             </div>
         </div>
-    </div>
-</div>
-
-{{-- Revoke confirm modal --}}
-<div id="revoke-modal" class="fixed inset-0 z-50 hidden">
-    <div class="absolute inset-0 bg-black/40" onclick="closeRevokeModal()"></div>
-    <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
-            <h3 class="font-semibold text-gray-800 mb-2">Revoke Access</h3>
-            <p class="text-sm text-gray-500 mb-6">
-                Remove <strong id="revoke-person"></strong>'s access to <strong id="revoke-vehicle"></strong>?
-            </p>
-            <input type="hidden" id="revoke-id" />
-            <p id="revoke-error" class="text-red-600 text-sm mb-4 hidden"></p>
-            <div class="flex gap-3">
-                <button onclick="closeRevokeModal()" class="flex-1 py-2 border border-gray-200 text-gray-600 text-sm rounded-lg hover:bg-gray-50">Cancel</button>
-                <button id="revoke-btn" onclick="submitRevoke()" class="flex-1 py-2 bg-red-500 text-white text-sm font-semibold rounded-lg hover:bg-red-600">Revoke</button>
-            </div>
+        <div class="modal-footer">
+            <button class="btn-secondary-modal" onclick="closeModal()">Cancel</button>
+            <button class="btn-primary" id="invite-submit-btn" onclick="submitInvite()">Send invite</button>
         </div>
     </div>
 </div>
 
 <script>
-    const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    (function() {
+        const CSRF = '{{ $CSRF }}';
 
-    function showEl(id) {
-        document.getElementById(id)?.classList.remove('hidden');
-    }
-
-    function hideEl(id) {
-        document.getElementById(id)?.classList.add('hidden');
-    }
-
-    function showErr(id, msg) {
-        const el = document.getElementById(id);
-        if (el) {
-            el.textContent = msg;
-            el.classList.remove('hidden');
+        // ── Modal ──────────────────────────────────────────────────────────────────
+        function openModal() {
+            document.getElementById('invite-modal').classList.add('open');
         }
-    }
 
-    function hideErr(id) {
-        document.getElementById(id)?.classList.add('hidden');
-    }
+        function closeModal() {
+            document.getElementById('invite-modal').classList.remove('open');
+            document.getElementById('modal-err').style.display = 'none';
+            document.getElementById('invite-vehicle').value = '';
+            document.getElementById('invite-phone').value = '';
+        }
+        window.openModal = openModal;
+        window.closeModal = closeModal;
 
-    function setBtn(id, loading, label) {
-        const btn = document.getElementById(id);
-        if (!btn) return;
-        btn.disabled = loading;
-        btn.textContent = loading ? 'Please wait…' : label;
-    }
+        // Close on backdrop click
+        document.getElementById('invite-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+        // Close on Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+        });
 
-    async function apiFetch(url, method, body = null) {
-        const opts = {
-            method,
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': CSRF
-            },
-        };
-        if (body) opts.body = JSON.stringify(body);
-        const res = await fetch(url, opts);
-        if (res.status === 401) {
-            window.location.href = '/login?expired=1';
+        // ── Helpers ───────────────────────────────────────────────────────────────
+        async function apiFetch(url, method, body) {
+            const opts = {
+                method,
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': CSRF,
+                },
+            };
+            if (body) opts.body = JSON.stringify(body);
+            const res = await fetch(url, opts);
+            if (res.status === 401) {
+                window.location.href = '/login?expired=1';
+                return {
+                    ok: false,
+                    data: {}
+                };
+            }
+            const data = await res.json().catch(() => ({}));
             return {
-                ok: false,
-                status: 401,
-                data: {}
+                ok: res.ok,
+                status: res.status,
+                data
             };
         }
-        const data = await res.json().catch(() => ({}));
-        return {
-            ok: res.ok,
-            data
-        };
-    }
 
-    function openInviteModal() {
-        showEl('invite-modal');
-    }
-
-    function closeInviteModal() {
-        hideEl('invite-modal');
-        hideErr('invite-error');
-        document.getElementById('invite-phone').value = '';
-        document.getElementById('invite-vehicle').value = '';
-    }
-
-    async function submitInvite() {
-        hideErr('invite-error');
-        const vehicleId = document.getElementById('invite-vehicle').value;
-        const phone = document.getElementById('invite-phone').value.trim();
-        if (!vehicleId) {
-            showErr('invite-error', 'Please select a vehicle.');
-            return;
-        }
-        if (!phone) {
-            showErr('invite-error', 'Please enter a phone number.');
-            return;
+        function showModalErr(msg) {
+            const el = document.getElementById('modal-err');
+            el.textContent = msg;
+            el.style.display = 'block';
         }
 
-        // Normalise to E.164 with +94 prefix
-        const digits = phone.replace(/\D/g, '');
-        let e164 = phone;
-        if (digits.length === 9) e164 = `+94${digits}`;
-        if (digits.length === 10 && digits.startsWith('0')) e164 = `+94${digits.slice(1)}`;
+        // ── Send invite ───────────────────────────────────────────────────────────
+        async function submitInvite() {
+            const vehicleId = document.getElementById('invite-vehicle').value.trim();
+            const phone = document.getElementById('invite-phone').value.trim();
+            document.getElementById('modal-err').style.display = 'none';
 
-        setBtn('invite-btn', true, 'Send Invite');
-        const {
-            ok,
-            data
-        } = await apiFetch('/sharing', 'POST', {
-            vehicleId,
-            phoneNumber: e164
-        });
-        setBtn('invite-btn', false, 'Send Invite');
+            if (!vehicleId) {
+                showModalErr('Please select a vehicle.');
+                return;
+            }
+            if (!phone) {
+                showModalErr('Please enter a phone number.');
+                return;
+            }
 
-        if (ok) {
-            closeInviteModal();
-            window.location.reload();
-        } else {
-            showErr('invite-error', data.message ?? 'Failed to send invite.');
+            const btn = document.getElementById('invite-submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Sending…';
+
+            const {
+                ok,
+                data
+            } = await apiFetch('/sharing', 'POST', {
+                vehicleId,
+                phoneNumber: phone
+            });
+
+            btn.disabled = false;
+            btn.textContent = 'Send invite';
+
+            if (ok && data.success !== false) {
+                closeModal();
+                window.location.reload();
+            } else {
+                showModalErr(data.message ?? 'Failed to send invite. Please try again.');
+            }
         }
-    }
+        window.submitInvite = submitInvite;
 
-    async function respondInvite(shareId, accept) {
-        const url = accept ? `/sharing/${shareId}/accept` : `/sharing/${shareId}/decline`;
-        const {
-            ok,
-            data
-        } = await apiFetch(url, 'POST');
-        if (ok) {
-            document.getElementById(`invite-${shareId}`)?.remove();
-            window.location.reload();
-        } else {
-            alert(data.message ?? 'Failed to respond to invite.');
+        // ── Accept / decline invite ───────────────────────────────────────────────
+        async function respondInvite(shareId, accept) {
+            const row = document.getElementById('invite-row-' + shareId);
+            const btns = row ? row.querySelectorAll('button') : [];
+            btns.forEach(b => b.disabled = true);
+
+            const url = accept ? '/sharing/' + shareId + '/accept' : '/sharing/' + shareId + '/decline';
+            const {
+                ok,
+                data
+            } = await apiFetch(url, 'POST');
+
+            if (ok && data.success !== false) {
+                window.location.reload();
+            } else {
+                btns.forEach(b => b.disabled = false);
+                alert(data.message ?? (accept ? 'Failed to accept invite.' : 'Failed to decline invite.'));
+            }
         }
-    }
+        window.respondInvite = respondInvite;
 
-    function confirmRevoke(shareId, vehicle, person) {
-        document.getElementById('revoke-id').value = shareId;
-        document.getElementById('revoke-vehicle').textContent = vehicle;
-        document.getElementById('revoke-person').textContent = person;
-        hideErr('revoke-error');
-        showEl('revoke-modal');
-    }
+        // ── Revoke share ──────────────────────────────────────────────────────────
+        async function revokeShare(shareId) {
+            if (!confirm('Revoke this share? The other person will immediately lose access to the vehicle.')) return;
 
-    function closeRevokeModal() {
-        hideEl('revoke-modal');
-    }
+            const row = document.getElementById('share-row-' + shareId);
+            const btn = row ? row.querySelector('button') : null;
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Revoking…';
+            }
 
-    async function submitRevoke() {
-        const id = document.getElementById('revoke-id').value;
-        setBtn('revoke-btn', true, 'Revoke');
-        const {
-            ok,
-            data
-        } = await apiFetch(`/sharing/${id}`, 'DELETE');
-        setBtn('revoke-btn', false, 'Revoke');
-        if (ok) {
-            closeRevokeModal();
-            document.getElementById(`share-${id}`)?.remove();
-            window.location.reload();
-        } else {
-            showErr('revoke-error', data.message ?? 'Failed to revoke.');
+            const {
+                ok,
+                data
+            } = await apiFetch('/sharing/' + shareId, 'DELETE');
+
+            if (ok && data.success !== false) {
+                window.location.reload();
+            } else {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Revoke';
+                }
+                alert(data.message ?? 'Failed to revoke share.');
+            }
         }
-    }
-
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') {
-            hideEl('invite-modal');
-            hideEl('revoke-modal');
-        }
-    });
+        window.revokeShare = revokeShare;
+    })();
 </script>
-
 @endsection
