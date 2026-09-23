@@ -8,6 +8,279 @@
     <title>@yield('title', 'ShaloTrack Fleet')</title>
     @vite(['resources/css/app.css'])
     @stack('head')
+
+    <style>
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+.stats-wrap {
+    display: flex;
+    height: calc(100vh - 64px);
+    overflow: hidden;
+    background: #f1f5f9;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────────────── */
+.sidebar {
+    width: 280px;
+    min-width: 280px;
+    background: #fff;
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.sidebar-header {
+    padding: 18px 16px 12px;
+    border-bottom: 1px solid #e2e8f0;
+}
+.sidebar-header h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #021F4A;
+    margin: 0 0 10px;
+}
+.sidebar-search {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+    color: #334155;
+    background: #f8fafc;
+    transition: border-color .15s;
+}
+.sidebar-search:focus { border-color: #FA6908; }
+
+.vehicle-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+}
+.vehicle-list::-webkit-scrollbar { width: 4px; }
+.vehicle-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+.vehicle-card {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 11px 16px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: background .15s, border-color .15s;
+}
+.vehicle-card:hover { background: #f8fafc; }
+.vehicle-card.active {
+    background: #fff7f0;
+    border-left-color: #FA6908;
+}
+.vehicle-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #021F4A;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.vehicle-icon svg { width: 20px; height: 20px; fill: #fff; }
+.vehicle-icon.demo { background: #FA6908; }
+.vehicle-info { flex: 1; min-width: 0; }
+.vehicle-plate {
+    font-size: 13px;
+    font-weight: 700;
+    color: #021F4A;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.vehicle-name {
+    font-size: 11px;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+}
+
+/* ── Main panel ──────────────────────────────────────────────────────────── */
+.stats-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+}
+
+/* Period bar */
+.period-bar {
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 52px;
+    flex-shrink: 0;
+}
+.period-btn {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    background: transparent;
+    color: #64748b;
+    transition: background .15s, color .15s;
+}
+.period-btn:hover { background: #f1f5f9; color: #021F4A; }
+.period-btn.active {
+    background: #FA6908;
+    color: #fff;
+}
+
+/* Scrollable content */
+.stats-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+}
+.stats-content::-webkit-scrollbar { width: 6px; }
+.stats-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+/* Empty / placeholder */
+.stats-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 12px;
+    color: #94a3b8;
+}
+.stats-empty svg { width: 64px; height: 64px; opacity: .4; }
+.stats-empty p { font-size: 15px; margin: 0; }
+
+/* Loading skeleton */
+.skeleton-wrap { animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: .5; }
+}
+.skeleton-box {
+    background: #e2e8f0;
+    border-radius: 10px;
+}
+
+/* Vehicle header inside stats panel */
+.stats-vehicle-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+.stats-vehicle-header .icon-big {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #021F4A;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.stats-vehicle-header .icon-big svg { width: 26px; height: 26px; fill: #fff; }
+.stats-vehicle-header .plate {
+    font-size: 20px;
+    font-weight: 800;
+    color: #021F4A;
+    line-height: 1;
+}
+.stats-vehicle-header .meta {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 3px;
+}
+
+/* ── Stat tiles ──────────────────────────────────────────────────────────── */
+.tiles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+}
+.tile {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+.tile-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-bottom: 6px;
+}
+.tile-value {
+    font-size: 24px;
+    font-weight: 800;
+    color: #021F4A;
+    line-height: 1;
+}
+.tile-unit {
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+    margin-left: 3px;
+}
+.tile-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+.tile-icon svg { width: 18px; height: 18px; }
+.tile-icon.orange { background: #fff7f0; }
+.tile-icon.orange svg { fill: #FA6908; }
+.tile-icon.navy   { background: #eef2ff; }
+.tile-icon.navy   svg { fill: #021F4A; }
+.tile-icon.red    { background: #fef2f2; }
+.tile-icon.red    svg { fill: #ef4444; }
+
+/* ── Chart cards ─────────────────────────────────────────────────────────── */
+.chart-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+}
+@media (min-width: 900px) {
+    .chart-grid { grid-template-columns: 1fr 1fr; }
+    .chart-grid .chart-card.full { grid-column: 1 / -1; }
+}
+.chart-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px 22px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+.chart-card h3 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #021F4A;
+    margin: 0 0 16px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+.chart-wrap {
+    position: relative;
+    height: 180px;
+}
+</style>
 </head>
 
 <body class="bg-gray-100 min-h-screen">

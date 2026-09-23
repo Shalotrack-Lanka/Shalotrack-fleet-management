@@ -15,7 +15,7 @@ use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\EmergencyContactController;
 use App\Http\Controllers\SavedPlaceController;
-use App\Http\Controllers\VehicleStatsController;
+use App\Http\Controllers\StatsController;
 
 // ---- Public ----
 Route::get('/', fn() => view('landing'))->name('home');
@@ -27,7 +27,6 @@ Route::post('/logout',[AuthController::class, 'logout'])->name('logout');
 Route::get('/register',  [RegisterController::class, 'show'])->name('register');
 Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
 
-// Used from the register page — clears session and goes to login
 // Email verification
 Route::get('/email/verify',         [EmailVerificationController::class, 'show'])->name('email.verify');
 Route::post('/email/mark-verified', [EmailVerificationController::class, 'markVerified'])->name('email.mark-verified');
@@ -59,7 +58,6 @@ Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(func
     Route::get('/trips/{vehicleId}/points',           [TripController::class, 'points']);
     Route::get('/trips/{vehicleId}/summary',          [TripController::class, 'summary']);
     Route::get('/trips/{vehicleId}/report',           [TripController::class, 'report']);
-    Route::get('/trips/{vehicleId}/report',           [TripController::class, 'report']);
 
     // Alerts
     Route::get('/alerts',              [AlertController::class, 'index'])->name('alerts');
@@ -89,8 +87,8 @@ Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(func
     Route::put('/profile',  [ProfileController::class, 'update']);
 
     // Emergency Contacts
-    Route::get('/emergency-contacts',       [EmergencyContactController::class, 'index'])->name('emergency-contacts');
-    Route::post('/emergency-contacts',      [EmergencyContactController::class, 'store']);
+    Route::get('/emergency-contacts',         [EmergencyContactController::class, 'index'])->name('emergency-contacts');
+    Route::post('/emergency-contacts',        [EmergencyContactController::class, 'store']);
     Route::delete('/emergency-contacts/{id}', [EmergencyContactController::class, 'destroy']);
 
     // Saved Places
@@ -99,6 +97,8 @@ Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(func
     Route::delete('/saved-places/{id}', [SavedPlaceController::class, 'destroy']);
 
     // Vehicle Statistics
-    Route::get('/stats',           [VehicleStatsController::class, 'index'])->name('stats');
-    Route::get('/stats/{id}',      [VehicleStatsController::class, 'show']);
+    // GET  /stats                      — renders the full stats page (vehicle list + blank panel)
+    // GET  /stats/{vehicleId}/data     — AJAX: returns JSON stats for the selected vehicle + period
+    Route::get('/stats',                   [StatsController::class, 'index'])->name('stats');
+    Route::get('/stats/{vehicleId}/data',  [StatsController::class, 'data']);
 });
