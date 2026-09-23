@@ -7,6 +7,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <title>@yield('title', 'ShaloTrack Fleet')</title>
     @vite(['resources/css/app.css'])
+    
+    <!-- CSS Stack for page specific styles -->
+    @stack('styles')
+    
     @stack('head')
 
     <style>
@@ -371,7 +375,7 @@
                     </svg>
                     Complaints
                 </a>
-            </nav>
+            
 
             <a href="/emergency-contacts"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
@@ -403,31 +407,12 @@
                 Vehicle Stats
             </a>
             </nav>
-
-            {{-- Bottom: Profile + Logout --}}
+            
+            {{-- Bottom Spacer --}}
             <div class="px-4 py-4 border-t border-blue-900 space-y-1">
-                <a href="/profile"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
-                          {{ request()->is('profile') ? 'bg-[#FA6908] text-white' : 'text-blue-200 hover:bg-blue-900 hover:text-white' }}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    Profile
-                </a>
-
-                <form method="POST" action="/logout">
-                    @csrf
-                    <button type="submit"
-                        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-blue-200 hover:bg-blue-900 hover:text-white transition text-left">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
-                        Logout
-                    </button>
-                </form>
+                 <!-- Empty container to keep sidebar layout intact after removing profile and logout -->
             </div>
+            
         </aside>
 
         {{-- ---- Main content ---- --}}
@@ -436,17 +421,43 @@
             {{-- Top bar --}}
             <header class="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between sticky top-0 z-40">
                 <h2 class="text-lg font-semibold text-gray-800">@yield('page-title', 'Dashboard')</h2>
-                <div class="flex items-center gap-3">
-                    <div class="text-right">
-                        @if(Session::get('customer_name'))
-                        <p class="text-sm font-semibold text-gray-800">{{ Session::get('customer_name') }}</p>
-                        <p class="text-xs text-gray-400">{{ Session::get('firebase_phone') }}</p>
-                        @else
-                        <p class="text-sm text-gray-500">{{ Session::get('firebase_phone') }}</p>
-                        @endif
+                
+                {{-- Profile Dropdown Area --}}
+                <div class="relative group inline-block text-left">
+                    <div class="flex items-center gap-3 cursor-pointer py-2">
+                        <div class="text-right">
+                            @if(Session::get('customer_name'))
+                            <p class="text-sm font-semibold text-gray-800">{{ Session::get('customer_name') }}</p>
+                            <p class="text-xs text-gray-400">{{ Session::get('firebase_phone') }}</p>
+                            @else
+                            <p class="text-sm text-gray-500">{{ Session::get('firebase_phone') }}</p>
+                            @endif
+                        </div>
+                        <div class="w-9 h-9 rounded-full bg-[#FA6908] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                            {{ strtoupper(substr(Session::get('customer_name') ?? Session::get('firebase_phone', 'U'), 0, 1)) }}
+                        </div>
                     </div>
-                    <div class="w-9 h-9 rounded-full bg-[#FA6908] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                        {{ strtoupper(substr(Session::get('customer_name') ?? Session::get('firebase_phone', 'U'), 0, 1)) }}
+
+                    <!-- Dropdown Menu -->
+                    <div class="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 border border-gray-100 overflow-hidden">
+                        <a href="/profile" class="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            Profile
+                        </a>
+                        
+                        <form method="POST" action="/logout" class="m-0">
+                            @csrf
+                            <a href="/logout" 
+                               onclick="event.preventDefault(); this.closest('form').submit();" 
+                               class="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                Logout
+                            </a>
+                        </form>
                     </div>
                 </div>
             </header>
