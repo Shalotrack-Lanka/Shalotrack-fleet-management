@@ -101,4 +101,5 @@ Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(func
     // GET  /stats/{vehicleId}/data     — AJAX: returns JSON stats for the selected vehicle + period
     Route::get('/stats',                   [StatsController::class, 'index'])->name('stats');
     Route::get('/stats/{vehicleId}/data',  [StatsController::class, 'data']);
+    Route::post('/stats/{vehicleId}/export', [StatsController::class, 'export'])->name('stats.export'); // POST for period selection
 });
