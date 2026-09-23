@@ -701,8 +701,8 @@
                     </div>
                     @if($gf['isOwner'] ?? true)
                     <div class="gf-card-actions">
-                        <button class="gf-act gf-act-edit" onclick="startEdit(@json($gf))">Edit</button>
-                        <button class="gf-act gf-act-del" onclick="openDeleteModal('{{ $gf['geofenceId'] }}', @json($gf['name']))">Delete</button>
+                        <button class="gf-act gf-act-edit" data-idx="{{ $loop->index }}" onclick="startEdit(GEOFENCES[+this.dataset.idx])">Edit</button>
+                        <button class="gf-act gf-act-del" data-id="{{ $gf['geofenceId'] }}" data-name="{{ $gf['name'] }}" onclick="openDeleteModal(this.dataset.id, this.dataset.name)">Delete</button>
                     </div>
                     @else
                     <p class="gf-shared-lbl">Shared — view only</p>
