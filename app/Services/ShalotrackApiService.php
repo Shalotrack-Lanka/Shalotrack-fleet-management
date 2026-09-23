@@ -181,7 +181,7 @@ class ShalotrackApiService
 
     public function getMyGeofences(): array
     {
-        return $this->get('/api/Geofences/mine');
+        return $this->get('/api/Geofences');
     }
 
     public function createGeofence(array $data): array
