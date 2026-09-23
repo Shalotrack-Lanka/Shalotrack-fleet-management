@@ -6,7 +6,6 @@
 @section('content')
 
 <style>
-    /* ---- Full-height split layout ---- */
     .gf-wrap {
         display: grid;
         grid-template-columns: 1fr 380px;
@@ -15,15 +14,41 @@
         overflow: hidden;
         border: 1px solid #e5e7eb;
         box-shadow: 0 2px 8px rgba(2, 31, 74, .08);
+        position: relative;
     }
 
-    /* ---- Map ---- */
     #gf-map {
         width: 100%;
         height: 100%;
     }
 
-    /* ---- Sidebar ---- */
+    /* Force crosshair on the entire map stack when in draw mode */
+    #gf-map.draw-mode,
+    #gf-map.draw-mode .gm-style,
+    #gf-map.draw-mode .gm-style>div,
+    #gf-map.draw-mode canvas {
+        cursor: crosshair !important;
+    }
+
+    .gf-map-banner {
+        display: none;
+        position: absolute;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #021F4A;
+        color: #fff;
+        font-size: .8125rem;
+        font-weight: 600;
+        padding: .5rem 1.25rem;
+        border-radius: 2rem;
+        z-index: 10;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, .35);
+        pointer-events: none;
+        white-space: nowrap;
+        letter-spacing: .01em;
+    }
+
     .gf-sidebar {
         background: #fff;
         border-left: 1px solid #e5e7eb;
@@ -104,7 +129,6 @@
         box-shadow: 0 0 0 3px rgba(250, 105, 8, .12);
     }
 
-    /* ---- Panel switching ---- */
     .gf-panel {
         display: none;
         flex-direction: column;
@@ -117,7 +141,6 @@
         display: flex;
     }
 
-    /* ---- List panel ---- */
     .gf-list-count {
         padding: .5rem 1.125rem;
         font-size: .75rem;
@@ -133,10 +156,6 @@
 
     .gf-list::-webkit-scrollbar {
         width: 4px;
-    }
-
-    .gf-list::-webkit-scrollbar-track {
-        background: transparent;
     }
 
     .gf-list::-webkit-scrollbar-thumb {
@@ -286,7 +305,6 @@
         padding-left: 1.125rem;
     }
 
-    /* ---- Form panel ---- */
     .gf-form-body {
         overflow-y: auto;
         flex: 1;
@@ -506,7 +524,6 @@
         cursor: not-allowed;
     }
 
-    /* ---- Delete modal ---- */
     .gf-modal-wrap {
         position: fixed;
         inset: 0;
@@ -590,7 +607,6 @@
         cursor: not-allowed;
     }
 
-    /* ---- Error banner ---- */
     .gf-banner {
         display: flex;
         align-items: center;
@@ -604,7 +620,6 @@
         margin-bottom: 1.25rem;
     }
 
-    /* ---- Responsive ---- */
     @media (max-width: 860px) {
         .gf-wrap {
             grid-template-columns: 1fr;
@@ -631,13 +646,13 @@
 
 <div class="gf-wrap">
 
-    {{-- Google Map --}}
     <div id="gf-map"></div>
 
-    {{-- Sidebar --}}
-    <div class="gf-sidebar">
+    <div class="gf-map-banner" id="gf-map-banner">
+        Click and drag on the map to draw a circle
+    </div>
 
-        {{-- Sidebar header --}}
+    <div class="gf-sidebar">
         <div class="gf-sidebar-head">
             <div class="gf-sidebar-top">
                 <span class="gf-sidebar-title" id="gf-sidebar-title">Geofences</span>
@@ -656,9 +671,7 @@
             </div>
         </div>
 
-        {{-- ============================
-             PANEL A — List
-        ============================= --}}
+        {{-- LIST PANEL --}}
         <div class="gf-panel gf-visible" id="gf-panel-list">
             <p class="gf-list-count">{{ count($geofences) }} geofence{{ count($geofences) !== 1 ? 's' : '' }}</p>
             <div class="gf-list">
@@ -669,7 +682,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.3" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                     <p class="gf-empty-t">No geofences yet</p>
-                    <p class="gf-empty-s">Click "Add" and draw a circle on the map to create your first zone.</p>
+                    <p class="gf-empty-s">Click "Add" and draw a circle<br>on the map to create your first zone.</p>
                 </div>
                 @else
                 @foreach($geofences as $gf)
@@ -700,12 +713,9 @@
             </div>
         </div>
 
-        {{-- ============================
-             PANEL B — Add / Edit form
-        ============================= --}}
+        {{-- FORM PANEL --}}
         <div class="gf-panel" id="gf-panel-form">
             <div class="gf-form-body">
-
                 <div class="gf-back-row">
                     <button class="gf-back-btn" onclick="cancelMode()">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -715,12 +725,11 @@
                     <span class="gf-form-title" id="gf-form-title">New Geofence</span>
                 </div>
 
-                {{-- Draw hint (shown only while no circle placed) --}}
                 <div class="gf-draw-hint" id="gf-draw-hint">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="flex-shrink:0;margin-top:1px">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span>Draw a circle directly on the map — click to set the center, then drag the edge to set the radius.</span>
+                    <span>Click on the map and drag outward to draw your geofence circle.</span>
                 </div>
 
                 <div class="gf-field">
@@ -749,9 +758,7 @@
                     <div class="gf-radius-hints"><span>50 m</span><span>5 km</span></div>
                 </div>
 
-                <div class="gf-coord-box" id="gf-coord-box">
-                    No circle drawn yet.
-                </div>
+                <div class="gf-coord-box" id="gf-coord-box">No circle drawn yet.</div>
 
                 <hr class="gf-divider" />
 
@@ -765,8 +772,8 @@
                 </div>
 
                 <div class="gf-form-err" id="gf-form-err"></div>
-
             </div>
+
             <div class="gf-form-foot">
                 <button class="gf-btn-cancel" onclick="cancelMode()">Cancel</button>
                 <button class="gf-btn-save" id="gf-save-btn" onclick="onSave()">
@@ -775,10 +782,9 @@
             </div>
         </div>
 
-    </div>{{-- /sidebar --}}
-</div>{{-- /gf-wrap --}}
+    </div>
+</div>
 
-{{-- Delete modal --}}
 <div class="gf-modal-wrap" id="gf-del-modal">
     <div class="gf-modal-bg" onclick="closeDeleteModal()"></div>
     <div class="gf-modal">
@@ -799,22 +805,25 @@
     const CSRF = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
     const GEOFENCES = @json($geofences);
 
-    /* ============================================================
-       State — single source of truth
-    ============================================================ */
+    /* ---- State ---- */
     let S = {
-        mode: 'none', // 'none' | 'draw' | 'edit'
+        mode: 'none',
         editId: null,
-        center: null, // { lat, lng }
+        center: null,
         radius: 500,
-        workCircle: null, // google.maps.Circle being drawn/edited
+        workCircle: null,
     };
 
-    let gmap, drawMgr;
-    const circleMap = {}; // geofenceId → google.maps.Circle (static)
+    let gmap;
+    const circleMap = {};
+
+    /* Active map event listener handles (so we can remove them cleanly) */
+    let _downH = null,
+        _moveH = null,
+        _upH = null;
 
     /* ============================================================
-       Map init — called by Google Maps callback
+       Map init — Google Maps callback
     ============================================================ */
     function initMap() {
         gmap = new google.maps.Map(document.getElementById('gf-map'), {
@@ -824,7 +833,6 @@
             },
             zoom: 8,
             mapTypeId: 'roadmap',
-            disableDefaultUI: false,
             streetViewControl: false,
             mapTypeControl: true,
             mapTypeControlOptions: {
@@ -836,37 +844,17 @@
             },
             fullscreenControl: true,
             fullscreenControlOptions: {
-                position: google.maps.ControlPosition.RIGHT_BOTTOM,
+                position: google.maps.ControlPosition.RIGHT_BOTTOM
             },
             gestureHandling: 'greedy',
             clickableIcons: false,
         });
 
-        /* Drawing manager */
-        drawMgr = new google.maps.drawing.DrawingManager({
-            drawingMode: null,
-            drawingControl: false,
-            circleOptions: {
-                fillColor: '#FA6908',
-                fillOpacity: 0.18,
-                strokeColor: '#FA6908',
-                strokeWeight: 2.5,
-                clickable: true,
-                editable: false,
-                draggable: false,
-                zIndex: 5,
-            },
-        });
-        drawMgr.setMap(gmap);
-
-        google.maps.event.addListener(drawMgr, 'circlecomplete', onCircleDrawn);
-
-        /* Render existing geofences */
         renderAll();
     }
 
     /* ============================================================
-       Render all existing geofences
+       Render existing geofences
     ============================================================ */
     function renderAll() {
         const bounds = new google.maps.LatLngBounds();
@@ -891,7 +879,6 @@
                 strokeColor: isOwner ? '#FA6908' : '#3B82F6',
                 strokeWeight: isActive ? 2 : 1,
                 strokeOpacity: isActive ? 0.8 : 0.4,
-                strokeDasharray: isActive ? null : '6 4',
                 clickable: true,
                 editable: false,
             });
@@ -925,7 +912,124 @@
     }
 
     /* ============================================================
-       Draw mode — user draws from scratch
+       Manual circle drawing — no DrawingManager
+    ============================================================ */
+    function _enableDraw() {
+        /* Lock map panning, show crosshair */
+        gmap.setOptions({
+            draggable: false,
+            scrollwheel: false
+        });
+        document.getElementById('gf-map').classList.add('draw-mode');
+        _showBanner(true);
+
+        _downH = gmap.addListener('mousedown', (e) => {
+            const origin = e.latLng;
+
+            /* Start a zero-radius circle at click point */
+            if (S.workCircle) S.workCircle.setMap(null);
+            S.workCircle = new google.maps.Circle({
+                map: gmap,
+                center: origin,
+                radius: 1,
+                fillColor: '#FA6908',
+                fillOpacity: 0.18,
+                strokeColor: '#FA6908',
+                strokeWeight: 2.5,
+                clickable: false,
+                editable: false,
+                draggable: false,
+                zIndex: 5,
+            });
+
+            /* Expand radius as mouse moves */
+            _moveH = gmap.addListener('mousemove', (e2) => {
+                const r = Math.max(_haversine(origin, e2.latLng), 50);
+                S.workCircle.setCenter(origin);
+                S.workCircle.setRadius(r);
+            });
+
+            /* Finalise on mouse up */
+            _upH = gmap.addListener('mouseup', () => {
+                _removeMoveUp();
+                _disableDraw();
+                _finaliseCircle();
+            });
+        });
+
+        /* Safety net: if user releases outside the map element */
+        document.addEventListener('mouseup', _onDocMouseUp, {
+            once: true
+        });
+    }
+
+    function _onDocMouseUp() {
+        /* Only fires when the map's own mouseup didn't catch it */
+        if (_moveH || _upH) {
+            _removeMoveUp();
+            _disableDraw();
+            if (S.workCircle && S.workCircle.getRadius() > 50) {
+                _finaliseCircle();
+            } else {
+                if (S.workCircle) {
+                    S.workCircle.setMap(null);
+                    S.workCircle = null;
+                }
+            }
+        }
+    }
+
+    function _removeMoveUp() {
+        if (_moveH) {
+            google.maps.event.removeListener(_moveH);
+            _moveH = null;
+        }
+        if (_upH) {
+            google.maps.event.removeListener(_upH);
+            _upH = null;
+        }
+    }
+
+    function _disableDraw() {
+        if (_downH) {
+            google.maps.event.removeListener(_downH);
+            _downH = null;
+        }
+        _removeMoveUp();
+        gmap.setOptions({
+            draggable: true,
+            scrollwheel: true
+        });
+        document.getElementById('gf-map').classList.remove('draw-mode');
+        _showBanner(false);
+    }
+
+    function _finaliseCircle() {
+        if (!S.workCircle) return;
+        S.workCircle.setEditable(true);
+        S.workCircle.setDraggable(true);
+        S.workCircle.setOptions({
+            clickable: true
+        });
+        _syncFromCircle();
+        document.getElementById('gf-draw-hint').style.display = 'none';
+        google.maps.event.addListener(S.workCircle, 'radius_changed', _syncFromCircle);
+        google.maps.event.addListener(S.workCircle, 'center_changed', _syncFromCircle);
+    }
+
+    /* Haversine — distance in metres between two google.maps.LatLng */
+    function _haversine(ll1, ll2) {
+        const R = 6371000;
+        const φ1 = ll1.lat() * Math.PI / 180;
+        const φ2 = ll2.lat() * Math.PI / 180;
+        const Δφ = (ll2.lat() - ll1.lat()) * Math.PI / 180;
+        const Δλ = (ll2.lng() - ll1.lng()) * Math.PI / 180;
+        const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    /* ============================================================
+       Draw mode (public entry point)
     ============================================================ */
     function openDrawMode() {
         _clearWork();
@@ -942,30 +1046,11 @@
         document.getElementById('gf-coord-box').textContent = 'No circle drawn yet.';
 
         _showPanel('form');
-        drawMgr.setDrawingMode(google.maps.drawing.OverlayType.CIRCLE);
+        _enableDraw();
     }
 
     /* ============================================================
-       Circle drawn callback
-    ============================================================ */
-    function onCircleDrawn(circle) {
-        drawMgr.setDrawingMode(null);
-
-        if (S.workCircle) S.workCircle.setMap(null);
-        S.workCircle = circle;
-        S.workCircle.setEditable(true);
-        S.workCircle.setDraggable(true);
-
-        _syncFromCircle();
-        document.getElementById('gf-draw-hint').style.display = 'none';
-
-        /* Live sync while user drags handles */
-        google.maps.event.addListener(S.workCircle, 'radius_changed', _syncFromCircle);
-        google.maps.event.addListener(S.workCircle, 'center_changed', _syncFromCircle);
-    }
-
-    /* ============================================================
-       Edit mode — pre-populate form with existing geofence
+       Edit mode
     ============================================================ */
     function startEdit(gf) {
         _clearWork();
@@ -994,7 +1079,6 @@
             document.getElementById('gf-draw-hint').style.display = 'none';
             _updateCoordBox();
 
-            /* Create an editable/draggable copy of this geofence's circle */
             S.workCircle = new google.maps.Circle({
                 map: gmap,
                 center: S.center,
@@ -1011,25 +1095,26 @@
             google.maps.event.addListener(S.workCircle, 'radius_changed', _syncFromCircle);
             google.maps.event.addListener(S.workCircle, 'center_changed', _syncFromCircle);
 
-            /* Dim the static circle */
-            if (circleMap[S.editId]) circleMap[S.editId].setOptions({
-                fillOpacity: 0.03,
-                strokeOpacity: 0.25
-            });
+            if (circleMap[S.editId]) {
+                circleMap[S.editId].setOptions({
+                    fillOpacity: 0.03,
+                    strokeOpacity: 0.25
+                });
+            }
 
             gmap.panTo(S.center);
             gmap.setZoom(14);
         } else {
             document.getElementById('gf-draw-hint').style.display = 'flex';
             document.getElementById('gf-coord-box').textContent = 'No location saved — draw on the map.';
-            drawMgr.setDrawingMode(google.maps.drawing.OverlayType.CIRCLE);
+            _enableDraw();
         }
 
         _showPanel('form');
     }
 
     /* ============================================================
-       Radius slider ↔ work circle sync
+       Radius slider
     ============================================================ */
     function onRadiusChange(val) {
         S.radius = parseInt(val, 10);
@@ -1041,7 +1126,7 @@
     }
 
     /* ============================================================
-       Save (create or update)
+       Save
     ============================================================ */
     async function onSave() {
         const errEl = document.getElementById('gf-form-err');
@@ -1106,19 +1191,18 @@
        Cancel
     ============================================================ */
     function cancelMode() {
+        _disableDraw();
         _clearWork();
 
-        /* Restore dimmed static circles */
         GEOFENCES.forEach(g => {
             if (!circleMap[g.geofenceId]) return;
             const active = g.isActive ?? true;
             circleMap[g.geofenceId].setOptions({
                 fillOpacity: active ? 0.10 : 0.04,
-                strokeOpacity: active ? 0.8 : 0.4
+                strokeOpacity: active ? 0.8 : 0.4,
             });
         });
 
-        drawMgr.setDrawingMode(null);
         S.mode = 'none';
         S.editId = null;
         S.center = null;
@@ -1126,7 +1210,7 @@
     }
 
     /* ============================================================
-       Focus geofence from list click
+       Focus geofence from list
     ============================================================ */
     function focusGeofence(id) {
         const g = GEOFENCES.find(x => x.geofenceId === id);
@@ -1140,7 +1224,7 @@
     }
 
     /* ============================================================
-       List search filter
+       List search
     ============================================================ */
     function filterList(q) {
         const term = q.toLowerCase().trim();
@@ -1252,6 +1336,10 @@
             (S.mode === 'edit' ? 'Edit Geofence' : 'New Geofence');
     }
 
+    function _showBanner(show) {
+        document.getElementById('gf-map-banner').style.display = show ? 'block' : 'none';
+    }
+
     function _showErr(el, msg) {
         el.textContent = msg;
         el.style.display = 'block';
@@ -1262,9 +1350,9 @@
     }
 </script>
 
-{{-- Google Maps JS API — loads async, calls initMap() on ready --}}
+{{-- Google Maps JS — no 'drawing' library needed anymore --}}
 <script async
-    src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_key') }}&libraries=drawing&callback=initMap&loading=async">
+    src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&callback=initMap&loading=async">
 </script>
 
 @endsection
