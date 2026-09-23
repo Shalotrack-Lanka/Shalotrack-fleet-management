@@ -1,184 +1,231 @@
 @extends('layouts.app')
 
-@section('title', 'Profile — ShaloTrack Fleet')
-@section('page-title', 'Profile')
+@section('title', 'Profile')
+
+@push('styles')
+<style>
+    /* ── Profile Container (Centering) ────────────────────────── */
+    .profile-container {
+        max-width: 800px;
+        margin: 40px auto; /* Centers the content */
+        padding: 0 20px;
+        animation: fadeIn 0.5s ease-in-out;
+    }
+
+    /* ── Profile Cards ────────────────────────────────────────── */
+    .profile-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+        margin-bottom: 24px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    /* Card Hover Animation */
+    .profile-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    /* ── Profile Header ───────────────────────────────────────── */
+    .profile-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Centers the avatar and name */
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        background-color: #FA6908; /* Exact Orange */
+        color: #ffffff;
+        font-size: 32px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin-bottom: 15px;
+        transition: transform 0.3s ease;
+    }
+
+    /* Avatar Hover Animation */
+    .profile-card:hover .profile-avatar {
+        transform: scale(1.1);
+    }
+
+    .profile-name {
+        font-size: 22px;
+        font-weight: 700;
+        color: #021F4A; /* Exact Navy Blue */
+        margin: 0 0 5px 0;
+    }
+
+    .profile-phone {
+        color: #64748b;
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .profile-status {
+        font-size: 13px;
+        color: #059669;
+        background: #d1fae5;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    /* ── Info Rows ───────────────────────────────────────────── */
+    .profile-info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 10px;
+        border-bottom: 1px solid #f8fafc;
+        border-radius: 8px;
+        transition: background-color 0.2s ease, padding-left 0.2s ease, padding-right 0.2s ease;
+    }
+
+    /* Row Hover Animation */
+    .profile-info-row:hover {
+        background-color: #f8fafc;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .profile-info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        color: #94a3b8;
+        font-weight: 500;
+        font-size: 14px;
+    }
+
+    .info-value {
+        color: #334155;
+        font-weight: 600;
+        font-size: 14px;
+        text-align: right;
+    }
+
+    .info-value.mono {
+        font-family: monospace;
+        font-size: 13px;
+        color: #64748b;
+    }
+
+    /* ── Buttons ─────────────────────────────────────────────── */
+    .edit-btn {
+        background-color: #FA6908;
+        color: white;
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-block;
+        margin-top: 25px;
+        font-size: 14px;
+    }
+
+    /* Button Hover Animation */
+    .edit-btn:hover {
+        background-color: #e85d00;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(250, 105, 8, 0.3);
+    }
+
+    .sign-out-btn {
+        color: #ef4444;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+    
+    .sign-out-btn:hover {
+        color: #dc2626;
+    }
+
+    /* Entry Animation */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+@endpush
 
 @section('content')
-
-    @if($error)
-        <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-3">
-            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            {{ $error }}
+<div class="profile-container">
+    
+    <!-- Main Profile Card -->
+    <div class="profile-card">
+        <!-- Header (Centered) -->
+        <div class="profile-header">
+            <div class="profile-avatar">N</div>
+            <h2 class="profile-name">noonecare</h2>
+            <div class="profile-phone">+94703792675</div>
+            <div class="profile-status">Active</div>
         </div>
-    @endif
 
-    @if($profile)
-        <div class="max-w-2xl">
-
-            {{-- Profile card --}}
-            <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-6">
-
-                {{-- Header --}}
-                <div class="px-6 py-6 border-b border-gray-100 flex items-center gap-5">
-                    <div class="w-16 h-16 rounded-full bg-[#FA6908] flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
-                        {{ strtoupper(substr($profile['fullName'] ?? 'U', 0, 1)) }}
-                    </div>
-                    <div>
-                        <p class="text-xl font-bold text-gray-800">{{ $profile['fullName'] ?? '—' }}</p>
-                        <p class="text-sm text-gray-400">{{ $profile['phoneNumber'] ?? '—' }}</p>
-                        <span class="inline-block mt-1 text-xs px-2 py-0.5 rounded-full
-                            {{ strtolower($profile['accountStatus'] ?? '') === 'active' ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-500' }}">
-                            {{ match((int)($profile['accountStatus'] ?? 0)) { 0 => 'Active', 1 => 'Suspended', 2 => 'Inactive', default => 'Unknown' } }}
-                        </span>
-                    </div>
-                </div>
-
-                {{-- Details --}}
-                <div class="px-6 py-5 space-y-4">
-                    <dl class="space-y-3">
-                        <div class="flex items-center justify-between text-sm">
-                            <dt class="text-gray-400">Full Name</dt>
-                            <dd class="text-gray-700 font-medium">{{ $profile['fullName'] ?? '—' }}</dd>
-                        </div>
-                        <div class="flex items-center justify-between text-sm">
-                            <dt class="text-gray-400">Email</dt>
-                            <dd class="text-gray-700">{{ $profile['email'] ?? '—' }}</dd>
-                        </div>
-                        <div class="flex items-center justify-between text-sm">
-                            <dt class="text-gray-400">Phone</dt>
-                            <dd class="text-gray-700">{{ $profile['phoneNumber'] ?? '—' }}</dd>
-                        </div>
-                        <div class="flex items-center justify-between text-sm">
-                            <dt class="text-gray-400">NIC Number</dt>
-                            <dd class="text-gray-700 font-mono text-xs">{{ $profile['nicNumber'] ?? '—' }}</dd>
-                        </div>
-                        <div class="flex items-center justify-between text-sm">
-                            <dt class="text-gray-400">Address</dt>
-                            <dd class="text-gray-700 text-right max-w-xs">{{ $profile['address'] ?? '—' }}</dd>
-                        </div>
-                        <div class="flex items-center justify-between text-sm">
-                            <dt class="text-gray-400">Vehicles</dt>
-                            <dd class="text-gray-700">{{ $profile['vehicleCount'] ?? 0 }}</dd>
-                        </div>
-                        <div class="flex items-center justify-between text-sm">
-                            <dt class="text-gray-400">Customer ID</dt>
-                            <dd class="text-gray-400 font-mono text-xs">{{ $profile['customerId'] ?? '—' }}</dd>
-                        </div>
-                    </dl>
-                </div>
-
-                {{-- Edit button --}}
-                <div class="px-6 py-4 border-t border-gray-100">
-                    <button onclick="openEditModal()"
-                            class="px-5 py-2 bg-[#FA6908] text-white text-sm font-semibold rounded-lg hover:bg-orange-600 transition">
-                        Edit Profile
-                    </button>
-                </div>
-            </div>
-
-            {{-- Account actions --}}
-            <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-                <h3 class="font-semibold text-gray-800 mb-4">Account</h3>
-                <form method="POST" action="/logout">
-                    @csrf
-                    <button type="submit"
-                            class="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                        </svg>
-                        Sign Out
-                    </button>
-                </form>
-            </div>
+        <!-- Info Rows -->
+        <div class="profile-info-row">
+            <span class="info-label">Full Name</span>
+            <span class="info-value">noonecare</span>
         </div>
-    @endif
+        <div class="profile-info-row">
+            <span class="info-label">Email</span>
+            <span class="info-value">nethukzz@gmail.com</span>
+        </div>
+        <div class="profile-info-row">
+            <span class="info-label">Phone</span>
+            <span class="info-value">+94703792675</span>
+        </div>
+        <div class="profile-info-row">
+            <span class="info-label">NIC Number</span>
+            <span class="info-value">200271901539</span>
+        </div>
+        <div class="profile-info-row">
+            <span class="info-label">Address</span>
+            <span class="info-value">kandy</span>
+        </div>
+        <div class="profile-info-row">
+            <span class="info-label">Vehicles</span>
+            <span class="info-value">0</span>
+        </div>
+        <div class="profile-info-row">
+            <span class="info-label">Customer ID</span>
+            <span class="info-value mono">9a531ec2-74e1-4f1e-92aa-d2a6dbf82d43</span>
+        </div>
 
-    {{-- Edit Profile Modal --}}
-    <div id="edit-modal" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-black/40" onclick="closeEditModal()"></div>
-        <div class="absolute inset-0 flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-                <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                    <h3 class="font-semibold text-gray-800">Edit Profile</h3>
-                    <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-                </div>
-                <div class="px-6 py-5 space-y-4">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Full Name *</label>
-                        <input type="text" id="edit-fullName"
-                               value="{{ $profile['fullName'] ?? '' }}"
-                               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#FA6908]" />
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Phone Number *</label>
-                        <input type="tel" id="edit-phoneNumber"
-                               value="{{ $profile['phoneNumber'] ?? '' }}"
-                               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#FA6908]" />
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Address</label>
-                        <textarea id="edit-address" rows="2"
-                                  class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#FA6908] resize-none">{{ $profile['address'] ?? '' }}</textarea>
-                    </div>
-                    <p id="edit-error" class="text-red-600 text-sm hidden"></p>
-                </div>
-                <div class="px-6 py-4 border-t border-gray-100 flex gap-3">
-                    <button onclick="closeEditModal()"
-                            class="flex-1 py-2 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50">Cancel</button>
-                    <button id="edit-btn" onclick="submitEdit()"
-                            class="flex-1 py-2 bg-[#FA6908] text-white text-sm font-semibold rounded-lg hover:bg-orange-600">Save Changes</button>
-                </div>
-            </div>
+        <!-- Edit Button -->
+        <button class="edit-btn">Edit Profile</button>
+    </div>
+
+    <!-- Account Settings Card -->
+    <div class="profile-card">
+        <h3 style="color: #021F4A; font-size: 16px; margin-top: 0; margin-bottom: 15px; font-weight: 700;">Account</h3>
+        <div class="profile-info-row">
+            <span class="sign-out-btn">
+                <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24">
+                    <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                </svg>
+                Sign Out
+            </span>
         </div>
     </div>
 
+</div>
 @endsection
-
-@push('scripts')
-<script>
-    const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-    function openEditModal()  { document.getElementById('edit-modal').classList.remove('hidden'); }
-    function closeEditModal() { document.getElementById('edit-modal').classList.add('hidden'); document.getElementById('edit-error').classList.add('hidden'); }
-
-    async function submitEdit() {
-        const errEl = document.getElementById('edit-error');
-        errEl.classList.add('hidden');
-
-        const fullName    = document.getElementById('edit-fullName').value.trim();
-        const phoneNumber = document.getElementById('edit-phoneNumber').value.trim();
-        const address     = document.getElementById('edit-address').value.trim();
-
-        if (!fullName)    { errEl.textContent = 'Full name is required.'; errEl.classList.remove('hidden'); return; }
-        if (!phoneNumber) { errEl.textContent = 'Phone number is required.'; errEl.classList.remove('hidden'); return; }
-
-        const btn = document.getElementById('edit-btn');
-        btn.disabled = true; btn.textContent = 'Saving...';
-
-        const res  = await fetch('/profile', {
-            method: 'PUT',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF },
-            body: JSON.stringify({ fullName, phoneNumber, address: address || null }),
-        });
-        const data = await res.json().catch(() => ({}));
-
-        btn.disabled = false; btn.textContent = 'Save Changes';
-
-        if (data.success) {
-            closeEditModal();
-            window.location.reload();
-        } else {
-            errEl.textContent = data.message ?? 'Failed to update profile.';
-            errEl.classList.remove('hidden');
-        }
-    }
-</script>
-@endpush
