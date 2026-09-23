@@ -31,11 +31,8 @@ class StatsController extends Controller
                 $all      = $response['data'] ?? $response;
                 $all      = is_array($all) ? $all : [];
 
-                // Include vehicles that have a GPS device OR are the system demo vehicle.
-                $vehicles = array_values(array_filter(
-                    $all,
-                    fn($v) => ($v['hasGpsDevice'] ?? false) || ($v['isDemoVehicle'] ?? false)
-                ));
+                // Show all vehicles — those without GPS will just return zero stats.
+                $vehicles = array_values($all);
             }
 
             return view('stats.index', [
