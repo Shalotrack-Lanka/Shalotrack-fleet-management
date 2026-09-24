@@ -54,6 +54,10 @@ class ProfileController extends Controller
                 'Address'     => $validated['address'] ?? null,
             ]);
 
+            // Keep the session in sync so the header name stays correct on
+            // subsequent page navigations without requiring a fresh login.
+            Session::put('customer_name', $validated['fullName']);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Profile updated successfully.',
