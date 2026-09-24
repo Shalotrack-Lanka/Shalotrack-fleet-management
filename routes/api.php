@@ -1,81 +1,46 @@
 <?php
 
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\VehicleController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\TripController;
-use App\Http\Controllers\AlertController;
-use App\Http\Controllers\GeofenceController;
-use App\Http\Controllers\SharingController;
-use App\Http\Controllers\ProfileController;
+use App\Http\Middleware\FirebaseAuthenticated;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
 
 /*
 |--------------------------------------------------------------------------
-| API Routes — ShaloTrack Fleet Portal
+| Browser JSON Routes — ShaloTrack Fleet Portal  (prefix: /api)
 |--------------------------------------------------------------------------
 |
-| All routes return JSON.
-| Auth routes are public — they establish the session.
-| All other routes are protected by FirebaseAuthenticated middleware.
-| The middleware reads the Firebase token from the encrypted session.
+| Loaded from bootstrap/app.php under the `web` middleware group, so these
+| routes get the session cookie (and CSRF protection on any non-GET).
+|
+| Only routes that the Blade pages actually call live here. The previous
+| file registered ~25 duplicate/dead routes (several pointing at controller
+| methods that don't exist) — removed to shrink the attack surface.
+|
+| Every {id} is constrained to a UUID so nothing but a real vehicle ID can
+| be forwarded into the C# API URL path.
 |
 */
 
-// ---- Public: Auth ----
-Route::post('/auth/callback', [AuthController::class, 'callback']);
-Route::post('/auth/logout',   [AuthController::class, 'logout']);
-Route::get('/auth/me',        [AuthController::class, 'me']);
+Route::middleware(FirebaseAuthenticated::class)->group(function () {
 
-// ---- Protected: All authenticated routes ----
-Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(function () {
-
-    // Profile
-    Route::get('/profile', [ProfileController::class, 'show']);
-    Route::put('/profile',  [ProfileController::class, 'update']);
-
-    // Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index']);
-
-    // Vehicles
-    Route::get('/vehicles',               [VehicleController::class, 'index']);
-    Route::post('/vehicles',              [VehicleController::class, 'store']);
-    Route::get('/vehicles/{id}',          [VehicleController::class, 'show']);
-    Route::put('/vehicles/{id}',          [VehicleController::class, 'update']);
-    Route::delete('/vehicles/{id}',       [VehicleController::class, 'destroy']);
-    Route::post('/vehicles/{id}/link',    [VehicleController::class, 'linkDevice']);
-    Route::delete('/vehicles/{id}/link',  [VehicleController::class, 'unlinkDevice']);
-    Route::get('/vehicles/{id}/location', [VehicleController::class, 'location']);
-
-    // Trip History
-    Route::get('/trips/{vehicleId}', [TripController::class, 'index']);
-
-    // Alerts
-    Route::get('/alerts',             [AlertController::class, 'index']);
-    Route::patch('/alerts/{id}/read', [AlertController::class, 'markRead']);
-
-    // Geofences
-    Route::get('/geofences',         [GeofenceController::class, 'index']);
-    Route::post('/geofences',        [GeofenceController::class, 'store']);
-    Route::put('/geofences/{id}',    [GeofenceController::class, 'update']);
-    Route::delete('/geofences/{id}', [GeofenceController::class, 'destroy']);
-
-    // Sharing
-    Route::get('/shares',                 [SharingController::class, 'index']);
-    Route::post('/shares',                [SharingController::class, 'store']);
-    Route::patch('/shares/{id}/accept',   [SharingController::class, 'accept']);
-    Route::delete('/shares/{id}',         [SharingController::class, 'destroy']);
-
-    // SignalR token endpoint
-    // React fetches this before initialising the SignalR connection.
-    // Returns the Firebase token for use as ?access_token= query param.
-    // This is the ONLY endpoint that exposes the token — intentionally,
-    // because SignalR JS client cannot send custom headers on WebSocket upgrade.
+    // SignalR token — used by dashboard, vehicles/show and trips pages.
+    // The SignalR JS client cannot send custom headers on the WebSocket
+    // upgrade, so it needs the Firebase token for ?access_token=.
+    // This is intentionally the ONLY endpoint that returns the token.
     Route::get('/signalr-token', function () {
-        return response()->json([
-            'token' => Session::get('firebase_token'),
-        ]);
+        return response()
+            ->json(['token' => Session::get('firebase_token')])
+            ->header('Cache-Control', 'no-store, private');
     });
 
+    // Vehicle detail as JSON — used by the "Unlink GPS" flow on
+    // vehicles/index to read currentAssignmentId.
+    Route::get('/vehicles/{id}', [VehicleController::class, 'showJson'])
+        ->whereUuid('id');
+
+    // Current location — HTTP fallback poll on vehicles/show when SignalR
+    // is unavailable. Path matches what the page already calls.
+    Route::get('/CurrentLocations/vehicle/{id}', [VehicleController::class, 'location'])
+        ->whereUuid('id');
 });
