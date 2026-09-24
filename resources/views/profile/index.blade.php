@@ -470,14 +470,23 @@ $completeness = (int) round(($filled / count($fields)) * 100);
                         id: `text-${field}`,
                         textContent: val || '—',
                         className: field === 'address' ?
-                            'text-sm font-semibold text-gray-800 leading-relaxed' : 'text-sm font-semibold text-gray-800',
+                            'text-sm font-semibold text-gray-800 leading-relaxed' :
+                            'text-sm font-semibold text-gray-800',
                     })
                 );
-                // Update hero name if editing full name
+                // Update hero name and header if editing full name
                 if (field === 'fullName') {
+                    // Hero card name
                     const heroName = document.getElementById('display-fullName');
                     if (heroName) heroName.textContent = val || '—';
-                    // Update initials
+
+                    // Header bar — name text and avatar initial
+                    const headerName = document.getElementById('header-name');
+                    if (headerName) headerName.textContent = val || '—';
+                    const headerAvatar = document.getElementById('header-avatar');
+                    if (headerAvatar) headerAvatar.textContent = (val || '').trim().charAt(0).toUpperCase() || 'U';
+
+                    // Hero card avatar initials
                     const parts = (val || '').trim().split(' ').filter(Boolean);
                     const newInits = parts.slice(0, 2).map(w => w[0].toUpperCase()).join('');
                     const avatar = document.querySelector('.profile-avatar-text');
