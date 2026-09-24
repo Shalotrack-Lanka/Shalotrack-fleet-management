@@ -53,33 +53,37 @@
         <div class="flex items-start gap-4 px-6 py-4 hover:bg-gray-50 transition {{ !($alert['isRead'] ?? false) ? 'bg-orange-50/30' : '' }}"
             id="alert-{{ $alert['alertId'] }}">
 
-            {{-- Icon --}}
+            {{-- Type-specific icon --}}
             <div class="flex-shrink-0 mt-0.5">
                 @php
                 $type = strtolower($alert['alertType'] ?? '');
-                $iconColor = match(true) {
-                str_contains($type, 'speed') => 'text-red-500 bg-red-50',
-                str_contains($type, 'ignition') => 'text-green-500 bg-green-50',
-                str_contains($type, 'offline') => 'text-gray-500 bg-gray-100',
-                str_contains($type, 'geofence') => 'text-blue-500 bg-blue-50',
-                str_contains($type, 'power') => 'text-yellow-500 bg-yellow-50',
-                str_contains($type, 'battery') => 'text-orange-500 bg-orange-50',
-                default => 'text-gray-500 bg-gray-100',
+                [$iconColor, $iconPath] = match(true) {
+                str_contains($type, 'speed') => ['text-red-500 bg-red-50', 'M13 10V3L4 14h7v7l9-11h-7z'],
+                str_contains($type, 'ignition') => ['text-green-500 bg-green-50', 'M13 10V3L4 14h7v7l9-11h-7z'],
+                str_contains($type, 'geofence') => ['text-blue-500 bg-blue-50', 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z'],
+                str_contains($type, 'power') => ['text-yellow-500 bg-yellow-50','M13 10V3L4 14h7v7l9-11h-7z'],
+                str_contains($type, 'battery') => ['text-orange-500 bg-orange-50','M9 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2h-2M9 3a2 2 0 002 2h2a2 2 0 002-2M9 3h6'],
+                str_contains($type, 'offline') => ['text-gray-500 bg-gray-100', 'M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072M5.636 18.364a9 9 0 010-12.728M3 3l18 18'],
+                default => ['text-gray-500 bg-gray-100', 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9'],
                 };
                 @endphp
-                <span class="w-8 h-8 rounded-full {{ $iconColor }} flex items-center justify-center">
+                <span class="w-9 h-9 rounded-full {{ $iconColor }} flex items-center justify-center">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $iconPath }}" />
                     </svg>
                 </span>
             </div>
 
             {{-- Content --}}
             <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 mb-0.5">
+                <div class="flex items-center gap-2 mb-0.5 flex-wrap">
                     <p class="text-sm font-semibold text-gray-800">{{ $alert['vehicleNumber'] ?? '—' }}</p>
-                    <span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
+                    <span class="text-xs px-2 py-0.5 rounded-full
+                        @if(str_contains(strtolower($alert['alertType'] ?? ''), 'speed')) bg-red-100 text-red-700
+                        @elseif(str_contains(strtolower($alert['alertType'] ?? ''), 'geofence')) bg-blue-100 text-blue-700
+                        @elseif(str_contains(strtolower($alert['alertType'] ?? ''), 'ignition')) bg-green-100 text-green-700
+                        @else bg-gray-100 text-gray-500
+                        @endif">
                         {{ $alert['alertType'] ?? 'Unknown' }}
                     </span>
                     @if(!($alert['isRead'] ?? false))
@@ -93,7 +97,7 @@
                 </p>
             </div>
 
-            {{-- Mark read --}}
+            {{-- Mark read button --}}
             @if(!($alert['isRead'] ?? false))
             <button onclick="markRead('{{ $alert['alertId'] }}')"
                 class="flex-shrink-0 text-xs text-gray-400 hover:text-[#FA6908] transition mt-1"
@@ -132,7 +136,8 @@
 @endif
 
 <script>
-    const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    // Use blade-rendered CSRF — no dependency on meta tag existence
+    const CSRF = '{{ csrf_token() }}';
 
     async function markRead(alertId) {
         const btn = document.getElementById(`read-btn-${alertId}`);
@@ -141,31 +146,38 @@
             btn.style.opacity = '0.4';
         }
 
-        const res = await fetch(`/alerts/${alertId}/read`, {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': CSRF,
-            },
-        });
+        try {
+            const res = await fetch(`/alerts/${alertId}/read`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': CSRF,
+                },
+            });
 
-        if (res.status === 401) {
-            window.location.href = '/login?expired=1';
-            return;
-        }
-
-        const data = await res.json().catch(() => ({}));
-        if (data.success || res.ok) {
-            const row = document.getElementById(`alert-${alertId}`);
-            if (row) {
-                row.classList.remove('bg-orange-50/30');
-                // Remove unread dot
-                row.querySelector('.bg-\\[\\#FA6908\\].rounded-full')?.remove();
+            if (res.status === 401) {
+                window.location.href = '/login?expired=1';
+                return;
             }
-            btn?.remove();
-        } else {
+
+            const data = await res.json().catch(() => ({}));
+            if (data.success || res.ok) {
+                const row = document.getElementById(`alert-${alertId}`);
+                if (row) {
+                    row.classList.remove('bg-orange-50/30');
+                    // Remove the unread orange dot
+                    row.querySelector('.w-2.h-2.bg-\\[\\#FA6908\\]')?.remove();
+                }
+                btn?.remove();
+            } else {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                }
+            }
+        } catch {
             if (btn) {
                 btn.disabled = false;
                 btn.style.opacity = '1';

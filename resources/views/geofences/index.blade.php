@@ -802,7 +802,7 @@
 <script>
     'use strict';
 
-    const CSRF = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
+    const CSRF = '{{ csrf_token() }}';
     const GEOFENCES = @json($geofences);
 
     /* ---- State ---- */
@@ -1057,8 +1057,7 @@
         S.mode = 'edit';
         S.editId = gf.geofenceId;
         S.radius = gf.radiusMeters ?? 500;
-        S.center = (gf.latitude && gf.longitude) ?
-            {
+        S.center = (gf.latitude && gf.longitude) ? {
                 lat: parseFloat(gf.latitude),
                 lng: parseFloat(gf.longitude)
             } :
@@ -1173,6 +1172,11 @@
             });
             const data = await res.json().catch(() => ({}));
 
+            if (res.status === 401) {
+                window.location.href = '/login?expired=1';
+                return;
+            }
+
             if (data.success) {
                 window.location.reload();
             } else {
@@ -1266,6 +1270,10 @@
                 },
             });
             const data = await res.json().catch(() => ({}));
+            if (res.status === 401) {
+                window.location.href = '/login?expired=1';
+                return;
+            }
             if (data.success) {
                 closeDeleteModal();
                 window.location.reload();

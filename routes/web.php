@@ -16,6 +16,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\EmergencyContactController;
 use App\Http\Controllers\SavedPlaceController;
 use App\Http\Controllers\StatsController;
+use App\Http\Controllers\ReportController;
 
 // ---- Public ----
 Route::get('/', fn() => view('landing'))->name('home');
@@ -58,6 +59,10 @@ Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(func
     Route::get('/trips/{vehicleId}/points',           [TripController::class, 'points']);
     Route::get('/trips/{vehicleId}/summary',          [TripController::class, 'summary']);
     Route::get('/trips/{vehicleId}/report',           [TripController::class, 'report']);
+
+    // Reports
+    Route::get('/reports',      [ReportController::class, 'index'])->name('reports');
+    Route::get('/reports/data', [ReportController::class, 'data']);
 
     // Alerts
     Route::get('/alerts',              [AlertController::class, 'index'])->name('alerts');
