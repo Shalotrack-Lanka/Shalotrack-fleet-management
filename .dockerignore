@@ -1,0 +1,62 @@
+# ---------------------------------------------------------------
+# Never send these into the Docker build context.
+# .env in particular: without this line, `COPY . .` would bake a
+# developer's local APP_KEY and API keys into the image in ECR.
+# ---------------------------------------------------------------
+
+# Secrets / local environment
+.env
+.env.*
+!.env.example
+auth.json
+
+# VCS / CI / editor
+.git
+.github
+.gitignore
+.gitattributes
+.editorconfig
+.idea
+.vscode
+.fleet
+.nova
+.zed
+.phpactor.json
+*.swp
+.DS_Store
+Thumbs.db
+
+# Dependencies — rebuilt inside the image
+node_modules
+vendor
+
+# Build output — rebuilt inside the image
+public/build
+public/hot
+public/storage
+
+# Runtime state — must never come from a dev machine
+storage/*.key
+storage/logs/*
+storage/pail
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/framework/testing/*
+bootstrap/cache/*.php
+database/*.sqlite
+database/*.sqlite-journal
+
+# Tests & dev tooling
+tests
+phpunit.xml
+.phpunit.cache
+.phpunit.result.cache
+*.log
+Homestead.json
+Homestead.yaml
+
+# Docs / docker build files themselves
+README.md
+Dockerfile
+.dockerignore
