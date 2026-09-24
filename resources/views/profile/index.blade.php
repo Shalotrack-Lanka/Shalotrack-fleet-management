@@ -327,7 +327,7 @@ $completeness = (int) round(($filled / count($fields)) * 100);
 @endif
 
 <script>
-    const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const CSRF = '{{ csrf_token() }}'; // Fixed: was querySelector which crashes when layout has no CSRF meta tag
     const origVal = {}; // track original values for cancel
 
     // ── Toast ─────────────────────────────────────────────────────────────────
@@ -470,8 +470,7 @@ $completeness = (int) round(($filled / count($fields)) * 100);
                         id: `text-${field}`,
                         textContent: val || '—',
                         className: field === 'address' ?
-                            'text-sm font-semibold text-gray-800 leading-relaxed' :
-                            'text-sm font-semibold text-gray-800',
+                            'text-sm font-semibold text-gray-800 leading-relaxed' : 'text-sm font-semibold text-gray-800',
                     })
                 );
                 // Update hero name if editing full name
