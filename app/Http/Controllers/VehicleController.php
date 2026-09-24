@@ -76,6 +76,38 @@ class VehicleController extends Controller
     }
 
     // -------------------------------------------------------------------------
+    // Vehicle detail as JSON (AJAX) — GET /api/vehicles/{id}
+    // Used by the "Unlink GPS" flow on vehicles/index to read
+    // currentAssignmentId. show() above returns a Blade view, so the page's
+    // res.json() call on it always failed.
+    // -------------------------------------------------------------------------
+
+    public function showJson(string $id)
+    {
+        try {
+            return response()->json($this->api->getVehicle($id));
+        } catch (\Exception $e) {
+            return $this->jsonApiError($e, 'showJson', 'Could not load vehicle.');
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Current location (AJAX) — GET /api/CurrentLocations/vehicle/{id}
+    // HTTP fallback poll on vehicles/show when SignalR is unavailable.
+    // Previously there was no Laravel route for this path, so the fallback
+    // poll always got a 404 and showed "Location unavailable".
+    // -------------------------------------------------------------------------
+
+    public function location(string $id)
+    {
+        try {
+            return response()->json($this->api->getVehicleLocation($id));
+        } catch (\Exception $e) {
+            return $this->jsonApiError($e, 'location', 'Location unavailable.');
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // Create vehicle (AJAX)
     // -------------------------------------------------------------------------
 
@@ -270,6 +302,37 @@ class VehicleController extends Controller
     // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------
+
+    /**
+     * JSON error response for the AJAX endpoints.
+     * 401 → the page redirects to /login?expired=1 (session flushed here).
+     * 403/404 → passed through as-is. Anything else → 502 (upstream failure).
+     */
+    private function jsonApiError(\Exception $e, string $action, string $message)
+    {
+        $code = (int) $e->getCode();
+
+        if ($code === 401) {
+            Session::flush();
+            return response()->json([
+                'success' => false,
+                'code'    => 'TOKEN_EXPIRED',
+                'message' => 'Session expired.',
+            ], 401);
+        }
+
+        Log::error("VehicleController: {$action} failed", [
+            'code'    => $code,
+            'message' => $e->getMessage(),
+        ]);
+
+        $status = in_array($code, [403, 404], true) ? $code : 502;
+
+        return response()->json([
+            'success' => false,
+            'message' => $message,
+        ], $status);
+    }
 
     private function handleApiException(\Exception $e): void
     {
