@@ -1,291 +1,840 @@
 @extends('layouts.app')
-@section('title', 'Emergency Contacts — ShaloTrack Fleet')
-@section('page-title', 'Emergency Contacts')
 
 @section('content')
+@php
+$contacts = $contacts ?? [];
+$error = $error ?? null;
+@endphp
+<style>
+    /* ── Emergency Contacts ──────────────────────────────────────────────────── */
+    .ec-wrap {
+        max-width: 820px;
+        margin: 0 auto;
+        padding: 2rem 1.25rem 3rem;
+    }
 
-@if($error)
-<div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-3">
-    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-    {{ $error }}
-</div>
-@endif
+    /* Header */
+    .ec-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.75rem;
+        flex-wrap: wrap;
+    }
 
-<div class="max-w-2xl">
+    .ec-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #021F4A;
+        line-height: 1.2;
+    }
 
-    <div class="flex items-center justify-between mb-6">
-        <p class="text-sm text-gray-500">{{ count($contacts) }} contact(s)</p>
-        <button onclick="openAddModal()"
-            class="flex items-center gap-2 px-4 py-2 bg-[#FA6908] hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+    .ec-subtitle {
+        font-size: .875rem;
+        color: #6b7280;
+        margin-top: .3rem;
+    }
+
+    .ec-add-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .625rem 1.25rem;
+        background: #FA6908;
+        color: #fff;
+        font-size: .875rem;
+        font-weight: 700;
+        border: none;
+        border-radius: .625rem;
+        cursor: pointer;
+        transition: background .15s;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .ec-add-btn:hover {
+        background: #e05a00;
+    }
+
+    /* Error banner */
+    .ec-error {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: .75rem;
+        padding: 1rem 1.25rem;
+        font-size: .875rem;
+        color: #dc2626;
+        margin-bottom: 1.25rem;
+    }
+
+    /* Info strip */
+    .ec-info {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: .75rem;
+        padding: .875rem 1.25rem;
+        font-size: .8125rem;
+        color: #0369a1;
+        margin-bottom: 1.5rem;
+    }
+
+    .ec-info svg {
+        flex-shrink: 0;
+        color: #0284c7;
+    }
+
+    /* Contact cards */
+    .ec-list {
+        display: flex;
+        flex-direction: column;
+        gap: .875rem;
+    }
+
+    .ec-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: .875rem;
+        padding: 1.125rem 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: box-shadow .15s;
+    }
+
+    .ec-card:hover {
+        box-shadow: 0 2px 10px rgba(0, 0, 0, .06);
+    }
+
+    .ec-avatar {
+        width: 46px;
+        height: 46px;
+        background: #fff7f0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .ec-avatar svg {
+        color: #FA6908;
+    }
+
+    .ec-body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .ec-name {
+        font-size: .9375rem;
+        font-weight: 700;
+        color: #021F4A;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        flex-wrap: wrap;
+    }
+
+    .ec-rel-badge {
+        display: inline-block;
+        font-size: .6875rem;
+        font-weight: 600;
+        color: #FA6908;
+        background: #fff7f0;
+        border: 1px solid #fed7aa;
+        border-radius: 99px;
+        padding: .1em .65em;
+        line-height: 1.6;
+    }
+
+    .ec-phone {
+        font-size: .8125rem;
+        color: #374151;
+        margin-top: .2rem;
+        font-weight: 500;
+    }
+
+    .ec-meta {
+        font-size: .75rem;
+        color: #9ca3af;
+        margin-top: .2rem;
+    }
+
+    .ec-del-btn {
+        width: 36px;
+        height: 36px;
+        background: none;
+        border: 1px solid #fecaca;
+        border-radius: .5rem;
+        color: #dc2626;
+        cursor: pointer;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background .15s, border-color .15s;
+    }
+
+    .ec-del-btn:hover {
+        background: #fef2f2;
+        border-color: #dc2626;
+    }
+
+    /* Empty state */
+    .ec-empty {
+        background: #fff;
+        border: 1px dashed #e5e7eb;
+        border-radius: .875rem;
+        padding: 3.5rem 1.5rem;
+        text-align: center;
+    }
+
+    .ec-empty-icon {
+        width: 56px;
+        height: 56px;
+        background: #f9fafb;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+    }
+
+    .ec-empty-icon svg {
+        color: #d1d5db;
+    }
+
+    .ec-empty-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #021F4A;
+    }
+
+    .ec-empty-desc {
+        font-size: .8125rem;
+        color: #6b7280;
+        margin-top: .375rem;
+        max-width: 340px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Overlay + Modals */
+    .ec-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 31, 74, .5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        padding: 1rem;
+    }
+
+    .ec-overlay.open {
+        display: flex;
+    }
+
+    .ec-modal {
+        background: #fff;
+        border-radius: 1rem;
+        width: 100%;
+        max-width: 460px;
+        box-shadow: 0 24px 64px rgba(0, 0, 0, .2);
+    }
+
+    .ec-modal-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .ec-modal-title {
+        font-size: 1.0625rem;
+        font-weight: 800;
+        color: #021F4A;
+    }
+
+    .ec-modal-close {
+        width: 30px;
+        height: 30px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #9ca3af;
+        border-radius: .5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ec-modal-close:hover {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .ec-modal-body {
+        padding: 1.5rem;
+    }
+
+    .ec-modal-foot {
+        padding: .875rem 1.5rem;
+        border-top: 1px solid #f3f4f6;
+        display: flex;
+        justify-content: flex-end;
+        gap: .75rem;
+    }
+
+    .ec-field {
+        margin-bottom: 1.125rem;
+    }
+
+    .ec-label {
+        display: block;
+        font-size: .8125rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: .375rem;
+    }
+
+    .ec-label .opt {
+        color: #9ca3af;
+        font-weight: 400;
+    }
+
+    .ec-label .req {
+        color: #dc2626;
+        margin-left: .1em;
+    }
+
+    .ec-input,
+    .ec-select {
+        width: 100%;
+        padding: .625rem .875rem;
+        border: 1px solid #d1d5db;
+        border-radius: .625rem;
+        font-size: .875rem;
+        color: #111827;
+        background: #fff;
+        transition: border-color .15s;
+        box-sizing: border-box;
+        font-family: inherit;
+    }
+
+    .ec-input:focus,
+    .ec-select:focus {
+        outline: none;
+        border-color: #FA6908;
+        box-shadow: 0 0 0 3px rgba(250, 105, 8, .12);
+    }
+
+    .ec-modal-err {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: .5rem;
+        padding: .75rem 1rem;
+        font-size: .8125rem;
+        color: #dc2626;
+        margin-bottom: 1rem;
+        display: none;
+    }
+
+    /* Buttons */
+    .ec-btn-cancel {
+        padding: .625rem 1.125rem;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: .625rem;
+        font-size: .875rem;
+        font-weight: 600;
+        color: #374151;
+        cursor: pointer;
+        font-family: inherit;
+    }
+
+    .ec-btn-cancel:hover {
+        background: #f3f4f6;
+    }
+
+    .ec-btn-primary {
+        padding: .625rem 1.25rem;
+        background: #FA6908;
+        border: none;
+        border-radius: .625rem;
+        font-size: .875rem;
+        font-weight: 700;
+        color: #fff;
+        cursor: pointer;
+        transition: background .15s;
+        font-family: inherit;
+    }
+
+    .ec-btn-primary:hover {
+        background: #e05a00;
+    }
+
+    .ec-btn-primary:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+    }
+
+    .ec-btn-danger {
+        padding: .625rem 1.25rem;
+        background: #dc2626;
+        border: none;
+        border-radius: .625rem;
+        font-size: .875rem;
+        font-weight: 700;
+        color: #fff;
+        cursor: pointer;
+        transition: background .15s;
+        font-family: inherit;
+    }
+
+    .ec-btn-danger:hover {
+        background: #b91c1c;
+    }
+
+    .ec-btn-danger:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+    }
+
+    /* Delete confirm modal */
+    .ec-confirm {
+        background: #fff;
+        border-radius: 1rem;
+        width: 100%;
+        max-width: 380px;
+        box-shadow: 0 24px 64px rgba(0, 0, 0, .2);
+        padding: 2rem 1.5rem;
+        text-align: center;
+    }
+
+    .ec-confirm-icon {
+        width: 54px;
+        height: 54px;
+        background: #fef2f2;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+    }
+
+    .ec-confirm-title {
+        font-size: 1.0625rem;
+        font-weight: 800;
+        color: #021F4A;
+    }
+
+    .ec-confirm-text {
+        font-size: .875rem;
+        color: #6b7280;
+        margin: .5rem 0 1.5rem;
+        line-height: 1.5;
+    }
+
+    .ec-confirm-actions {
+        display: flex;
+        gap: .75rem;
+        justify-content: center;
+    }
+
+    @media (max-width: 620px) {
+        .ec-wrap {
+            padding: 1.25rem .875rem 2rem;
+        }
+
+        .ec-top {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .ec-add-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .ec-card {
+            flex-wrap: wrap;
+        }
+
+        .ec-modal,
+        .ec-confirm {
+            border-radius: .75rem;
+        }
+
+        .ec-modal-body {
+            padding: 1.25rem;
+        }
+
+        .ec-confirm-actions {
+            flex-direction: column;
+        }
+
+        .ec-btn-cancel,
+        .ec-btn-danger {
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>
+
+<div class="ec-wrap">
+
+    {{-- Page header --}}
+    <div class="ec-top">
+        <div>
+            <div class="ec-title">Emergency Contacts</div>
+            <div class="ec-subtitle">People ShaloTrack will notify if you trigger an SOS alert</div>
+        </div>
+        <button class="ec-add-btn" onclick="openAdd()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
             </svg>
             Add Contact
         </button>
     </div>
 
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-6">
-        <div class="px-6 py-4 border-b border-gray-100 bg-amber-50">
-            <p class="text-sm text-amber-700 flex items-center gap-2">
-                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Emergency contacts are notified when an SOS alert is triggered from the mobile app.
-            </p>
-        </div>
+    {{-- Error banner --}}
+    @if($error)
+    <div class="ec-error">{{ $error }}</div>
+    @endif
 
-        @if(empty($contacts))
-        <div class="p-12 text-center">
-            <div class="w-14 h-14 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg class="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-            </div>
-            <p class="text-gray-400 font-medium mb-1">No emergency contacts</p>
-            <p class="text-gray-300 text-sm">Add contacts who should be notified in an emergency.</p>
-        </div>
-        @else
-        <div class="divide-y divide-gray-50">
-            @foreach($contacts as $contact)
-            <div class="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition"
-                id="contact-{{ $contact['emergencyContactId'] }}">
-                <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span class="text-red-500 font-bold text-sm">
-                            {{ strtoupper(substr($contact['name'] ?? 'U', 0, 1)) }}
-                        </span>
-                    </div>
-                    <div>
-                        <p class="font-semibold text-gray-800 text-sm">{{ $contact['name'] }}</p>
-                        <p class="text-xs text-gray-400">{{ $contact['phoneNumber'] }} · {{ $contact['relationship'] ?? 'Other' }}</p>
-                    </div>
-                </div>
-                <button onclick="confirmDelete('{{ $contact['emergencyContactId'] }}', '{{ addslashes($contact['name']) }}')"
-                    class="text-gray-300 hover:text-red-500 transition p-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                </button>
-            </div>
-            @endforeach
-        </div>
-        @endif
+    {{-- Info strip --}}
+    <div class="ec-info">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        When you press the SOS button in the ShaloTrack app, these contacts receive an SMS and push notification with your live location.
     </div>
+
+    {{-- Contact list (JS-rendered from PHP array) --}}
+    <div class="ec-list" id="ec-list"></div>
+
 </div>
 
-{{-- Add Modal --}}
-<div id="add-modal" class="fixed inset-0 z-50 hidden">
-    <div class="absolute inset-0 bg-black/40" onclick="closeAddModal()"></div>
-    <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                <h3 class="font-semibold text-gray-800">Add Emergency Contact</h3>
-                <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+{{-- ── Add Contact Modal ──────────────────────────────────────────────────── --}}
+<div class="ec-overlay" id="ec-add-overlay">
+    <div class="ec-modal">
+        <div class="ec-modal-head">
+            <span class="ec-modal-title">Add Emergency Contact</span>
+            <button class="ec-modal-close" onclick="closeAdd()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="ec-modal-body">
+            <div class="ec-modal-err" id="ec-add-err"></div>
+            <div class="ec-field">
+                <label class="ec-label" for="ec-name">
+                    Full Name <span class="req">*</span>
+                </label>
+                <input id="ec-name" type="text" class="ec-input"
+                    placeholder="e.g. Kasun Perera" maxlength="80"
+                    autocomplete="name">
             </div>
-            <div class="px-6 py-5 space-y-4">
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Full Name *</label>
-                    <input type="text" id="add-name" placeholder="John Silva"
-                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent" />
+            <div class="ec-field">
+                <label class="ec-label" for="ec-phone">
+                    Phone Number <span class="req">*</span>
+                </label>
+                <input id="ec-phone" type="tel" class="ec-input"
+                    placeholder="e.g. +94 77 123 4567"
+                    autocomplete="tel">
+                <div style="font-size:.75rem;color:#6b7280;margin-top:.35rem">
+                    Include country code (e.g. +94 for Sri Lanka)
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Phone Number *</label>
-                    <div class="flex rounded-lg border border-gray-200 overflow-hidden focus-within:ring-2 focus-within:ring-[#FA6908]">
-                        <span class="px-3 py-2 bg-gray-50 text-gray-500 text-sm border-r border-gray-200">🇱🇰 +94</span>
-                        <input type="tel" id="add-phone" placeholder="071 234 5678"
-                            class="flex-1 px-3 py-2 text-sm outline-none" />
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Relationship</label>
-                    <select id="add-relationship" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent">
-                        <option value="Family">Family</option>
-                        <option value="Spouse">Spouse</option>
-                        <option value="Parent">Parent</option>
-                        <option value="Sibling">Sibling</option>
-                        <option value="Friend">Friend</option>
-                        <option value="Colleague">Colleague</option>
-                        <option value="Other" selected>Other</option>
-                    </select>
-                </div>
-                <p id="add-error" class="text-red-600 text-sm hidden"></p>
             </div>
-            <div class="px-6 py-4 border-t border-gray-100 flex gap-3">
-                <button onclick="closeAddModal()"
-                    class="flex-1 py-2 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50">Cancel</button>
-                <button id="add-btn" onclick="submitAdd()"
-                    class="flex-1 py-2 bg-[#FA6908] text-white text-sm font-semibold rounded-lg hover:bg-orange-600">Add Contact</button>
+            <div class="ec-field" style="margin-bottom:0">
+                <label class="ec-label" for="ec-relation">
+                    Relationship <span class="opt">(optional)</span>
+                </label>
+                <select id="ec-relation" class="ec-select">
+                    <option value="">— Select relationship —</option>
+                    <option>Family</option>
+                    <option>Spouse</option>
+                    <option>Partner</option>
+                    <option>Parent</option>
+                    <option>Child</option>
+                    <option>Sibling</option>
+                    <option>Friend</option>
+                    <option>Colleague</option>
+                    <option>Other</option>
+                </select>
             </div>
+        </div>
+        <div class="ec-modal-foot">
+            <button class="ec-btn-cancel" onclick="closeAdd()">Cancel</button>
+            <button class="ec-btn-primary" id="ec-add-submit" onclick="submitAdd()">
+                Add Contact
+            </button>
         </div>
     </div>
 </div>
 
-{{-- Delete Modal --}}
-<div id="delete-modal" class="fixed inset-0 z-50 hidden">
-    <div class="absolute inset-0 bg-black/40" onclick="closeDeleteModal()"></div>
-    <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
-            <h3 class="font-semibold text-gray-800 mb-2">Remove Contact</h3>
-            <p class="text-sm text-gray-500 mb-6">Remove <strong id="delete-name"></strong> from emergency contacts?</p>
-            <input type="hidden" id="delete-id" />
-            <p id="delete-error" class="text-red-600 text-sm mb-4 hidden"></p>
-            <div class="flex gap-3">
-                <button onclick="closeDeleteModal()"
-                    class="flex-1 py-2 border border-gray-200 text-gray-600 text-sm rounded-lg">Cancel</button>
-                <button id="delete-btn" onclick="submitDelete()"
-                    class="flex-1 py-2 bg-red-500 text-white text-sm font-semibold rounded-lg hover:bg-red-600">Remove</button>
-            </div>
+{{-- ── Delete Confirm Modal ───────────────────────────────────────────────── --}}
+<div class="ec-overlay" id="ec-del-overlay">
+    <div class="ec-confirm">
+        <div class="ec-confirm-icon">
+            <svg width="24" height="24" fill="none" stroke="#dc2626" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+        </div>
+        <div class="ec-confirm-title">Remove Contact?</div>
+        <div class="ec-confirm-text" id="ec-del-text">
+            This person will no longer be notified when you trigger an SOS alert.
+        </div>
+        <div class="ec-confirm-actions">
+            <button class="ec-btn-cancel" onclick="closeDel()">Cancel</button>
+            <button class="ec-btn-danger" id="ec-del-btn" onclick="submitDel()">Remove</button>
         </div>
     </div>
 </div>
 
 <script>
-    const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const CSRF = '{{ csrf_token() }}';
 
-    function showEl(id) {
-        document.getElementById(id)?.classList.remove('hidden');
+    /* ── State ─────────────────────────────────────────────────────────────── */
+    let CONTACTS = @json($contacts);
+    let _delId = null;
+
+    /* ── Utility ────────────────────────────────────────────────────────────── */
+    function esc(s) {
+        return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
-    function hideEl(id) {
-        document.getElementById(id)?.classList.add('hidden');
-    }
-
-    function showErr(id, msg) {
-        const el = document.getElementById(id);
-        if (el) {
-            el.textContent = msg;
-            el.classList.remove('hidden');
+    function fmtDate(iso) {
+        if (!iso) return '';
+        try {
+            return new Date(iso).toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+        } catch {
+            return '';
         }
     }
 
-    function setBtn(id, loading, label) {
-        const btn = document.getElementById(id);
-        if (!btn) return;
-        btn.disabled = loading;
-        btn.textContent = loading ? 'Please wait…' : label;
-    }
+    /* ── Render ─────────────────────────────────────────────────────────────── */
+    function render() {
+        const list = document.getElementById('ec-list');
 
-    async function apiFetch(url, method, body = null) {
-        const opts = {
-            method,
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': CSRF
-            },
-        };
-        if (body) opts.body = JSON.stringify(body);
-        const res = await fetch(url, opts);
-        if (res.status === 401) {
-            window.location.href = '/login?expired=1';
-            return {
-                ok: false,
-                status: 401,
-                data: {}
-            };
+        if (!CONTACTS.length) {
+            list.innerHTML = `
+        <div class="ec-empty">
+            <div class="ec-empty-icon">
+                <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.768-.231-1.48-.634-2.07M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.768.231-1.48.634-2.07m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+            </div>
+            <div class="ec-empty-title">No emergency contacts yet</div>
+            <div class="ec-empty-desc">Add someone who should be notified when you press the SOS button.</div>
+        </div>`;
+            return;
         }
-        return {
-            ok: res.ok,
-            data: await res.json().catch(() => ({}))
-        };
+
+        list.innerHTML = CONTACTS.map(c => {
+            const rel = c.relationship ?
+                `<span class="ec-rel-badge">${esc(c.relationship)}</span>` : '';
+            return `
+        <div class="ec-card">
+            <div class="ec-avatar">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+            </div>
+            <div class="ec-body">
+                <div class="ec-name">${esc(c.name)}${rel}</div>
+                <div class="ec-phone">${esc(c.phoneNumber)}</div>
+                <div class="ec-meta">Added ${fmtDate(c.createdAt)}</div>
+            </div>
+            <button class="ec-del-btn"
+                    onclick="confirmDel('${esc(c.emergencyContactId)}','${esc(c.name)}')"
+                    title="Remove ${esc(c.name)}">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+            </button>
+        </div>`;
+        }).join('');
     }
 
-    function openAddModal() {
-        showEl('add-modal');
-        document.getElementById('add-name')?.focus();
+    /* ── Add Modal ──────────────────────────────────────────────────────────── */
+    function openAdd() {
+        document.getElementById('ec-name').value = '';
+        document.getElementById('ec-phone').value = '';
+        document.getElementById('ec-relation').value = '';
+        hideErr('ec-add-err');
+        setBtn('ec-add-submit', false, 'Add Contact');
+        document.getElementById('ec-add-overlay').classList.add('open');
+        setTimeout(() => document.getElementById('ec-name').focus(), 60);
     }
 
-    function closeAddModal() {
-        hideEl('add-modal');
-        hideEl('add-error');
-        ['add-name', 'add-phone'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.value = '';
-        });
+    function closeAdd() {
+        document.getElementById('ec-add-overlay').classList.remove('open');
     }
 
     async function submitAdd() {
-        hideEl('add-error');
-        const name = document.getElementById('add-name').value.trim();
-        const phone = document.getElementById('add-phone').value.trim();
-        const rel = document.getElementById('add-relationship').value;
+        const name = document.getElementById('ec-name').value.trim();
+        const phone = document.getElementById('ec-phone').value.trim();
+        const relation = document.getElementById('ec-relation').value.trim();
+        const errEl = document.getElementById('ec-add-err');
+
         if (!name) {
-            showErr('add-error', 'Name is required.');
+            showErr(errEl, 'Name is required.');
             return;
         }
         if (!phone) {
-            showErr('add-error', 'Phone number is required.');
+            showErr(errEl, 'Phone number is required.');
             return;
         }
 
-        // Normalise to E.164
-        const digits = phone.replace(/\D/g, '');
-        let e164 = phone;
-        if (digits.length === 9) e164 = `+94${digits}`;
-        if (digits.length === 10 && digits.startsWith('0')) e164 = `+94${digits.slice(1)}`;
+        setBtn('ec-add-submit', true, 'Saving…');
+        hideErr('ec-add-err');
 
-        setBtn('add-btn', true, 'Add Contact');
-        const {
-            ok,
-            data
-        } = await apiFetch('/emergency-contacts', 'POST', {
-            name,
-            phoneNumber: e164,
-            relationship: rel
-        });
-        setBtn('add-btn', false, 'Add Contact');
+        try {
+            const res = await fetch('/emergency-contacts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': CSRF,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    name,
+                    phoneNumber: phone,
+                    relationship: relation || null
+                }),
+            });
 
-        if (ok) {
-            closeAddModal();
-            window.location.reload();
-        } else {
-            showErr('add-error', data.message ?? 'Failed to add contact.');
+            if (res.status === 401) {
+                window.location.href = '/login?expired=1';
+                return;
+            }
+
+            const json = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                showErr(errEl, json.message ?? 'Failed to add contact. Please try again.');
+                setBtn('ec-add-submit', false, 'Add Contact');
+                return;
+            }
+
+            /* Append new contact to local array and re-render */
+            const contact = json.data ?? json;
+            if (contact && contact.emergencyContactId) {
+                CONTACTS.push(contact);
+            } else {
+                /* Controller returned success but no data — reload to get fresh list */
+                window.location.reload();
+                return;
+            }
+            render();
+            closeAdd();
+
+        } catch {
+            showErr(errEl, 'Network error — please try again.');
+            setBtn('ec-add-submit', false, 'Add Contact');
         }
     }
 
-    function confirmDelete(id, name) {
-        document.getElementById('delete-id').value = id;
-        document.getElementById('delete-name').textContent = name;
-        hideEl('delete-error');
-        showEl('delete-modal');
+    /* ── Delete Modal ───────────────────────────────────────────────────────── */
+    function confirmDel(id, name) {
+        _delId = id;
+        document.getElementById('ec-del-text').textContent =
+            `"${name}" will no longer be notified when you trigger an SOS alert.`;
+        setBtn('ec-del-btn', false, 'Remove');
+        document.getElementById('ec-del-overlay').classList.add('open');
     }
 
-    function closeDeleteModal() {
-        hideEl('delete-modal');
+    function closeDel() {
+        document.getElementById('ec-del-overlay').classList.remove('open');
+        _delId = null;
     }
 
-    async function submitDelete() {
-        const id = document.getElementById('delete-id').value;
-        setBtn('delete-btn', true, 'Remove');
-        const {
-            ok,
-            data
-        } = await apiFetch(`/emergency-contacts/${id}`, 'DELETE');
-        setBtn('delete-btn', false, 'Remove');
-        if (ok) {
-            closeDeleteModal();
-            document.getElementById(`contact-${id}`)?.remove();
-            window.location.reload();
-        } else {
-            showErr('delete-error', data.message ?? 'Failed to remove.');
+    async function submitDel() {
+        if (!_delId) return;
+        setBtn('ec-del-btn', true, 'Removing…');
+
+        try {
+            const res = await fetch(`/emergency-contacts/${_delId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': CSRF,
+                    'Accept': 'application/json'
+                },
+            });
+
+            if (res.status === 401) {
+                window.location.href = '/login?expired=1';
+                return;
+            }
+
+            if (res.ok) {
+                const gone = _delId;
+                CONTACTS = CONTACTS.filter(c => c.emergencyContactId !== gone);
+                render();
+                closeDel();
+            } else {
+                /* Fallback: reload on unknown errors */
+                window.location.reload();
+            }
+
+        } catch {
+            setBtn('ec-del-btn', false, 'Remove');
         }
     }
 
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') {
-            hideEl('add-modal');
-            hideEl('delete-modal');
-        }
+    /* ── Helpers ────────────────────────────────────────────────────────────── */
+    function showErr(el, msg) {
+        if (typeof el === 'string') el = document.getElementById(el);
+        el.textContent = msg;
+        el.style.display = 'block';
+    }
+
+    function hideErr(id) {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    }
+
+    function setBtn(id, disabled, label) {
+        const btn = document.getElementById(id);
+        if (!btn) return;
+        btn.disabled = disabled;
+        btn.textContent = label;
+    }
+
+    /* ── Keyboard / backdrop close ──────────────────────────────────────────── */
+    document.addEventListener('keydown', ev => {
+        if (ev.key !== 'Escape') return;
+        closeAdd();
+        closeDel();
     });
-</script>
+    ['ec-add-overlay', 'ec-del-overlay'].forEach(id => {
+        const el = document.getElementById(id);
+        el.addEventListener('click', ev => {
+            if (ev.target === el) {
+                closeAdd();
+                closeDel();
+            }
+        });
+    });
 
+    /* ── Init ───────────────────────────────────────────────────────────────── */
+    render();
+</script>
 @endsection
