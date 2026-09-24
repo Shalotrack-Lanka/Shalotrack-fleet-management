@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Guards all authenticated web routes.
  *
- * - API requests (Accept: application/json) → return 401 JSON
+ * - API requests (/api/* or Accept: application/json) → return 401 JSON
  * - Web requests (browser) → redirect to /login
  * - Token is ALWAYS read from encrypted server-side session only.
  */
@@ -43,7 +43,7 @@ class FirebaseAuthenticated
             // email_verified is null/not set for existing users (pre-verification feature)
             // Only enforce for users who have pending_verification_email set
             if (Session::has('pending_verification_email')) {
-                if ($request->expectsJson()) {
+                if ($this->wantsJson($request)) {
                     return response()->json(['success' => false, 'code' => 'EMAIL_UNVERIFIED'], 403);
                 }
                 return redirect('/email/verify');
@@ -56,7 +56,7 @@ class FirebaseAuthenticated
     private function unauthenticated(Request $request, bool $expired = false): Response
     {
         // API requests get JSON
-        if ($request->expectsJson()) {
+        if ($this->wantsJson($request)) {
             return response()->json([
                 'success' => false,
                 'code'    => $expired ? 'TOKEN_EXPIRED' : 'UNAUTHENTICATED',
@@ -67,5 +67,18 @@ class FirebaseAuthenticated
         // Browser requests get redirected
         $url = $expired ? '/login?expired=1' : '/login';
         return redirect($url);
+    }
+
+    /**
+     * FIX: /api/* must always get a JSON 401, never a 302 to /login.
+     *
+     * The pages call fetch('/api/signalr-token') WITHOUT an Accept header,
+     * so expectsJson() is false. A redirect would be silently followed by
+     * fetch(), return the login HTML with status 200, and the page's
+     * `res.status === 401` session-expiry check would never fire.
+     */
+    private function wantsJson(Request $request): bool
+    {
+        return $request->expectsJson() || $request->is('api/*');
     }
 }
