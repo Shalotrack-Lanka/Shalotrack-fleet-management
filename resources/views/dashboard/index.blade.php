@@ -399,6 +399,7 @@
             ignition: !!(v.ignition),
             latitude: v.latitude,
             longitude: v.longitude,
+            heading: v.heading ?? v.bearing ?? null, // degrees 0–359, null = unknown
         };
     });
 
@@ -415,17 +416,84 @@
         return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
-    /* ── SVG car marker icon ──────────────────────────────── */
-    function makeMarkerIcon(online) {
-        const fill = online ? '#FA6908' : '#9CA3AF';
+    /* ── Top-down car marker ──────────────────────────────────
+     *
+     *  Organic sedan silhouette viewed from directly above.
+     *  The POINTED NOSE is the front — no separate direction arrow
+     *  needed; the shape itself communicates heading.
+     *
+     *  Geometry (40×40 viewBox, anchor at centre 20,20):
+     *    Body  : bezier path, pointed at y=5 (front), rounded at y=35 (rear)
+     *    Wheels: 4 dark rects protruding from body sides
+     *    Glass : semi-transparent paths for front + rear screens
+     *    Lights: yellow headlights (front), red taillights (rear)
+     *
+     *  online  → ShaloTrack orange (#FA6908)
+     *  offline → neutral grey     (#9CA3AF)
+     *
+     *  Heading (0–359°, 0 = north, clockwise): rotates the whole <g>
+     *  so the pointed nose tracks the real bearing when available.
+     * ──────────────────────────────────────────────────────── */
+    function makeMarkerIcon(online, heading) {
+        const bodyColor = online ? '#FA6908' : '#9CA3AF';
+        const wheelColor = online ? '#7c2d08' : '#374151';
+        const glassColor = 'rgba(210,240,255,0.55)';
+        const rot = (heading != null && !isNaN(heading)) ? Math.round(heading) : 0;
+
         const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
-        <circle cx="20" cy="20" r="18" fill="${fill}" stroke="white" stroke-width="3"/>
-        <path fill="white" transform="translate(9,9) scale(0.916)"
-              d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0
-                 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5
-                 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5
-                 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
-    </svg>`;
+  <g transform="rotate(${rot},20,20)">
+
+    <!-- Subtle ground shadow for depth on light map tiles -->
+    <ellipse cx="20.5" cy="21" rx="13" ry="17" fill="rgba(0,0,0,0.10)"/>
+
+    <!-- Wheels: rendered first so body covers their inner edges -->
+    <rect x="7"  y="11" width="5" height="9" rx="2.5" fill="${wheelColor}"/>
+    <rect x="28" y="11" width="5" height="9" rx="2.5" fill="${wheelColor}"/>
+    <rect x="7"  y="22" width="5" height="9" rx="2.5" fill="${wheelColor}"/>
+    <rect x="28" y="22" width="5" height="9" rx="2.5" fill="${wheelColor}"/>
+
+    <!-- Car body
+         Right front : cubic bezier from pointed tip (20,5) curves out to right side (28,14)
+         Right side  : straight down to (28,27)
+         Right rear  : rounds off to tail centre (20,35)
+         Left rear   : mirrors right
+         Left side   : straight up to (12,14)
+         Left front  : bezier back to tip (20,5)
+    -->
+    <path d="M 20,5
+             C 26.5,5 28,9 28,14
+             L 28,27
+             C 28,32.5 24.5,35 20,35
+             C 15.5,35 12,32.5 12,27
+             L 12,14
+             C 12,9 13.5,5 20,5 Z"
+          fill="${bodyColor}" stroke="white" stroke-width="1.5"/>
+
+    <!-- Front windshield — trapezoid following the hood curve -->
+    <path d="M 17.5,11
+             C 17.5,9.5 22.5,9.5 22.5,11
+             L 22,17
+             C 22,18.5 18,18.5 18,17 Z"
+          fill="${glassColor}"/>
+
+    <!-- Rear windshield — slightly dimmer -->
+    <path d="M 17,24
+             C 17,22.5 23,22.5 23,24
+             L 22.5,30
+             C 22.5,31.5 17.5,31.5 17.5,30 Z"
+          fill="${glassColor}" opacity="0.6"/>
+
+    <!-- Headlights: warm yellow, split pair at nose -->
+    <rect x="15.5" y="7"  width="3.5" height="2" rx="1" fill="rgba(255,255,180,0.95)"/>
+    <rect x="21"   y="7"  width="3.5" height="2" rx="1" fill="rgba(255,255,180,0.95)"/>
+
+    <!-- Taillights: red pair at boot -->
+    <rect x="15.5" y="33" width="3.5" height="2" rx="1" fill="rgba(220,30,30,0.9)"/>
+    <rect x="21"   y="33" width="3.5" height="2" rx="1" fill="rgba(220,30,30,0.9)"/>
+
+  </g>
+</svg>`;
+
         return {
             url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
             scaledSize: new google.maps.Size(40, 40),
@@ -513,6 +581,7 @@
             if (isNaN(lat) || isNaN(lng)) return;
 
             const vid = v.vehicleId.toLowerCase();
+            const heading = v.heading ?? v.bearing ?? null;
             trails[vid] = [{
                 lat,
                 lng
@@ -525,7 +594,7 @@
                 },
                 map: gmap,
                 title: v.vehicleNumber,
-                icon: makeMarkerIcon(!!(v.online)),
+                icon: makeMarkerIcon(!!(v.online), heading),
                 zIndex: 10,
             });
 
@@ -557,7 +626,7 @@
                 bottom: 40,
                 left: 40
             });
-            /* prevent over-zooming on single marker */
+            /* prevent over-zooming on a single marker */
             google.maps.event.addListenerOnce(gmap, 'bounds_changed', () => {
                 if (gmap.getZoom() > 14) gmap.setZoom(14);
             });
@@ -574,7 +643,9 @@
             lat,
             lng
         };
-        const icon = makeMarkerIcon(true);
+        /* Accept heading from any field name the C# hub may send */
+        const heading = data.heading ?? data.bearing ?? data.course ?? null;
+        const icon = makeMarkerIcon(true, heading);
 
         if (!trails[vehicleId]) trails[vehicleId] = [];
         trails[vehicleId].push(pos);
@@ -617,14 +688,14 @@
                 longitude: data.longitude,
                 online: true,
                 speed: data.speed ?? 0,
-                /* support both ignition and ignitionStatus from C# hub */
                 ignition: !!(data.ignition ?? data.ignitionStatus),
+                heading,
             });
-            /* Update info window if it's open */
+            /* Refresh info window if it's open */
             if (activeInfoVid === vehicleId) {
                 infoWins[vehicleId]?.setContent(buildInfoHtml(vehicleId));
             }
-            /* Update stats only if status changed */
+            /* Recalc stat tiles only on status change */
             if (!wasOnline) recalcStats();
         }
     }
@@ -710,22 +781,17 @@
             const res = await fetch('/api/signalr-token', {
                 credentials: 'include'
             });
-
-            /* Session expired — redirect immediately, don't wait 90s */
             if (res.status === 401) {
                 window.location.href = '/login?expired=1';
                 return;
             }
             if (!res.ok) throw new Error('HTTP ' + res.status);
-
             const json = await res.json();
             token = json.token;
             if (!token) throw new Error('empty token');
-
         } catch (err) {
             console.warn('[Dashboard SignalR] Token fetch failed', err);
             setStatus('disconnected');
-            /* Soft reload after 90s so the user doesn't stare at a broken page forever */
             setTimeout(() => window.location.reload(), 90_000);
             return;
         }
@@ -763,7 +829,6 @@
 
         connection.onclose(() => {
             setStatus('disconnected');
-            /* After exhausting auto-reconnect attempts, reload */
             setTimeout(() => window.location.reload(), 10_000);
         });
 
