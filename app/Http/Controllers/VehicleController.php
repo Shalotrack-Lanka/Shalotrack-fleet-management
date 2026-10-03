@@ -12,7 +12,7 @@ class VehicleController extends Controller
     public function __construct(private ShalotrackApiService $api) {}
 
     // -------------------------------------------------------------------------
-    // Vehicle list
+    // Vehicle list — owned + accepted shares merged into one collection
     // -------------------------------------------------------------------------
 
     public function index()
@@ -29,11 +29,41 @@ class VehicleController extends Controller
                 ]);
             }
 
+            // Owned vehicles
             $response = $this->api->getVehiclesByCustomer($customerId);
-            $vehicles = $response['data'] ?? $response;
+            $owned    = $response['data'] ?? $response;
+            $owned    = is_array($owned) ? $owned : [];
+
+            // Shared vehicles — normalised to the same shape as owned, accepted only
+            $sharesRes = $this->api->getSharedWithMe();
+            $shares    = $sharesRes['data'] ?? $sharesRes;
+            $shares    = is_array($shares) ? $shares : [];
+
+            $shared = [];
+            foreach ($shares as $s) {
+                if (($s['status'] ?? '') !== 'Accepted') {
+                    continue;
+                }
+                $shared[] = [
+                    'vehicleId'     => $s['vehicleId'],
+                    'vehicleNumber' => $s['vehicleNumber'],
+                    'make'          => $s['make']  ?? '',
+                    'model'         => $s['model'] ?? '',
+                    'year'          => $s['year']  ?? null,
+                    'vehicleType'   => $s['vehicleType'] ?? null,
+                    'hasGpsDevice'  => true,   // vehicle was shared for tracking — GPS is linked
+                    'isDemoVehicle' => false,
+                    'isShared'      => true,
+                    'ownerName'     => $s['otherPartyName'] ?? null,
+                    'shareId'       => $s['shareId'],
+                    'color'         => null,
+                    'fuelType'      => null,
+                    'imei'          => null,
+                ];
+            }
 
             return view('vehicles.index', [
-                'vehicles'   => is_array($vehicles) ? $vehicles : [],
+                'vehicles'   => array_merge($owned, $shared),
                 'customerId' => $customerId,
                 'error'      => null,
             ]);
@@ -94,8 +124,6 @@ class VehicleController extends Controller
     // -------------------------------------------------------------------------
     // Current location (AJAX) — GET /api/CurrentLocations/vehicle/{id}
     // HTTP fallback poll on vehicles/show when SignalR is unavailable.
-    // Previously there was no Laravel route for this path, so the fallback
-    // poll always got a 404 and showed "Location unavailable".
     // -------------------------------------------------------------------------
 
     public function location(string $id)

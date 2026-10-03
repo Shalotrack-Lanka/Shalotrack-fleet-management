@@ -213,6 +213,47 @@
         font-weight: 600;
         color: #1f2937;
     }
+
+    /* ── Responsive ─────────────────────────────── */
+    @media (max-width: 1100px) {
+        .dash-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .vlist {
+            max-height: 360px;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .stat-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .stat-card {
+            padding: 14px;
+            gap: 10px;
+        }
+
+        .stat-icon {
+            width: 36px;
+            height: 36px;
+        }
+
+        .stat-value {
+            font-size: 22px;
+        }
+
+        .dash-grid {
+            gap: 16px;
+        }
+
+        #map {
+            height: 300px;
+        }
+    }
 </style>
 
 {{-- ─── ERROR BANNER ──────────────────────────────────── --}}
@@ -346,6 +387,9 @@
                             @if($vehicle['isDemoVehicle'] ?? $vehicle['isDemo'] ?? false)
                             <span style="font-size:10px;color:#FA6908;font-weight:600;margin-left:4px;">[DEMO]</span>
                             @endif
+                            @if($vehicle['isShared'] ?? false)
+                            <span style="font-size:10px;color:#7e22ce;font-weight:600;margin-left:4px;">[SHARED]</span>
+                            @endif
                         </p>
                         <span id="vbadge-{{ $vid }}" class="{{ $online ? 'badge-online' : 'badge-offline' }}">
                             {{ $online ? 'Online' : 'Offline' }}
@@ -384,7 +428,31 @@
 <script>
     'use strict';
 
-    const vehiclesRaw = @json($dashboard['vehicles'] ?? []);
+    /* Vehicles deleted on the Vehicles tab this session. Workaround until the
+       C# dashboard endpoint stops returning deleted vehicles (server-side fix). */
+    const deletedIds = (() => {
+        try {
+            return new Set(JSON.parse(sessionStorage.getItem('st_deleted_vehicles') ?? '[]').map(i => String(i).toLowerCase()));
+        } catch (_) {
+            return new Set();
+        }
+    })();
+
+    const vehiclesRaw = @json($dashboard['vehicles'] ?? []).filter(v => !deletedIds.has(String(v.vehicleId).toLowerCase()));
+
+    /* Remove already-rendered rows of deleted vehicles, then fix counters */
+    (function pruneDeleted() {
+        if (!deletedIds.size) return;
+        document.querySelectorAll('.vrow').forEach(r => {
+            const id = r.id.replace('vrow-', '').toLowerCase();
+            if (deletedIds.has(id)) r.remove();
+        });
+        const total = vehiclesRaw.length;
+        const elT = document.getElementById('stat-total');
+        const elS = document.getElementById('vlist-summary');
+        if (elT) elT.textContent = total;
+        if (elS) elS.textContent = total + ' total';
+    })();
 
     /* vehicleMap keyed by lowercased vehicleId */
     const vehicleMap = {};
@@ -402,6 +470,8 @@
             heading: v.heading ?? v.bearing ?? null, // degrees 0–359, null = unknown
         };
     });
+
+    if (deletedIds.size) recalcStats(); // online/offline/moving tiles must exclude deleted vehicles
 
     /* ── Map state ─────────────────────────────────────────── */
     let gmap = null;
