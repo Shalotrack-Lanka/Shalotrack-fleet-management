@@ -17,22 +17,23 @@
 @endif
 
 {{-- Header row --}}
-<div class="flex items-center justify-between mb-6">
+<div class="flex items-center justify-between mb-6 gap-3">
     <p class="text-sm text-gray-500">{{ count($vehicles ?? []) }} vehicle(s) registered</p>
     @if($customerId)
     <button onclick="openAddModal()"
-        class="flex items-center gap-2 px-4 py-2 bg-[#FA6908] hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition">
+        class="flex items-center gap-2 px-4 py-2 bg-[#FA6908] hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition flex-shrink-0">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        Add Vehicle
+        <span class="hidden sm:inline">Add Vehicle</span>
+        <span class="sm:hidden">Add</span>
     </button>
     @endif
 </div>
 
 {{-- Empty state --}}
 @if(empty($vehicles))
-<div class="bg-white rounded-xl border border-gray-100 shadow-sm p-16 text-center">
+<div class="bg-white rounded-xl border border-gray-100 shadow-sm p-12 md:p-16 text-center">
     <svg class="w-16 h-16 text-gray-200 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
             d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -44,31 +45,35 @@
 </div>
 @else
 {{-- Vehicle grid --}}
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="vehicles-grid">
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6" id="vehicles-grid">
     @foreach($vehicles as $vehicle)
+    @php $isShared = (bool)($vehicle['isShared'] ?? false); @endphp
     <div class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition overflow-hidden"
         id="vehicle-card-{{ $vehicle['vehicleId'] }}">
 
         {{-- Card header --}}
-        <div class="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
-            <div>
-                <p class="font-bold text-gray-800">{{ $vehicle['vehicleNumber'] }}</p>
-                <p class="text-xs text-gray-400 mt-0.5">{{ $vehicle['make'] }} {{ $vehicle['model'] }} · {{ $vehicle['year'] }}</p>
+        <div class="px-4 md:px-5 py-4 border-b border-gray-50 flex items-center justify-between gap-2">
+            <div class="min-w-0">
+                <p class="font-bold text-gray-800 truncate">{{ $vehicle['vehicleNumber'] }}</p>
+                <p class="text-xs text-gray-400 mt-0.5 truncate">{{ $vehicle['make'] }} {{ $vehicle['model'] }}{{ ($vehicle['year'] ?? null) ? ' · ' . $vehicle['year'] : '' }}</p>
             </div>
-            @if($vehicle['isDemoVehicle'] ?? false)
-            <span class="text-xs text-[#FA6908] bg-orange-50 border border-orange-200 px-2 py-1 rounded-full font-semibold">Demo</span>
+            {{-- Status badge: Shared > Demo > GPS Linked > No GPS --}}
+            @if($isShared)
+            <span class="text-xs text-purple-700 bg-purple-50 border border-purple-200 px-2 py-1 rounded-full font-semibold flex-shrink-0">Shared</span>
+            @elseif($vehicle['isDemoVehicle'] ?? false)
+            <span class="text-xs text-[#FA6908] bg-orange-50 border border-orange-200 px-2 py-1 rounded-full font-semibold flex-shrink-0">Demo</span>
             @elseif($vehicle['hasGpsDevice'] ?? false)
-            <span class="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full font-medium">
+            <span class="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full font-medium flex-shrink-0">
                 <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
                 GPS Linked
             </span>
             @else
-            <span class="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-full">No GPS</span>
+            <span class="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-full flex-shrink-0">No GPS</span>
             @endif
         </div>
 
         {{-- Card body --}}
-        <div class="px-5 py-4 space-y-2">
+        <div class="px-4 md:px-5 py-4 space-y-2">
             @if($vehicle['color'] ?? null)
             <div class="flex items-center justify-between text-sm">
                 <span class="text-gray-300">Color</span>
@@ -93,17 +98,25 @@
                 <span class="text-gray-700 font-mono text-xs">{{ $vehicle['imei'] }}</span>
             </div>
             @endif
+            {{-- Shared vehicle: show owner name --}}
+            @if($isShared && ($vehicle['ownerName'] ?? null))
+            <div class="flex items-center justify-between text-sm pt-1 border-t border-gray-50">
+                <span class="text-gray-300">Shared by</span>
+                <span class="text-purple-700 font-medium">{{ $vehicle['ownerName'] }}</span>
+            </div>
+            @endif
         </div>
 
         {{-- Card actions --}}
-        <div class="px-5 py-3 bg-gray-50 border-t border-gray-100 flex items-center gap-2">
+        <div class="px-4 md:px-5 py-3 bg-gray-50 border-t border-gray-100 flex items-center gap-2">
             <a href="/vehicles/{{ $vehicle['vehicleId'] }}"
                 class="flex-1 text-center py-1.5 text-sm text-[#021F4A] font-medium hover:text-[#FA6908] transition">
                 View Details
             </a>
-            @if($vehicle['isDemoVehicle'] ?? false)
+            {{-- Shared and demo vehicles are view-only — hide mutating actions --}}
+            @if($isShared || ($vehicle['isDemoVehicle'] ?? false))
             <span class="flex-1 text-center py-1.5 text-xs text-gray-400 italic select-none">
-                Read-only demo
+                {{ $isShared ? 'View only' : 'Read-only demo' }}
             </span>
             @else
             <button onclick="openEditModal({{ json_encode($vehicle) }})"
@@ -140,9 +153,9 @@
     ================================================================ --}}
 <div id="add-modal" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/40" onclick="closeAddModal()"></div>
-    <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg relative">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+    <div class="absolute inset-0 flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-lg relative max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 sticky top-0 bg-white">
                 <h3 class="font-semibold text-gray-800">Add Vehicle</h3>
                 <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -150,7 +163,7 @@
                     </svg>
                 </button>
             </div>
-            <div class="px-6 py-5 space-y-4">
+            <div class="px-5 py-5 space-y-4">
                 <div class="grid grid-cols-2 gap-4">
                     <div class="col-span-2">
                         <label class="block text-xs font-medium text-gray-500 mb-1">Vehicle Number *</label>
@@ -205,13 +218,13 @@
                 </div>
                 <p id="add-error" class="text-red-600 text-sm hidden"></p>
             </div>
-            <div class="px-6 py-4 border-t border-gray-100 flex gap-3">
+            <div class="px-5 py-4 border-t border-gray-100 flex gap-3">
                 <button onclick="closeAddModal()"
-                    class="flex-1 py-2 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition">
+                    class="flex-1 py-2.5 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition">
                     Cancel
                 </button>
                 <button id="add-submit-btn" onclick="submitAddVehicle()"
-                    class="flex-1 py-2 bg-[#FA6908] text-white text-sm font-semibold rounded-lg hover:bg-orange-600 transition">
+                    class="flex-1 py-2.5 bg-[#FA6908] text-white text-sm font-semibold rounded-lg hover:bg-orange-600 transition">
                     Add Vehicle
                 </button>
             </div>
@@ -224,9 +237,9 @@
     ================================================================ --}}
 <div id="edit-modal" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/40" onclick="closeEditModal()"></div>
-    <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg relative">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+    <div class="absolute inset-0 flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-lg relative max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 sticky top-0 bg-white">
                 <h3 class="font-semibold text-gray-800">Edit Vehicle</h3>
                 <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -234,7 +247,7 @@
                     </svg>
                 </button>
             </div>
-            <div class="px-6 py-5 space-y-4">
+            <div class="px-5 py-5 space-y-4">
                 <input type="hidden" id="edit-vehicleId" />
                 <div class="grid grid-cols-2 gap-4">
                     <div class="col-span-2">
@@ -290,11 +303,11 @@
                 </div>
                 <p id="edit-error" class="text-red-600 text-sm hidden"></p>
             </div>
-            <div class="px-6 py-4 border-t border-gray-100 flex gap-3">
+            <div class="px-5 py-4 border-t border-gray-100 flex gap-3">
                 <button onclick="closeEditModal()"
-                    class="flex-1 py-2 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition">Cancel</button>
+                    class="flex-1 py-2.5 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition">Cancel</button>
                 <button id="edit-submit-btn" onclick="submitEditVehicle()"
-                    class="flex-1 py-2 bg-[#FA6908] text-white text-sm font-semibold rounded-lg hover:bg-orange-600 transition">Save Changes</button>
+                    class="flex-1 py-2.5 bg-[#FA6908] text-white text-sm font-semibold rounded-lg hover:bg-orange-600 transition">Save Changes</button>
             </div>
         </div>
     </div>
@@ -305,9 +318,9 @@
     ================================================================ --}}
 <div id="link-modal" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/40" onclick="closeLinkModal()"></div>
-    <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md relative">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+    <div class="absolute inset-0 flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md relative">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
                 <h3 class="font-semibold text-gray-800">Link GPS Device</h3>
                 <button onclick="closeLinkModal()" class="text-gray-400 hover:text-gray-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -315,7 +328,7 @@
                     </svg>
                 </button>
             </div>
-            <div class="px-6 py-5 space-y-4">
+            <div class="px-5 py-5 space-y-4">
                 <p class="text-sm text-gray-500">Enter the IMEI number printed on the GPS device to link it to <strong id="link-vehicle-name"></strong>.</p>
                 <input type="hidden" id="link-vehicleId" />
                 <div>
@@ -325,11 +338,11 @@
                 </div>
                 <p id="link-error" class="text-red-600 text-sm hidden"></p>
             </div>
-            <div class="px-6 py-4 border-t border-gray-100 flex gap-3">
+            <div class="px-5 py-4 border-t border-gray-100 flex gap-3">
                 <button onclick="closeLinkModal()"
-                    class="flex-1 py-2 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition">Cancel</button>
+                    class="flex-1 py-2.5 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition">Cancel</button>
                 <button id="link-submit-btn" onclick="submitLinkDevice()"
-                    class="flex-1 py-2 bg-[#FA6908] text-white text-sm font-semibold rounded-lg hover:bg-orange-600 transition">Link Device</button>
+                    class="flex-1 py-2.5 bg-[#FA6908] text-white text-sm font-semibold rounded-lg hover:bg-orange-600 transition">Link Device</button>
             </div>
         </div>
     </div>
@@ -340,8 +353,8 @@
     ================================================================ --}}
 <div id="delete-modal" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/40" onclick="closeDeleteModal()"></div>
-    <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm relative p-6 text-center">
+    <div class="absolute inset-0 flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-sm relative p-6 text-center">
             <div class="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -357,17 +370,34 @@
             <p id="delete-error" class="text-red-600 text-sm mb-4 hidden"></p>
             <div class="flex gap-3">
                 <button onclick="closeDeleteModal()"
-                    class="flex-1 py-2 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition">Cancel</button>
+                    class="flex-1 py-2.5 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition">Cancel</button>
                 <button id="delete-submit-btn" onclick="submitDelete()"
-                    class="flex-1 py-2 bg-red-500 text-white text-sm font-semibold rounded-lg hover:bg-red-600 transition">Delete</button>
+                    class="flex-1 py-2.5 bg-red-500 text-white text-sm font-semibold rounded-lg hover:bg-red-600 transition">Delete</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const CSRF = '{{ csrf_token() }}';
     const customerId = '{{ $customerId }}';
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Deleted-vehicle session tracking
+    // The C# dashboard endpoint may return deleted vehicles until it's fixed.
+    // We store deleted IDs in sessionStorage so the dashboard JS can filter them.
+    // ─────────────────────────────────────────────────────────────────────────
+    const ST_DELETED_KEY = 'st_deleted_vehicles';
+
+    function markVehicleDeleted(id) {
+        try {
+            const list = JSON.parse(sessionStorage.getItem(ST_DELETED_KEY) ?? '[]');
+            if (!list.includes(id)) {
+                list.push(id);
+                sessionStorage.setItem(ST_DELETED_KEY, JSON.stringify(list));
+            }
+        } catch (_) {}
+    }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
     function showEl(id) {
@@ -404,7 +434,7 @@
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'X-CSRF-TOKEN': CSRF
+                'X-CSRF-TOKEN': CSRF,
             },
         };
         if (body) opts.body = JSON.stringify(body);
@@ -624,6 +654,7 @@
         } = await apiFetch(`/vehicles/${id}`, 'DELETE');
         setBtn('delete-submit-btn', false, 'Delete');
         if (ok) {
+            markVehicleDeleted(id); // track so dashboard can hide it until C# cache refreshes
             closeDeleteModal();
             document.getElementById(`vehicle-card-${id}`)?.remove();
             if (document.querySelectorAll('[id^="vehicle-card-"]').length === 0) window.location.reload();
