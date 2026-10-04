@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Trip History')
+@section('page-title', 'Trip History')
 
 @section('content')
 {{-- ============================================================
@@ -710,7 +711,7 @@
            that unreliable and squeezed the map to nothing). The page now flows
            and scrolls normally: vehicle/trip list on top, then the map. */
         .trip-wrap {
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1fr);
             grid-template-rows: auto auto;
             height: auto;
             overflow: visible;
@@ -724,6 +725,7 @@
 
         .t-main {
             overflow: visible;
+            min-width: 0;
         }
 
         #map {

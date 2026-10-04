@@ -531,7 +531,7 @@
         </aside>
 
         {{-- ---- Main content ---- --}}
-        <main class="flex-1 md:ml-64 min-h-screen">
+        <main class="flex-1 min-w-0 md:ml-64 min-h-screen">
 
             {{-- Top bar --}}
             <header class="bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-40">
