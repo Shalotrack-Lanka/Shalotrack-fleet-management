@@ -17,6 +17,7 @@ use App\Http\Controllers\EmergencyContactController;
 use App\Http\Controllers\SavedPlaceController;
 use App\Http\Controllers\StatsController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ReportExportController;
 use App\Http\Controllers\RenewalController;
 use App\Http\Controllers\SosController;
 
@@ -64,11 +65,14 @@ Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(func
 
     // Reports
     Route::get('/reports',      [ReportController::class, 'index'])->name('reports');
-    Route::get('/reports/data', [ReportController::class, 'data']);
+    Route::get('/reports/view',   [ReportController::class, 'view'])->middleware('throttle:30,1');
+    // PDF / CSV — rendered server-side from API data; throttled because each call hits the API
+    Route::get('/reports/export', [ReportExportController::class, 'report'])->middleware('throttle:12,1');
 
     // Alerts
     Route::get('/alerts/unread-count', [AlertController::class, 'unreadCount'])->middleware('throttle:30,1');
     Route::get('/alerts',              [AlertController::class, 'index'])->name('alerts');
+    Route::post('/alerts/read-all',    [AlertController::class, 'markAllRead'])->middleware('throttle:3,1');
     Route::post('/alerts/{id}/read',   [AlertController::class, 'markRead']);
 
     // Geofences
@@ -121,5 +125,9 @@ Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(func
     // GET  /stats/{vehicleId}/data     — AJAX: returns JSON stats for the selected vehicle + period
     Route::get('/stats',                   [StatsController::class, 'index'])->name('stats');
     Route::get('/stats/{vehicleId}/data',  [StatsController::class, 'data']);
-    Route::post('/stats/{vehicleId}/export', [StatsController::class, 'export'])->name('stats.export'); // POST for period selection
+    // GET ?period=&format=pdf|csv — rendered server-side (no browser-supplied numbers/images)
+    Route::match(['get', 'post'], '/stats/{vehicleId}/export', [ReportExportController::class, 'stats'])
+        ->whereUuid('vehicleId')
+        ->middleware('throttle:12,1')
+        ->name('stats.export');
 });

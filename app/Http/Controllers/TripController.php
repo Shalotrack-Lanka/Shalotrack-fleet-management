@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\ShalotrackApiService;
+use App\Support\LocalTime;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -26,21 +27,23 @@ class TripController extends Controller
 
             $vehicles = [];
             if ($customerId) {
-                $response = $this->api->getVehiclesByCustomer($customerId);
-                $all      = $response['data'] ?? $response;
-                $all      = is_array($all) ? array_values($all) : [];
+                // Owned + accepted shares (the API allows trip history for both)
+                $all = $this->api->getTrackableVehicles($customerId);
 
-                // Sort: GPS-enabled first; within GPS, demo vehicle last so
-                // owned vehicles appear at the top of the sidebar. Non-GPS
-                // vehicles still show (grayed out) so the customer can see
-                // their full fleet and knows they need to link a device.
+                // Sort: GPS-enabled first; owned before shared; demo vehicle last
+                // so the customer's own vehicles appear at the top of the list.
+                // Non-GPS vehicles still show (grayed out) so the customer can
+                // see their full fleet and knows they need to link a device.
                 usort($all, function ($a, $b) {
-                    $aGps  = (bool) ($a['hasGpsDevice']  ?? false);
-                    $bGps  = (bool) ($b['hasGpsDevice']  ?? false);
-                    $aDemo = (bool) ($a['isDemoVehicle'] ?? false);
-                    $bDemo = (bool) ($b['isDemoVehicle'] ?? false);
-                    if ($aGps !== $bGps)   return $bGps  <=> $aGps;   // GPS first
-                    if ($aDemo !== $bDemo) return $aDemo <=> $bDemo;   // demo last within GPS
+                    $aGps    = (bool) ($a['hasGpsDevice']  ?? false);
+                    $bGps    = (bool) ($b['hasGpsDevice']  ?? false);
+                    $aDemo   = (bool) ($a['isDemoVehicle'] ?? false);
+                    $bDemo   = (bool) ($b['isDemoVehicle'] ?? false);
+                    $aShared = (bool) ($a['isShared']      ?? false);
+                    $bShared = (bool) ($b['isShared']      ?? false);
+                    if ($aGps !== $bGps)       return $bGps    <=> $aGps;     // GPS first
+                    if ($aDemo !== $bDemo)     return $aDemo   <=> $bDemo;    // demo last
+                    if ($aShared !== $bShared) return $aShared <=> $bShared;  // owned before shared
                     return 0;
                 });
 
@@ -77,23 +80,14 @@ class TripController extends Controller
             'to'   => 'required|date|after:from',
         ]);
 
-        // Normalise datetime-local format (YYYY-MM-DDTHH:MM) → ISO-8601 with seconds
-        // so the C# API DateTime model-binder has a complete string to parse.
-        $from = $request->input('from');
-        $to   = $request->input('to');
-        if ($from && strlen($from) === 16) $from .= ':00';
-        if ($to   && strlen($to)   === 16) $to   .= ':00';
+        // The API reads these as UTC. The browser sends either a UTC ISO string
+        // ("…Z") or a bare Colombo wall-clock time; LocalTime resolves both to UTC.
+        $from = LocalTime::toApiUtc($request->input('from'));
+        $to   = LocalTime::toApiUtc($request->input('to'));
 
         try {
             $response = $this->api->getTripHistory($vehicleId, $from, $to);
 
-            // DEBUG – remove once trip history is confirmed working.
-            Log::debug('TripController: points raw response', [
-                'vehicleId' => $vehicleId,
-                'from'      => $from,
-                'to'        => $to,
-                'response'  => $response,
-            ]);
 
             $points = $response['data'] ?? $response;
             $points = is_array($points) ? $points : [];
@@ -125,22 +119,14 @@ class TripController extends Controller
             'to'   => 'required|date|after:from',
         ]);
 
-        // Normalise datetime-local format (YYYY-MM-DDTHH:MM) → ISO-8601 with seconds.
-        $from = $request->input('from');
-        $to   = $request->input('to');
-        if ($from && strlen($from) === 16) $from .= ':00';
-        if ($to   && strlen($to)   === 16) $to   .= ':00';
+        // The API reads these as UTC. The browser sends either a UTC ISO string
+        // ("…Z") or a bare Colombo wall-clock time; LocalTime resolves both to UTC.
+        $from = LocalTime::toApiUtc($request->input('from'));
+        $to   = LocalTime::toApiUtc($request->input('to'));
 
         try {
             $response = $this->api->getTripSummary($vehicleId, $from, $to);
 
-            // DEBUG – remove once trip history is confirmed working.
-            Log::debug('TripController: summary raw response', [
-                'vehicleId' => $vehicleId,
-                'from'      => $from,
-                'to'        => $to,
-                'response'  => $response,
-            ]);
 
             $data = $response['data'] ?? $response;
 
@@ -168,8 +154,15 @@ class TripController extends Controller
      */
     public function report(Request $request, string $vehicleId)
     {
-        $from = $request->query('from', now()->startOfDay()->format('Y-m-d\TH:i'));
-        $to   = $request->query('to',   now()->format('Y-m-d\TH:i'));
+        $request->validate([
+            'from' => 'nullable|date',
+            'to'   => 'nullable|date',
+        ]);
+
+        // Defaults are "today so far" in Sri Lanka time; everything goes to the
+        // API as UTC (see LocalTime).
+        $from = LocalTime::toApiUtc($request->query('from') ?: LocalTime::now()->startOfDay()->format('Y-m-d\TH:i'));
+        $to   = LocalTime::toApiUtc($request->query('to')   ?: LocalTime::now()->format('Y-m-d\TH:i'));
 
         try {
             // ── Fetch vehicle info ──────────────────────────────────────────
@@ -178,10 +171,7 @@ class TripController extends Controller
             $customerId = $profile['data']['customerId'] ?? null;
 
             if ($customerId) {
-                $vehiclesRes = $this->api->getVehiclesByCustomer($customerId);
-                $allVehicles = $vehiclesRes['data'] ?? $vehiclesRes;
-                $allVehicles = is_array($allVehicles) ? $allVehicles : [];
-                foreach ($allVehicles as $v) {
+                foreach ($this->api->getTrackableVehicles($customerId) as $v) {
                     if (strtolower((string) ($v['vehicleId'] ?? '')) === strtolower($vehicleId)) {
                         $vehicle = $v;
                         break;
@@ -200,7 +190,11 @@ class TripController extends Controller
             $totalDistanceKm  = array_sum(array_column($trips, 'distanceKm'));
             $totalDurationMin = array_sum(array_column($trips, 'durationMinutes'));
             $maxSpeed = count($trips) ? max(array_column($trips, 'maxSpeed')) : 0;
-            $avgSpeed = count($trips) ? array_sum(array_column($trips, 'avgSpeed')) / count($trips) : 0;
+            // Duration-weighted, same rule as the API's own stats (a 2-minute trip
+            // must not count as much as a 2-hour trip).
+            $avgSpeed = $totalDurationMin > 0
+                ? array_sum(array_map(fn($t) => ($t['avgSpeed'] ?? 0) * ($t['durationMinutes'] ?? 0), $trips)) / $totalDurationMin
+                : 0;
 
             // ── Logo (base64 embed, same pattern as admin portal) ────────────
             $logoPath   = public_path('images/logo.png');
@@ -225,7 +219,7 @@ class TripController extends Controller
                 'logoBase64'
             ))->setPaper('a4', 'landscape');
 
-            $filename = 'shalotrack_trip_report_' . now()->format('Y-m-d_His') . '.pdf';
+            $filename = 'shalotrack_trip_report_' . LocalTime::now()->format('Y-m-d_His') . '.pdf';
             return $pdf->stream($filename);
 
         } catch (\Exception $e) {

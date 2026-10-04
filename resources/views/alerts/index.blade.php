@@ -32,7 +32,15 @@
                 @endforeach
             </select>
         </div>
-        <div class="text-sm text-gray-400">{{ $totalCount }} alert(s) total</div>
+        <div class="flex items-center gap-3 text-sm text-gray-400">
+            <span>Page {{ $currentPage }}</span>
+            @if(collect($alerts)->contains(fn($a) => !($a['isRead'] ?? false)))
+            <button type="button" id="btn-read-all" onclick="markAllRead()"
+                class="px-3 py-1.5 text-xs font-semibold border border-gray-200 rounded-lg text-gray-600 hover:border-[#FA6908] hover:text-[#FA6908] transition">
+                Mark all as read
+            </button>
+            @endif
+        </div>
     </form>
 </div>
 
@@ -92,8 +100,8 @@
                 </div>
                 <p class="text-sm text-gray-600 break-words">{{ $alert['message'] ?? '—' }}</p>
                 <p class="text-xs text-gray-400 mt-1">
-                    {{ \Carbon\Carbon::parse($alert['triggeredAt'])->diffForHumans() }}
-                    · {{ \Carbon\Carbon::parse($alert['triggeredAt'])->format('d M Y, H:i') }}
+                    {{ \App\Support\LocalTime::ago($alert['triggeredAt'] ?? null) }}
+                    · {{ \App\Support\LocalTime::format($alert['triggeredAt'] ?? null, 'd M Y, h:i A') }}
                 </p>
             </div>
 
@@ -113,9 +121,9 @@
     </div>
 
     {{-- Pagination --}}
-    @if($totalPages > 1)
+    @if($currentPage > 1 || $hasNext)
     <div class="px-4 md:px-6 py-4 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3">
-        <p class="text-xs text-gray-400">Page {{ $currentPage }} of {{ $totalPages }}</p>
+        <p class="text-xs text-gray-400">Page {{ $currentPage }}</p>
         <div class="flex gap-2">
             @if($currentPage > 1)
             <a href="{{ request()->fullUrlWithQuery(['page' => $currentPage - 1]) }}"
@@ -123,12 +131,12 @@
                 ← Previous
             </a>
             @endif
-            @if($currentPage < $totalPages)
-                <a href="{{ request()->fullUrlWithQuery(['page' => $currentPage + 1]) }}"
+            @if($hasNext)
+            <a href="{{ request()->fullUrlWithQuery(['page' => $currentPage + 1]) }}"
                 class="px-3 py-1.5 text-xs bg-[#FA6908] text-white rounded-lg hover:bg-orange-600 transition">
                 Next →
-                </a>
-                @endif
+            </a>
+            @endif
         </div>
     </div>
     @endif
@@ -138,6 +146,29 @@
 <script>
     // Use blade-rendered CSRF — no dependency on meta tag existence
     const CSRF = '{{ csrf_token() }}';
+
+    async function markAllRead() {
+        const btn = document.getElementById('btn-read-all');
+        if (btn) { btn.disabled = true; btn.textContent = 'Marking…'; }
+        try {
+            const res = await fetch('/alerts/read-all', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF },
+            });
+            if (res.status === 401) { window.location.href = '/login?expired=1'; return; }
+            if (res.status === 429) { if (btn) { btn.disabled = false; btn.textContent = 'Try again in a minute'; } return; }
+            const data = await res.json().catch(() => ({}));
+            if (res.ok && data.success) {
+                window.location.reload();   // list + header badge both come back fresh from the server
+            } else if (btn) {
+                btn.disabled = false;
+                btn.textContent = data.failed ? 'Some failed — retry' : 'Failed — retry';
+            }
+        } catch {
+            if (btn) { btn.disabled = false; btn.textContent = 'Failed — retry'; }
+        }
+    }
 
     async function markRead(alertId) {
         const btn = document.getElementById(`read-btn-${alertId}`);

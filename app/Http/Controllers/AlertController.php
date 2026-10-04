@@ -22,12 +22,16 @@ class AlertController extends Controller
             $page      = max(1, (int) $request->query('page', 1));
             $vehicleId = $request->query('vehicle') ?: null;
 
-            $response = $this->api->getMyAlerts($page, 20, $vehicleId);
+            $pageSize = 20;
+            $response = $this->api->getMyAlerts($page, $pageSize, $vehicleId);
             $data     = $response['data'] ?? $response;
 
-            $alerts     = is_array($data['items'] ?? null) ? $data['items'] : (is_array($data) && isset($data[0]) ? $data : []);
-            $totalCount = $data['totalCount'] ?? count($alerts);
-            $totalPages = $data['totalPages'] ?? ceil($totalCount / 20);
+            // The API returns a plain list for the requested page (no totals), so we
+            // can only know there may be more when the page came back full. (The old
+            // code derived "total pages" from the page's own length, which made it
+            // always 1 — alerts older than the newest 20 could never be reached.)
+            $alerts  = is_array($data['items'] ?? null) ? $data['items'] : (is_array($data) && isset($data[0]) ? $data : []);
+            $hasNext = count($alerts) >= $pageSize;
 
             // Also get vehicles for the filter dropdown
             $profile    = $this->api->getMyProfile();
@@ -43,8 +47,7 @@ class AlertController extends Controller
                 'alerts'      => $alerts,
                 'vehicles'    => $vehicles,
                 'currentPage' => $page,
-                'totalPages'  => (int) $totalPages,
-                'totalCount'  => (int) $totalCount,
+                'hasNext'     => $hasNext,
                 'vehicleFilter' => $vehicleId,
                 'error'       => null,
             ]);
@@ -59,8 +62,7 @@ class AlertController extends Controller
                 'alerts'      => [],
                 'vehicles'    => [],
                 'currentPage' => 1,
-                'totalPages'  => 1,
-                'totalCount'  => 0,
+                'hasNext'     => false,
                 'vehicleFilter' => null,
                 'error'       => 'Could not load alerts. Please refresh.',
             ]);
@@ -80,6 +82,48 @@ class AlertController extends Controller
         } catch (\Exception $e) {
             Log::error('AlertController: markRead failed', ['error' => $e->getMessage()]);
             return response()->json(['success' => false, 'message' => 'Failed to mark as read.'], 422);
+        }
+    }
+
+    /**
+     * POST /alerts/read-all
+     * Marks every unread alert among the newest 50 as read (the same window the
+     * header badge counts), so one click always brings the badge to zero.
+     * The API has no bulk endpoint, so this is up to 50 small PATCH calls — hence
+     * the tight route throttle.
+     */
+    public function markAllRead()
+    {
+        try {
+            $response = $this->api->getMyAlerts(1, 50);
+            $data     = $response['data'] ?? $response;
+            $items    = is_array($data['items'] ?? null)
+                ? $data['items']
+                : (is_array($data) && isset($data[0]) ? $data : []);
+
+            $done = 0;
+            $failed = 0;
+            foreach ($items as $a) {
+                if ($a['isRead'] ?? false) continue;
+                try {
+                    $this->api->markAlertRead((string) $a['alertId']);
+                    $done++;
+                } catch (\Exception $e) {
+                    if ((int) $e->getCode() === 401) throw $e;
+                    $failed++;
+                }
+            }
+
+            Cache::forget($this->badgeCacheKey());
+            return response()->json(['success' => $failed === 0, 'marked' => $done, 'failed' => $failed]);
+
+        } catch (\Exception $e) {
+            if ((int) $e->getCode() === 401) {
+                Session::flush();
+                return response()->json(['success' => false, 'code' => 'TOKEN_EXPIRED'], 401);
+            }
+            Log::error('AlertController: markAllRead failed', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Could not mark alerts as read.'], 422);
         }
     }
 
