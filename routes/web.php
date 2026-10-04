@@ -17,6 +17,7 @@ use App\Http\Controllers\EmergencyContactController;
 use App\Http\Controllers\SavedPlaceController;
 use App\Http\Controllers\StatsController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\RenewalController;
 
 // ---- Public ----
 Route::get('/', fn() => view('landing'))->name('home');
@@ -86,6 +87,13 @@ Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(func
     Route::get('/complaints/{id}',         [ComplaintController::class, 'show'])->name('complaints.show');
     Route::post('/complaints',             [ComplaintController::class, 'store']);
     Route::post('/complaints/{id}/reply',  [ComplaintController::class, 'reply']);
+
+    // Renewals — web parity with the Android RenewalActivity.
+    // Write routes are throttled: slips are file uploads proxied to the API.
+    Route::get('/renewals',                   [RenewalController::class, 'index'])->name('renewals');
+    Route::post('/renewals',                  [RenewalController::class, 'store'])->middleware('throttle:10,1');
+    Route::post('/renewals/{id}/slip',        [RenewalController::class, 'uploadSlip'])->middleware('throttle:10,1');
+    Route::post('/renewals/{id}/cancel',      [RenewalController::class, 'cancel'])->middleware('throttle:10,1');
 
     // Profile
     Route::get('/profile',  [ProfileController::class, 'index'])->name('profile');
