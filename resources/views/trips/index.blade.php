@@ -1624,7 +1624,7 @@
                 .configureLogging(signalR.LogLevel.Warning)
                 .build();
 
-            signalrConn.on('LocationUpdate', onLiveUpdate);
+            signalrConn.on('LocationUpdated', onLiveUpdate);
             signalrConn.onreconnecting(() => setLiveStatus('connecting', 'Reconnecting…'));
             signalrConn.onreconnected(() => {
                 setLiveStatus('connected', 'Connected');
@@ -1636,7 +1636,7 @@
             });
 
             await signalrConn.start();
-            await signalrConn.invoke('Subscribe', currentVehicleId);
+            await signalrConn.invoke('JoinVehicleGroup', currentVehicleId);
 
             liveActive = true;
             setLiveStatus('connected', 'Connected');
@@ -1645,7 +1645,15 @@
 
         } catch (e) {
             console.error('SignalR start:', e);
-            setLiveStatus('disconnected', 'Failed — ' + e.message.slice(0, 40));
+            const m = String(e.message || '');
+            const friendly = m.includes('SUBSCRIPTION_RENEWAL_REQUIRED')
+                ? 'Subscription expired — renew to use live tracking.'
+                : m.includes('Vehicle not found')
+                    ? 'You do not have access to this vehicle.'
+                    : 'Could not start live tracking. Please try again.';
+            setLiveStatus('disconnected', friendly);
+            try { await signalrConn?.stop(); } catch (_) {}
+            signalrConn = null;
         } finally {
             btn.disabled = false;
         }
@@ -1654,7 +1662,7 @@
     async function stopLive() {
         if (signalrConn) {
             try {
-                await signalrConn.invoke('Unsubscribe', currentVehicleId);
+                await signalrConn.invoke('LeaveVehicleGroup', currentVehicleId);
             } catch (_) {}
             try {
                 await signalrConn.stop();
