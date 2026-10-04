@@ -114,6 +114,8 @@
 @endif
 
 {{-- ── Inline JS ────────────────────────────────────────────────────────────── --}}
+@include('partials.marker-glide')
+
 <script>
     const vehicleId = '{{ $vehicle["vehicleId"]     ?? "" }}'.toLowerCase();
     const hasGps = {
@@ -177,7 +179,7 @@
     }
 
     // ── Place or update marker ─────────────────────────────────────────────────
-    function applyLocation(lat, lng, speed, ignition) {
+    function applyLocation(lat, lng, speed, ignition, lastUpdate) {
         const pos = {
             lat,
             lng
@@ -192,9 +194,12 @@
         </div>`;
 
         if (marker) {
-            marker.setPosition(pos);
-            marker.setIcon(vehicleIcon(true));
-            marker.getTitle(); // keeps reference
+            // Glide to the new fix instead of hopping (noise/jumps are ignored).
+            MarkerGlide.move('vehicle', marker, pos, null, lastUpdate ? Date.parse(lastUpdate) : NaN, {});
+            if (!marker._online) {
+                marker.setIcon(vehicleIcon(true));
+                marker._online = true;
+            }
             if (marker._infoWindow) marker._infoWindow.setContent(popup);
         } else {
             const iw = new google.maps.InfoWindow({
@@ -206,6 +211,7 @@
                 icon: vehicleIcon(true),
                 title: vehicleNum,
             });
+            marker._online = true;
             marker._infoWindow = iw;
             marker.addListener('click', () => iw.open({
                 anchor: marker,
@@ -276,7 +282,7 @@
                 setStatus('offline', 'No location data yet');
                 return;
             }
-            applyLocation(parseFloat(loc.latitude), parseFloat(loc.longitude), loc.speed, loc.ignitionStatus ?? loc.ignition);
+            applyLocation(parseFloat(loc.latitude), parseFloat(loc.longitude), loc.speed, loc.ignitionStatus ?? loc.ignition, loc.lastUpdate);
             const updated = loc.lastUpdate ? new Date(loc.lastUpdate).toLocaleTimeString() : '—';
             setStatus('fallback', `Polled ${updated}`);
         } catch {
@@ -332,7 +338,7 @@
             const lat = parseFloat(data.latitude);
             const lng = parseFloat(data.longitude);
             if (isNaN(lat) || isNaN(lng)) return;
-            applyLocation(lat, lng, data.speed, data.ignition ?? data.ignitionStatus);
+            applyLocation(lat, lng, data.speed, data.ignition ?? data.ignitionStatus, data.lastUpdate);
             const t = data.lastUpdate ? 'Updated ' + new Date(data.lastUpdate).toLocaleTimeString() : 'Live';
             setStatus('live', t);
         });

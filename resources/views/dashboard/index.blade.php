@@ -416,7 +416,7 @@
                         @if($online)
                         {{ $speed }} km/h · {{ $ignition ? 'Ignition on' : 'Ignition off' }}
                         @elseif($lastSeen)
-                        Last seen {{ \Carbon\Carbon::parse($lastSeen)->diffForHumans() }}
+                        Last seen {{ \App\Support\LocalTime::ago($lastSeen) }}
                         @else
                         No location data
                         @endif
@@ -435,6 +435,8 @@
     <p style="color:#9ca3af;font-size:14px;">No data available. Please refresh.</p>
 </div>
 @endif
+
+@include('partials.marker-glide')
 
 {{-- ─── JS (inline — no @push dependency) ────────────── --}}
 <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
@@ -730,15 +732,32 @@
         /* Accept heading from any field name the C# hub may send */
         const heading = data.heading ?? data.bearing ?? data.course ?? null;
         const icon = makeMarkerIcon(true, heading);
+        const devMs = data.lastUpdate ? Date.parse(data.lastUpdate) : NaN;
 
         if (!trails[vehicleId]) trails[vehicleId] = [];
-        trails[vehicleId].push(pos);
-        if (trails[vehicleId].length > TRAIL_MAX) trails[vehicleId].shift();
+
+        let rejected = false;
+        const wasOffline = !!vehicleMap[vehicleId] && !vehicleMap[vehicleId].online;
 
         if (markers[vehicleId]) {
-            markers[vehicleId].setPosition(pos);
-            markers[vehicleId].setIcon(icon);
+            /* Glide to the new fix instead of hopping. GPS noise and impossible jumps
+               are rejected and must not touch the trail or the stored position. */
+            const result = MarkerGlide.move(vehicleId, markers[vehicleId], pos, heading, devMs, {
+                paint: deg => markers[vehicleId].setIcon(makeMarkerIcon(true, deg)),
+                frame: p => {
+                    const path = polylines[vehicleId]?.getPath();
+                    if (path && path.getLength()) path.setAt(path.getLength() - 1, new google.maps.LatLng(p.lat, p.lng));
+                },
+            });
+            rejected = result === 'noise' || result === 'jump';
+            if (wasOffline) markers[vehicleId].setIcon(icon); /* grey -> orange as soon as it reports */
+            if (!rejected) {
+                trails[vehicleId].push(pos);
+                if (trails[vehicleId].length > TRAIL_MAX) trails[vehicleId].shift();
+            }
         } else {
+            trails[vehicleId].push(pos);
+            if (trails[vehicleId].length > TRAIL_MAX) trails[vehicleId].shift();
             const v = vehicleMap[vehicleId];
             markers[vehicleId] = new google.maps.Marker({
                 position: pos,
@@ -751,25 +770,33 @@
             markers[vehicleId].addListener('click', () => openInfo(vehicleId));
         }
 
-        if (polylines[vehicleId]) {
-            polylines[vehicleId].setPath(trails[vehicleId]);
-        } else {
-            polylines[vehicleId] = new google.maps.Polyline({
-                path: trails[vehicleId],
-                geodesic: true,
-                strokeColor: '#FA6908',
-                strokeOpacity: 0.75,
-                strokeWeight: 4,
-                map: gmap,
-            });
+        if (!rejected) {
+            if (polylines[vehicleId]) {
+                polylines[vehicleId].setPath(trails[vehicleId]);
+                /* the line's tip follows the marker, not the target, while it glides */
+                const cur = markers[vehicleId].getPosition();
+                const path = polylines[vehicleId].getPath();
+                if (cur && path.getLength() > 1) path.setAt(path.getLength() - 1, cur);
+            } else {
+                polylines[vehicleId] = new google.maps.Polyline({
+                    path: trails[vehicleId],
+                    geodesic: true,
+                    strokeColor: '#FA6908',
+                    strokeOpacity: 0.75,
+                    strokeWeight: 4,
+                    map: gmap,
+                });
+            }
         }
 
         /* Merge state into vehicleMap */
         if (vehicleMap[vehicleId]) {
             const wasOnline = vehicleMap[vehicleId].online;
             Object.assign(vehicleMap[vehicleId], {
-                latitude: data.latitude,
-                longitude: data.longitude,
+                ...(rejected ? {} : {
+                    latitude: data.latitude,
+                    longitude: data.longitude
+                }),
                 online: true,
                 speed: data.speed ?? 0,
                 ignition: !!(data.ignition ?? data.ignitionStatus),
