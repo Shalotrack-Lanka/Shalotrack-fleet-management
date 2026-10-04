@@ -11,7 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 </head>
-<body class="min-h-screen flex items-center justify-center bg-[#021F4A] px-4">
+<body class="min-h-screen flex items-center justify-center bg-[#021F4A] px-4 py-8">
 
     {{-- reCAPTCHA container — required by Firebase Phone Auth, invisible to user --}}
     <div id="recaptcha-container"></div>
@@ -19,7 +19,7 @@
     <div class="w-full max-w-md">
 
         {{-- Logo --}}
-        <div class="text-center mb-10">
+        <div class="text-center mb-6 sm:mb-10">
             <h1 class="text-3xl font-bold text-white tracking-tight">
                 Shalo<span class="text-[#FA6908]">Track</span>
             </h1>
@@ -27,7 +27,7 @@
         </div>
 
         {{-- Card --}}
-        <div class="bg-white rounded-2xl shadow-2xl p-8">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
 
             {{-- Session expired banner --}}
             @if($expired)
@@ -59,7 +59,7 @@
                                 type="tel"
                                 id="phone-input"
                                 placeholder="071 234 5678"
-                                class="flex-1 px-3 py-2.5 text-sm outline-none bg-white"
+                                class="flex-1 min-w-0 px-3 py-2.5 text-base sm:text-sm outline-none bg-white"
                                 autofocus
                             />
                         </div>

@@ -20,7 +20,7 @@
         </div>
 
         {{-- Card --}}
-        <div class="bg-white rounded-2xl shadow-2xl p-8">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
 
             <h2 class="text-xl font-semibold text-gray-800 mb-1">Complete your profile</h2>
             <p class="text-gray-500 text-sm mb-6">
@@ -46,7 +46,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
                     <input type="text" name="fullName" value="{{ old('fullName') }}"
                            placeholder="John Silva"
-                           class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition @error('fullName') border-red-400 @enderror"
+                           class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-base sm:text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition @error('fullName') border-red-400 @enderror"
                            required autofocus />
                     @error('fullName')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -57,7 +57,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
                     <input type="email" name="email" value="{{ old('email') }}"
                            placeholder="john@example.com"
-                           class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition @error('email') border-red-400 @enderror"
+                           class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-base sm:text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition @error('email') border-red-400 @enderror"
                            required />
                     @error('email')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -68,7 +68,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">NIC Number *</label>
                     <input type="text" name="nicNumber" value="{{ old('nicNumber') }}"
                            placeholder="200175906423 or 980923858V"
-                           class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition font-mono @error('nicNumber') border-red-400 @enderror"
+                           class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-base sm:text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition font-mono @error('nicNumber') border-red-400 @enderror"
                            required />
                     @error('nicNumber')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -79,7 +79,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
                     <textarea name="address" rows="2"
                               placeholder="No. 123, Main Street, Colombo"
-                              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition resize-none">{{ old('address') }}</textarea>
+                              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-base sm:text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition resize-none">{{ old('address') }}</textarea>
                 </div>
 
                 <div class="pt-2">

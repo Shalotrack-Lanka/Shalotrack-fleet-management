@@ -67,6 +67,7 @@ Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(func
     Route::get('/reports/data', [ReportController::class, 'data']);
 
     // Alerts
+    Route::get('/alerts/unread-count', [AlertController::class, 'unreadCount'])->middleware('throttle:30,1');
     Route::get('/alerts',              [AlertController::class, 'index'])->name('alerts');
     Route::post('/alerts/{id}/read',   [AlertController::class, 'markRead']);
 

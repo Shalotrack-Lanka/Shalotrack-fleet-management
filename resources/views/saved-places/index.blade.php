@@ -4,9 +4,30 @@
 
 @section('content')
 <style>
+    .sp-grid {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 24px;
+        align-items: start;
+    }
+
     #map {
         height: 500px;
         width: 100%;
+    }
+
+    /* Phones/tablets: map on top, saved-places list below it */
+    @media (max-width: 900px) {
+        .sp-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        #map {
+            height: 55vh;
+            height: 55dvh;
+            min-height: 300px;
+        }
     }
 
     /* Pin controls */
@@ -178,7 +199,7 @@
     <button onclick="cancelPin()" class="ml-auto text-xs text-gray-400 hover:text-gray-600 underline">Cancel</button>
 </div>
 
-<div style="display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;">
+<div class="sp-grid">
 
     {{-- ─── MAP PANEL ─── --}}
     <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">

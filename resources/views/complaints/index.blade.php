@@ -15,7 +15,7 @@
 @endif
 
 <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+    <div class="px-4 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between">
         <h3 class="font-semibold text-gray-800">My Complaints</h3>
         <button onclick="openFileModal()"
             class="flex items-center gap-1.5 px-3 py-1.5 bg-[#FA6908] text-white text-xs font-semibold rounded-lg hover:bg-orange-600 transition">
@@ -77,8 +77,8 @@
 <div id="file-modal" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/40" onclick="closeFileModal()"></div>
     <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-100">
                 <h3 class="font-semibold text-gray-800">File a Complaint</h3>
                 <button onclick="closeFileModal()" class="text-gray-400 hover:text-gray-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -86,7 +86,7 @@
                     </svg>
                 </button>
             </div>
-            <div class="px-6 py-5 space-y-4">
+            <div class="px-4 sm:px-6 py-5 space-y-4">
                 <p class="text-sm text-gray-500">Complaints can only be filed against vehicles you own.</p>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">Vehicle</label>
@@ -113,7 +113,7 @@
                 </div>
                 <p id="file-error" class="text-red-600 text-sm hidden"></p>
             </div>
-            <div class="px-6 py-4 border-t border-gray-100 flex gap-3">
+            <div class="px-4 sm:px-6 py-4 border-t border-gray-100 flex gap-3">
                 <button onclick="closeFileModal()"
                     class="flex-1 py-2 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50">Cancel</button>
                 <button id="file-btn" onclick="submitComplaint()"

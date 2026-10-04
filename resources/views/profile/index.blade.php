@@ -49,7 +49,7 @@ $completeness = (int) round(($filled / count($fields)) * 100);
         </div>
 
         {{-- Avatar (overlapping banner) --}}
-        <div class="px-6 pb-5">
+        <div class="px-4 sm:px-6 pb-5">
             <div class="flex items-end justify-between -mt-10 mb-4">
                 <div class="relative">
                     <div class="w-20 h-20 rounded-2xl bg-[#FA6908] text-white flex items-center justify-center text-2xl font-bold ring-4 ring-white shadow-lg select-none">
@@ -92,7 +92,7 @@ $completeness = (int) round(($filled / count($fields)) * 100);
 
     {{-- ── Stats strip ─────────────────────────────────────────────────────── --}}
     <div class="grid grid-cols-2 gap-4">
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4 flex items-center gap-4">
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 sm:px-5 py-4 flex items-center gap-3 sm:gap-4">
             <div class="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center flex-shrink-0">
                 <svg class="w-5 h-5 text-[#FA6908]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -108,7 +108,7 @@ $completeness = (int) round(($filled / count($fields)) * 100);
                 <p class="text-xs text-gray-400 font-medium">{{ $vehicleCount === 1 ? 'Vehicle' : 'Vehicles' }} Registered</p>
             </div>
         </div>
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4 flex items-center gap-4">
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 sm:px-5 py-4 flex items-center gap-3 sm:gap-4">
             <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
                 <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -124,13 +124,13 @@ $completeness = (int) round(($filled / count($fields)) * 100);
 
     {{-- ── Editable info ───────────────────────────────────────────────────── --}}
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-50">
+        <div class="px-4 sm:px-6 py-4 border-b border-gray-50">
             <h3 class="font-semibold text-gray-800 text-sm">Personal Information</h3>
             <p class="text-xs text-gray-400 mt-0.5">Click the pencil icon on any field to edit it.</p>
         </div>
 
         {{-- Full Name --}}
-        <div class="flex items-start justify-between px-6 py-4 border-b border-gray-50 hover:bg-gray-50/50 transition group">
+        <div class="flex items-start justify-between px-4 sm:px-6 py-4 border-b border-gray-50 hover:bg-gray-50/50 transition group">
             <div class="flex items-start gap-3 min-w-0 flex-1">
                 <div class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
                     <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -178,7 +178,7 @@ $completeness = (int) round(($filled / count($fields)) * 100);
         </div>
 
         {{-- Phone --}}
-        <div class="flex items-start justify-between px-6 py-4 border-b border-gray-50 hover:bg-gray-50/50 transition group">
+        <div class="flex items-start justify-between px-4 sm:px-6 py-4 border-b border-gray-50 hover:bg-gray-50/50 transition group">
             <div class="flex items-start gap-3 min-w-0 flex-1">
                 <div class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
                     <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -222,7 +222,7 @@ $completeness = (int) round(($filled / count($fields)) * 100);
         </div>
 
         {{-- Address --}}
-        <div class="flex items-start justify-between px-6 py-4 border-b border-gray-50 hover:bg-gray-50/50 transition group">
+        <div class="flex items-start justify-between px-4 sm:px-6 py-4 border-b border-gray-50 hover:bg-gray-50/50 transition group">
             <div class="flex items-start gap-3 min-w-0 flex-1">
                 <div class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
                     <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -266,7 +266,7 @@ $completeness = (int) round(($filled / count($fields)) * 100);
         </div>
 
         {{-- Email — read only --}}
-        <div class="flex items-center gap-3 px-6 py-4 border-b border-gray-50">
+        <div class="flex items-center gap-3 px-4 sm:px-6 py-4 border-b border-gray-50">
             <div class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -281,7 +281,7 @@ $completeness = (int) round(($filled / count($fields)) * 100);
         </div>
 
         {{-- NIC — read only --}}
-        <div class="flex items-center gap-3 px-6 py-4 border-b border-gray-50">
+        <div class="flex items-center gap-3 px-4 sm:px-6 py-4 border-b border-gray-50">
             <div class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -297,7 +297,7 @@ $completeness = (int) round(($filled / count($fields)) * 100);
 
         {{-- Customer ID — copyable --}}
         @if($customerId)
-        <div class="flex items-center gap-3 px-6 py-4">
+        <div class="flex items-center gap-3 px-4 sm:px-6 py-4">
             <div class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

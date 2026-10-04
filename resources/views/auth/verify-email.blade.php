@@ -9,7 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 </head>
-<body class="min-h-screen flex items-center justify-center bg-[#021F4A] px-4">
+<body class="min-h-screen flex items-center justify-center bg-[#021F4A] px-4 py-8">
 
     <div class="w-full max-w-md">
 

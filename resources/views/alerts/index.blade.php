@@ -16,9 +16,9 @@
 @endif
 
 {{-- Filter bar --}}
-<div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-6">
-    <form method="GET" action="/alerts" class="flex flex-wrap items-end gap-4">
-        <div class="flex-1 min-w-48">
+<div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4 md:p-5 mb-4 md:mb-6">
+    <form method="GET" action="/alerts" class="flex flex-wrap items-end gap-3 md:gap-4">
+        <div class="flex-1 min-w-[12rem]">
             <label class="block text-xs font-medium text-gray-500 mb-1">Filter by Vehicle</label>
             <select name="vehicle"
                 onchange="this.form.submit()"
@@ -38,7 +38,7 @@
 
 {{-- Alerts list --}}
 @if(empty($alerts))
-<div class="bg-white rounded-xl border border-gray-100 shadow-sm p-16 text-center">
+<div class="bg-white rounded-xl border border-gray-100 shadow-sm p-10 md:p-16 text-center">
     <svg class="w-16 h-16 text-gray-200 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
             d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -50,7 +50,7 @@
 <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
     <div class="divide-y divide-gray-50">
         @foreach($alerts as $alert)
-        <div class="flex items-start gap-4 px-6 py-4 hover:bg-gray-50 transition {{ !($alert['isRead'] ?? false) ? 'bg-orange-50/30' : '' }}"
+        <div class="flex items-start gap-3 md:gap-4 px-4 md:px-6 py-4 hover:bg-gray-50 transition {{ !($alert['isRead'] ?? false) ? 'bg-orange-50/30' : '' }}"
             id="alert-{{ $alert['alertId'] }}">
 
             {{-- Type-specific icon --}}
@@ -90,7 +90,7 @@
                     <span class="w-2 h-2 bg-[#FA6908] rounded-full flex-shrink-0"></span>
                     @endif
                 </div>
-                <p class="text-sm text-gray-600">{{ $alert['message'] ?? '—' }}</p>
+                <p class="text-sm text-gray-600 break-words">{{ $alert['message'] ?? '—' }}</p>
                 <p class="text-xs text-gray-400 mt-1">
                     {{ \Carbon\Carbon::parse($alert['triggeredAt'])->diffForHumans() }}
                     · {{ \Carbon\Carbon::parse($alert['triggeredAt'])->format('d M Y, H:i') }}
@@ -100,7 +100,7 @@
             {{-- Mark read button --}}
             @if(!($alert['isRead'] ?? false))
             <button onclick="markRead('{{ $alert['alertId'] }}')"
-                class="flex-shrink-0 text-xs text-gray-400 hover:text-[#FA6908] transition mt-1"
+                class="flex-shrink-0 text-xs text-gray-400 hover:text-[#FA6908] transition -mt-1 p-2.5 -mr-2 md:mt-1 md:p-0 md:mr-0"
                 title="Mark as read"
                 id="read-btn-{{ $alert['alertId'] }}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,7 +114,7 @@
 
     {{-- Pagination --}}
     @if($totalPages > 1)
-    <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+    <div class="px-4 md:px-6 py-4 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3">
         <p class="text-xs text-gray-400">Page {{ $currentPage }} of {{ $totalPages }}</p>
         <div class="flex gap-2">
             @if($currentPage > 1)
@@ -171,6 +171,7 @@
                     row.querySelector('.w-2.h-2.bg-\\[\\#FA6908\\]')?.remove();
                 }
                 btn?.remove();
+                window.refreshAlertBadge?.();   // header badge (server cache is cleared on mark-read)
             } else {
                 if (btn) {
                     btn.disabled = false;

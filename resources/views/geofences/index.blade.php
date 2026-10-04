@@ -623,7 +623,8 @@
     @media (max-width: 860px) {
         .gf-wrap {
             grid-template-columns: 1fr;
-            grid-template-rows: 50vh 1fr;
+            grid-template-rows: minmax(320px, 55vh) auto;
+            grid-template-rows: minmax(320px, 55dvh) auto;   /* dvh: ignores the mobile URL bar jitter */
             height: auto;
         }
 
