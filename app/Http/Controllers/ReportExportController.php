@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\ReportBuilder;
+use App\Services\ReverseGeocoder;
 use App\Support\Chart;
 use App\Support\CsvExport;
 use App\Support\LocalTime;
@@ -22,7 +23,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ReportExportController extends Controller
 {
-    public function __construct(private ReportBuilder $reports) {}
+    public function __construct(private ReportBuilder $reports, private ReverseGeocoder $geocoder) {}
 
     // ── GET|POST /stats/{vehicleId}/export?period=today|week|month|all&format=pdf|csv ──
 
@@ -166,6 +167,15 @@ class ReportExportController extends Controller
     {
         $name = $this->fileBase($vehicle) . "_{$fileKey}";
 
+        // Cached addresses only (no network, so a download is never slowed down by
+        // the geocoder). Stops looked up while viewing the report are included.
+        foreach ($stops as &$st) {
+            $st['address'] = ($st['lat'] !== null && $st['lng'] !== null)
+                ? $this->geocoder->peek((float) $st['lat'], (float) $st['lng'])
+                : null;
+        }
+        unset($st);
+
         if ($format === 'csv') {
             $rows = [
                 ['Stop Report'],
@@ -174,12 +184,12 @@ class ReportExportController extends Controller
                 ['Range (Sri Lanka time)', $range],
                 ['Generated (Sri Lanka time)', LocalTime::now()->format('Y-m-d H:i')],
                 [],
-                ['#', 'Date', 'Arrived', 'Departed', 'Duration (min)', 'Latitude', 'Longitude', 'Google Maps link', 'Status'],
+                ['#', 'Date', 'Arrived', 'Departed', 'Duration (min)', 'Address', 'Latitude', 'Longitude', 'Google Maps link', 'Status'],
             ];
             foreach ($stops as $i => $s) {
                 $hasPos = $s['lat'] !== null && $s['lng'] !== null;
                 $rows[] = [$i + 1, $s['start']->format('Y-m-d'), $s['start']->format('H:i:s'), $s['end']?->format('H:i:s'),
-                    round($s['minutes'], 1), $hasPos ? (float) $s['lat'] : '', $hasPos ? (float) $s['lng'] : '',
+                    round($s['minutes'], 1), $s['address'] ?? '', $hasPos ? (float) $s['lat'] : '', $hasPos ? (float) $s['lng'] : '',
                     $hasPos ? 'https://www.google.com/maps?q=' . (float) $s['lat'] . ',' . (float) $s['lng'] : '',
                     $s['inProgress'] ? 'Still stopped' : 'Completed'];
             }

@@ -22,4 +22,12 @@ return [
         'api_key' => env('GOOGLE_MAPS_API_KEY'),
     ],
 
+    // Reverse geocoding (coordinates -> address). Free OpenStreetMap Nominatim by
+    // default; point GEOCODER_URL at a self-hosted instance if volume grows.
+    // GEOCODER_USER_AGENT must identify the app + a contact (Nominatim policy).
+    'geocoder' => [
+        'url'        => env('GEOCODER_URL', 'https://nominatim.openstreetmap.org'),
+        'user_agent' => env('GEOCODER_USER_AGENT', 'ShaloTrack-Fleet/1.0 (fleet.shalotrack.com)'),
+    ],
+
 ];

@@ -313,6 +313,24 @@ $pendingCount = count($pendingInvites);
         cursor: not-allowed;
     }
 
+    .sh-btn-track {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .375rem;
+        padding: .5rem .875rem;
+        background: #FA6908;
+        border: 1px solid #FA6908;
+        border-radius: .5rem;
+        font-size: .8125rem;
+        font-weight: 600;
+        color: #fff;
+        text-decoration: none;
+        white-space: nowrap;
+        font-family: inherit;
+        transition: background .15s;
+    }
+    .sh-btn-track:hover { background: #e55d00; }
     .sh-btn-revoke {
         padding: .5rem .875rem;
         background: #fff;
@@ -1005,7 +1023,22 @@ $pendingCount = count($pendingInvites);
                 &nbsp;· Since ${fmtDate(s.respondedAt ?? s.invitedAt)}
             </div>
         </div>
+        ${trackLink(s)}
     </div>`).join('');
+    }
+
+    /* "Track live" — opens the Trips page on the Live tab for this shared vehicle
+       (the web equivalent of the Android shared-vehicle map). The id is checked so
+       only a well-formed GUID ever reaches the URL. */
+    function trackLink(s) {
+        const id = String(s.vehicleId ?? '');
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return '';
+        return `<div class="sh-card-actions">
+            <a class="sh-btn-track" href="/trips?vehicle=${encodeURIComponent(id)}&mode=live">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg>
+                Track live
+            </a>
+        </div>`;
     }
 
     /* ── Render: My Shares ──────────────────────────────────────────────────────── */

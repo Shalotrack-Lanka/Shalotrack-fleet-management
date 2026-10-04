@@ -12,7 +12,9 @@
     .stats-wrap {
         display: grid;
         grid-template-columns: 280px 1fr;
-        height: calc(100vh - 64px);
+        height: calc(100vh - 160px);
+        height: calc(100dvh - 160px);
+        min-height: 560px;
         overflow: hidden;
         background: #f8fafc;
     }
@@ -148,7 +150,7 @@
     }
 
     /* Period bar */
-    .period-bar {
+    .stats-period-bar {
         padding: 10px 24px;
         background: #fff;
         border-bottom: 1px solid #e2e8f0;
@@ -156,7 +158,9 @@
         align-items: center;
         gap: 8px;
         flex-shrink: 0;
+        flex-wrap: wrap;
     }
+    .stats-period-bar[hidden] { display: none; }
 
     .period-spacer {
         flex: 1;
@@ -535,19 +539,63 @@
     /* ── Responsive ────────────────────────────────────────────────────────────── */
     @media (max-width: 900px) {
         .stats-wrap {
-            grid-template-columns: 1fr;
-            grid-template-rows: auto 1fr;
+            display: block;
             height: auto;
+            overflow: visible;
+        }
+        .sidebar, .stats-main { width: 100%; min-width: 0; }
+
+        .stats-wrap {
+            min-height: 0;
         }
 
         .sidebar {
             border-right: none;
             border-bottom: 1px solid #e2e8f0;
-            height: 240px;
+            height: auto;
+            overflow: visible;
         }
 
+        .sidebar-header {
+            padding: 14px 16px 8px;
+        }
+
+        .sidebar-search {
+            font-size: 16px;
+            /* keeps iOS from zooming into the field */
+        }
+
+        /* Vehicles become a swipeable strip instead of a tall list */
+        .vehicle-list {
+            display: flex;
+            flex-direction: row;
+            gap: 8px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 8px 16px 14px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .vehicle-card {
+            flex: 0 0 auto;
+            min-width: 160px;
+            max-width: 240px;
+        }
+
+        /* Phones: let the page itself scroll instead of nesting a second scroll
+           area inside a fixed 100vh box (the old calc() also ignored the top bar
+           and the renewal banner, so it clipped content). */
         .stats-main {
-            height: calc(100vh - 304px);
+            height: auto;
+            overflow: visible;
+        }
+
+        .stats-content {
+            overflow: visible;
+        }
+
+        .stats-empty {
+            min-height: 220px;
         }
 
         .chart-grid {
@@ -564,8 +612,33 @@
             grid-template-columns: 1fr 1fr;
         }
 
-        .period-bar {
-            flex-wrap: wrap;
+        .stats-main { display: block; }
+
+        .stats-period-bar {
+            display: grid;
+            grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+            padding: 10px 16px;
+        }
+
+        .period-btn, .export-wrap { min-width: 0; }
+        .export-wrap { grid-column: 1 / -1; position: relative; margin-left: 0; }
+
+        .period-btn {
+            flex: 1 1 auto;
+            text-align: center;
+        }
+
+        .period-spacer {
+            display: none;
+        }
+
+        .export-wrap {
+            width: 100%;
+        }
+
+        .btn-export {
+            width: 100%;
+            justify-content: center;
         }
 
         .stats-content {
@@ -613,6 +686,9 @@
                     @elseif($demo)
                     <div class="vehicle-name">Demo Vehicle</div>
                     @endif
+                    @if(!empty($v['isShared']))
+                    <div class="vehicle-name" style="color:#0369a1">Shared{{ !empty($v['ownerName']) ? ' by ' . $v['ownerName'] : '' }}</div>
+                    @endif
                 </div>
             </div>
             @empty
@@ -627,10 +703,10 @@
     <div class="stats-main">
 
         {{-- Period selector (shown once a vehicle is selected) --}}
-        <div class="period-bar" id="period-bar" style="display:none;">
+        <div class="stats-period-bar" id="stats-period-bar" hidden>
             <button class="period-btn active" data-period="today" onclick="setPeriod('today')">Today</button>
-            <button class="period-btn" data-period="week" onclick="setPeriod('week')">This Week</button>
-            <button class="period-btn" data-period="month" onclick="setPeriod('month')">This Month</button>
+            <button class="period-btn" data-period="week" onclick="setPeriod('week')">Last 7 Days</button>
+            <button class="period-btn" data-period="month" onclick="setPeriod('month')">Last 30 Days</button>
             <button class="period-btn" data-period="all" onclick="setPeriod('all')">All Time</button>
             <div class="period-spacer"></div>
             <div class="export-wrap" id="export-wrap">
@@ -894,8 +970,13 @@
         selectedVehicleName = name;
         selectedVehicleIsDemo = isDemo;
 
-        document.getElementById('period-bar').style.display = 'flex';
+        document.getElementById('stats-period-bar').hidden = false;
         loadStats();
+
+        // On phones the vehicle strip sits above the data — bring the data into view
+        if (window.innerWidth <= 900) {
+            document.getElementById('stats-period-bar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     }
 
     // ══════════════════════════════════════════════════════════════════════════════
@@ -1200,120 +1281,53 @@
     // Close on outside click
     document.addEventListener('click', () => closeExportMenu());
 
-    // ── CSV ───────────────────────────────────────────────────────────────────────
-    function exportCSV() {
-        if (!lastData) return;
-        const d = lastData;
+    // ── Downloads ─────────────────────────────────────────────────────────────────
+    // Both files are built on the server from fresh API data (correct Sri Lanka
+    // time, real charts, every number) — the browser only says which vehicle and
+    // period to export.
+    function exportCSV() { exportFile('csv'); }
 
-        const rows = [
-            ['ShaloTrack Vehicle Statistics Export'],
-            ['Vehicle', selectedVehiclePlate],
-            ['Name', selectedVehicleName || ''],
-            ['Period', periodLabel(activePeriod)],
-            ['Generated', new Date().toLocaleString()],
-            [],
-            ['Metric', 'Value', 'Unit'],
-            ['Total Distance', fmt(d.totalDistanceKm, 2), 'km'],
-            ['Total Trips', d.totalTripCount ?? '', ''],
-            ['Total Stops', d.totalStopCount ?? '', ''],
-            ['Driving Time', Math.round(d.totalDrivingMinutes ?? 0), 'min'],
-            ['Idle Time', Math.round(d.totalIdleMinutes ?? 0), 'min'],
-            ['Ignition On Time', Math.round(d.totalIgnitionOnMinutes ?? 0), 'min'],
-            ['Max Speed', fmt(d.maxSpeed, 1), 'km/h'],
-            ['Avg Speed', fmt(d.averageSpeed, 1), 'km/h'],
-            ['Overspeed Alerts', d.overspeedIncidentCount ?? '', ''],
-        ];
+    function exportPDF() { exportFile('pdf'); }
 
-        const daily = (d.dailyBreakdown ?? []).sort((a, b) => new Date(a.date) - new Date(b.date));
-        if (daily.length > 0) {
-            rows.push([], ['Daily Breakdown'],
-                ['Date', 'Distance (km)', 'Trips', 'Stops', 'Ignition On (min)']);
-            daily.forEach(row => rows.push([
-                row.date ?? '',
-                parseFloat(row.distanceKm ?? 0).toFixed(2),
-                row.tripCount ?? 0,
-                row.stopCount ?? 0,
-                Math.round(row.ignitionOnMinutes ?? 0),
-            ]));
-        }
-
-        const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
-        const blob = new Blob([csv], {
-            type: 'text/csv;charset=utf-8;'
-        });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `stats_${selectedVehiclePlate}_${activePeriod}_${new Date().toISOString().slice(0,10)}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
-    }
-
-    // ── PDF (server-side via barryvdh/laravel-dompdf) ───────────────────────────
-    async function exportPDF() {
+    async function exportFile(format) {
         if (!lastData || !selectedVehicleId) return;
 
         const btn = document.getElementById('btn-export');
+        const original = btn.innerHTML;
         btn.disabled = true;
-        btn.textContent = 'Generating…';
+        btn.textContent = format === 'pdf' ? 'Building PDF…' : 'Preparing…';
 
         try {
-            // Capture Chart.js canvases as PNG data-URLs to embed in the PDF
-            function canvasPng(id) {
-                const el = document.getElementById(id);
-                return (el && el.tagName === 'CANVAS') ? el.toDataURL('image/png') : '';
-            }
-
-            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-            if (!csrfMeta) throw new Error('CSRF token meta tag not found in layout.');
-
-            const body = new URLSearchParams({
-                _token: csrfMeta.content,
-                period: activePeriod,
-                vehicle_plate: selectedVehiclePlate,
-                vehicle_name: selectedVehicleName,
-                vehicle_is_demo: selectedVehicleIsDemo ? '1' : '0',
-                chart_distance: canvasPng('chart-distance'),
-                chart_trips_stops: canvasPng('chart-trips-stops'),
-                chart_ignition: canvasPng('chart-ignition'),
-            });
-
-            const res = await fetch(`/stats/${selectedVehicleId}/export`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: body.toString(),
-            });
+            const qs = new URLSearchParams({ period: activePeriod, format });
+            const res = await fetch(`/stats/${selectedVehicleId}/export?${qs}`, { credentials: 'include' });
 
             if (res.status === 401) {
                 window.location.href = '/login?expired=1';
                 return;
             }
-
             if (!res.ok) {
                 const json = await res.json().catch(() => ({}));
-                throw new Error(json.message || `Server error (${res.status})`);
+                throw new Error(json.message || (res.status === 429
+                    ? 'Too many downloads — please wait a minute.'
+                    : `Server error (${res.status})`));
             }
 
-            // Stream the PDF blob to a download
             const blob = await res.blob();
+            const filename = res.headers.get('Content-Disposition')?.match(/filename="?([^";]+)"?/)?.[1]
+                || `shalotrack_${selectedVehiclePlate}_${activePeriod}.${format}`;
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            const filename = res.headers.get('Content-Disposition')
-                ?.match(/filename="?([^"]+)"?/)?.[1] ||
-                `shalotrack_${selectedVehiclePlate}_${activePeriod}.pdf`;
-
             a.href = url;
             a.download = filename;
+            document.body.appendChild(a);
             a.click();
-            URL.revokeObjectURL(url);
-
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 2000);
         } catch (err) {
-            alert(`PDF export failed: ${err.message}`);
+            alert(`Export failed: ${err.message}`);
         } finally {
             btn.disabled = false;
-            btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5v-2z"/></svg> Export <svg class="chevron" viewBox="0 0 24 24" style="width:12px;height:12px;fill:currentColor"><path d="M7 10l5 5 5-5z"/></svg>`;
+            btn.innerHTML = original;
         }
     }
 
@@ -1365,8 +1379,8 @@
     function periodLabel(period) {
         return {
             today: 'Today',
-            week: 'This Week',
-            month: 'This Month',
+            week: 'Last 7 Days',
+            month: 'Last 30 Days',
             all: 'All Time'
         } [period] ?? '';
     }

@@ -133,7 +133,7 @@
     /* ── History panel ── */
     .date-range-row {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         gap: 6px;
         padding: 10px 12px 0;
     }
@@ -788,6 +788,226 @@
             display: none;
         }
     }
+
+    /* ── Shared badge ── */
+    .badge-shared {
+        background: #0ea5e9;
+        color: #fff;
+    }
+
+    /* ── Trip detail card (start / end addresses + stops) ── */
+    .trip-detail {
+        background: #fff;
+        border-bottom: 1px solid #e2e8f0;
+        flex-shrink: 0;
+        max-height: 36%;
+        overflow-y: auto;
+    }
+
+    .trip-detail.hidden {
+        display: none;
+    }
+
+    .td-journey {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 4px 16px;
+        padding: 9px 16px;
+    }
+
+    .td-pt {
+        display: flex;
+        gap: 9px;
+        min-width: 0;
+    }
+
+    .td-dot {
+        flex: none;
+        width: 10px;
+        height: 10px;
+        margin-top: 4px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 1px #cbd5e1;
+    }
+
+    .td-dot.start { background: #22c55e; }
+    .td-dot.end { background: #ef4444; }
+
+    .td-lbl {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        color: #94a3b8;
+    }
+
+    .td-addr {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--navy);
+        line-height: 1.3;
+        overflow-wrap: anywhere;
+    }
+
+    .td-addr.pending {
+        color: #94a3b8;
+        font-weight: 500;
+    }
+
+    .td-stops summary {
+        cursor: pointer;
+        padding: 7px 16px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        color: #475569;
+        border-top: 1px solid #f1f5f9;
+        list-style: none;
+        user-select: none;
+    }
+
+    .td-stops summary::-webkit-details-marker { display: none; }
+    .td-stops summary::before { content: '\25B8'; display: inline-block; margin-right: 6px; transition: transform .15s; }
+    .td-stops[open] summary::before { transform: rotate(90deg); }
+
+    .td-stop {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+        padding: 7px 16px;
+        border: 0;
+        border-top: 1px solid #f8fafc;
+        background: transparent;
+        text-align: left;
+        cursor: pointer;
+        font: inherit;
+    }
+
+    .td-stop:hover,
+    .td-stop:focus-visible {
+        background: #f8fafc;
+        outline: none;
+    }
+
+    .td-stop-n {
+        flex: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--navy);
+        color: #fff;
+        font-size: 10px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 1px;
+    }
+
+    .td-stop-body { min-width: 0; flex: 1; }
+    .td-stop-time { font-size: 11.5px; color: #475569; font-weight: 600; }
+
+    /* ── Jump-to-date button + drill-down sheet ── */
+    .btn-jump {
+        width: 100%;
+        margin-top: 6px;
+        padding: 8px 0;
+        background: #fff;
+        color: var(--navy);
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: border-color .15s, color .15s;
+    }
+
+    .btn-jump:hover { border-color: var(--orange); color: var(--orange); }
+
+    .dd-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        background: rgba(2, 31, 74, .45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+    }
+
+    .dd-overlay.hidden { display: none; }
+
+    .dd-sheet {
+        width: 100%;
+        max-width: 380px;
+        max-height: min(80vh, 560px);
+        max-height: min(80dvh, 560px);
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 20px 50px rgba(2, 31, 74, .3);
+        overflow: hidden;
+    }
+
+    .dd-head {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 8px 10px 14px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .dd-title {
+        flex: 1;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--navy);
+    }
+
+    .dd-ic {
+        width: 34px;
+        height: 34px;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: #475569;
+        font-size: 18px;
+        cursor: pointer;
+    }
+
+    .dd-ic:hover { background: #f1f5f9; }
+    .dd-ic[hidden] { display: none; }
+
+    .dd-rows { overflow-y: auto; }
+
+    .dd-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 13px 18px;
+        border: 0;
+        border-bottom: 1px solid #f1f5f9;
+        background: #fff;
+        font: inherit;
+        font-size: 14px;
+        color: var(--navy);
+        text-align: left;
+        cursor: pointer;
+    }
+
+    .dd-row:hover:not(:disabled),
+    .dd-row:focus-visible { background: #fff7f0; outline: none; }
+    .dd-row:disabled { color: #cbd5e1; cursor: not-allowed; }
+    .dd-row .dd-tag { font-size: 10px; font-weight: 700; color: var(--orange); letter-spacing: .06em; text-transform: uppercase; }
+
+    @media (max-width: 820px) {
+        .td-journey { grid-template-columns: 1fr; }
+        .trip-detail { max-height: none; overflow: visible; }
+    }
 </style>
 
 {{-- ══════════════════════════════════════════════════════════
@@ -816,6 +1036,8 @@
                     data-plate="{{ $plate }}"
                     data-name="{{ $make }}"
                     data-demo="{{ $isDemo ? '1' : '0' }}"
+                    data-shared="{{ !empty($v['isShared']) ? '1' : '0' }}"
+                    data-owner="{{ $v['ownerName'] ?? '' }}"
                     @if(!$hasGps) disabled @endif>{{ $label }}</option>
                 @endforeach
             </select>
@@ -835,6 +1057,7 @@
             </div>
             <div class="load-row">
                 <button id="btn-load" class="btn-load" onclick="loadTrips()">Load Trips</button>
+                <button type="button" class="btn-jump" onclick="openDrill()">Jump to a month, week or day</button>
             </div>
 
             <div id="trips-scroll" class="trips-scroll">
@@ -931,11 +1154,39 @@
             </div>
         </div>
 
+        {{-- Trip detail: where it started / ended, and every stop with its address --}}
+        <div id="trip-detail" class="trip-detail hidden">
+            <div class="td-journey">
+                <div class="td-pt">
+                    <span class="td-dot start"></span>
+                    <div style="min-width:0">
+                        <div class="td-lbl">Start · <span id="td-start-time">–</span></div>
+                        <div class="td-addr pending" id="td-start-addr">Finding address…</div>
+                    </div>
+                </div>
+                <div class="td-pt">
+                    <span class="td-dot end"></span>
+                    <div style="min-width:0">
+                        <div class="td-lbl"><span id="td-end-lbl">End</span> · <span id="td-end-time">–</span></div>
+                        <div class="td-addr pending" id="td-end-addr">Finding address…</div>
+                    </div>
+                </div>
+            </div>
+            <details class="td-stops" id="td-stops" hidden>
+                <summary id="td-stops-title">Stops</summary>
+                <div id="td-stops-list"></div>
+            </details>
+        </div>
+
         {{-- Google Map --}}
         <div id="map"></div>
 
         {{-- Live stats bar --}}
         <div id="live-bar" class="live-bar hidden">
+            <div class="ls-item">
+                <span class="ls-label">Status</span>
+                <span class="ls-value" id="ls-state">–</span>
+            </div>
             <div class="ls-item">
                 <span class="ls-label">Speed</span>
                 <span class="ls-value orange" id="ls-speed">– km/h</span>
@@ -975,6 +1226,18 @@
     </main>
 </div>
 
+{{-- Month → week → day picker (same drill-down as the Android app) --}}
+<div id="dd-overlay" class="dd-overlay hidden" onclick="if (event.target === this) closeDrill()">
+    <div class="dd-sheet" role="dialog" aria-modal="true" aria-labelledby="dd-title">
+        <div class="dd-head">
+            <button type="button" class="dd-ic" id="dd-back" onclick="drillBack()" aria-label="Back" hidden>&#8249;</button>
+            <div class="dd-title" id="dd-title">Select a month</div>
+            <button type="button" class="dd-ic" onclick="closeDrill()" aria-label="Close">&#10005;</button>
+        </div>
+        <div class="dd-rows" id="dd-rows"></div>
+    </div>
+</div>
+
 {{-- ══════════════════════════════════════════════════════════
      JAVASCRIPT  — all inside @section so layout renders it
      ══════════════════════════════════════════════════════════ --}}
@@ -992,12 +1255,16 @@
     let endMarker = null; // red circle
     let routePolyline = null;
     let stopMarkers = []; // orange/navy dots
+    let stopInfos = []; // one InfoWindow per stop marker
+    let openInfo = null;
 
     /* ── State ──────────────────────────────────────────────────── */
     let currentVehicleId = '';
     let currentVehiclePlate = '';
     let currentVehicleName = '';
     let currentVehicleDemo = false;
+    let currentVehicleShared = false;
+    let currentVehicleOwner = '';
 
     let allTrips = []; // loaded from summary endpoint
     let tripPoints = []; // GPS points for selected trip
@@ -1051,6 +1318,7 @@
         // Apply initial vehicle from the <select>
         const sel = document.getElementById('vehicle-select');
         if (sel && sel.value) applyVehicleFromSelect();
+        applyDeepLink();
     }
 
     /* ══════════════════════════════════════════════════════════════
@@ -1065,14 +1333,20 @@
         currentVehiclePlate = opt.dataset.plate || opt.value;
         currentVehicleName = opt.dataset.name || '';
         currentVehicleDemo = opt.dataset.demo === '1';
+        currentVehicleShared = opt.dataset.shared === '1';
+        currentVehicleOwner = opt.dataset.owner || '';
 
         // Update vehicle strip
         document.getElementById('vs-plate').textContent = currentVehiclePlate;
-        document.getElementById('vs-name').textContent = currentVehicleName;
+        document.getElementById('vs-name').textContent = currentVehicleName +
+            (currentVehicleShared && currentVehicleOwner ? ' · shared by ' + currentVehicleOwner : '');
         const badge = document.getElementById('vs-badge');
         if (currentVehicleDemo) {
             badge.textContent = 'DEMO';
             badge.className = 'vs-badge badge-demo';
+        } else if (currentVehicleShared) {
+            badge.textContent = 'SHARED';
+            badge.className = 'vs-badge badge-shared';
         } else {
             badge.textContent = '';
             badge.className = 'vs-badge';
@@ -1438,8 +1712,10 @@
 
         /* ── Stop markers ── */
         const stops = detectStops(points);
+        tripStops = stops;
         renderStopMarkers(stops);
         document.getElementById('tile-stops').textContent = stops.length;
+        renderTripDetail(points, stops, trip);
 
         /* ── Fit bounds ── */
         const bounds = new google.maps.LatLngBounds();
@@ -1471,6 +1747,8 @@
                             lat: +points[mid].latitude,
                             lng: +points[mid].longitude,
                             durationMin: Math.round(durSecs / 60),
+                            start: points[runStart].eventTime,
+                            end: points[i - 1].eventTime,
                         });
                     }
                     runStart = null;
@@ -1483,34 +1761,201 @@
     function renderStopMarkers(stops) {
         stopMarkers.forEach(m => m.setMap(null));
         stopMarkers = [];
+        stopInfos = [];
 
-        stops.forEach(stop => {
+        stops.forEach((stop, i) => {
             const m = new google.maps.Marker({
                 position: {
                     lat: stop.lat,
                     lng: stop.lng
                 },
                 map,
-                title: 'Stop — ' + fmtDuration(stop.durationMin),
+                title: 'Stop ' + (i + 1) + ' — ' + fmtDuration(stop.durationMin),
                 zIndex: 8,
+                label: {
+                    text: String(i + 1),
+                    color: '#fff',
+                    fontSize: '10px',
+                    fontWeight: '700'
+                },
                 icon: {
                     path: google.maps.SymbolPath.CIRCLE,
-                    scale: 6,
+                    scale: 9,
                     fillColor: NAVY,
-                    fillOpacity: .9,
+                    fillOpacity: .95,
                     strokeColor: '#fff',
                     strokeWeight: 2,
                 },
             });
 
-            const iw = new google.maps.InfoWindow({
-                content: `<div style="font-size:12px;padding:4px 8px">
-                <strong>Stop</strong><br>Duration: ${escHtml(fmtDuration(stop.durationMin))}
-              </div>`,
-            });
-            m.addListener('click', () => iw.open(map, m));
+            const iw = new google.maps.InfoWindow();
+            m.addListener('click', () => openStop(i));
             stopMarkers.push(m);
+            stopInfos.push(iw);
         });
+    }
+
+    /** Pan to a stop, open its bubble, and fill in its address when it arrives. */
+    function openStop(i) {
+        const stop = tripStops[i];
+        const m = stopMarkers[i];
+        const iw = stopInfos[i];
+        if (!stop || !m || !iw) return;
+
+        if (openInfo && openInfo !== iw) openInfo.close();
+        openInfo = iw;
+
+        const id = 'iw-addr-' + i;
+        iw.setContent(`<div style="font-size:12px;padding:4px 8px;max-width:220px">
+            <strong>Stop ${i + 1}</strong> · ${escHtml(fmtDuration(stop.durationMin))}<br>
+            ${escHtml(fmtTime(stop.start))} – ${escHtml(fmtTime(stop.end))}<br>
+            <span id="${id}" style="color:#475569">Finding address…</span><br>
+            <a href="https://www.google.com/maps?q=${stop.lat},${stop.lng}" target="_blank" rel="noopener">Open in Google Maps</a>
+        </div>`);
+        iw.open(map, m);
+        map.panTo(m.getPosition());
+        if (map.getZoom() < 15) map.setZoom(16);
+
+        resolveAddress(stop.lat, stop.lng, true).then(a => {
+            const text = a || coordText(stop.lat, stop.lng);
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
+            // also fill the list row if it was waiting for a tap
+            const rowAddr = document.querySelector(`#td-stops-list .td-stop:nth-child(${i + 1}) .td-addr`);
+            if (rowAddr) {
+                rowAddr.classList.remove('pending');
+                rowAddr.textContent = text;
+            }
+        });
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       ADDRESSES  (coordinates → place name, via /geocode/reverse)
+       The server caches results (30 days, ~11 m grid) and talks to the free
+       OpenStreetMap geocoder at no more than ~1 request/second, so the browser
+       asks one at a time. Cached answers come back instantly and skip the wait.
+       ══════════════════════════════════════════════════════════════ */
+    const ADDR_DONE = new Map(); // 'lat,lng' → address string (successes only)
+    const ADDR_INFLIGHT = new Map(); // 'lat,lng' → Promise
+    let addrQueue = Promise.resolve();
+    let addrEpoch = 0; // bumped whenever the trip changes → queued lookups for the old trip are dropped
+
+    function coordKey(lat, lng) {
+        return (+lat).toFixed(4) + ',' + (+lng).toFixed(4);
+    }
+
+    function coordText(lat, lng) {
+        return (+lat).toFixed(5) + ', ' + (+lng).toFixed(5);
+    }
+
+    /** @param {boolean} urgent  skip the queue's polite spacing (user clicked something) */
+    function resolveAddress(lat, lng, urgent) {
+        const k = coordKey(lat, lng);
+        if (ADDR_DONE.has(k)) return Promise.resolve(ADDR_DONE.get(k));
+        if (ADDR_INFLIGHT.has(k)) return ADDR_INFLIGHT.get(k);
+
+        const epoch = addrEpoch;
+        const task = addrQueue.then(async () => {
+            if (!urgent && epoch !== addrEpoch) return null; // trip changed while waiting
+            let waitMs = 0;
+            try {
+                const res = await fetch(`/geocode/reverse?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
+                });
+                if (res.status === 401) {
+                    window.location.href = '/login?expired=1';
+                    return null;
+                }
+                if (res.status === 429) {
+                    waitMs = 5000; // we were throttled — back off, show coordinates
+                    return null;
+                }
+                if (!res.ok) return null;
+                const json = await res.json();
+                if (!json.cached) waitMs = 1100; // a real provider call was made
+                if (json.address) {
+                    ADDR_DONE.set(k, json.address);
+                    return json.address;
+                }
+                return null;
+            } catch (_) {
+                return null;
+            } finally {
+                if (waitMs) await new Promise(r => setTimeout(r, waitMs));
+            }
+        }).finally(() => ADDR_INFLIGHT.delete(k));
+
+        addrQueue = task.catch(() => null);
+        ADDR_INFLIGHT.set(k, task);
+        return task;
+    }
+
+    function fillAddress(el, lat, lng) {
+        if (!el) return;
+        el.classList.add('pending');
+        el.textContent = 'Finding address…';
+        resolveAddress(lat, lng).then(a => {
+            el.classList.remove('pending');
+            el.textContent = a || coordText(lat, lng);
+            if (!a) el.title = 'Address unavailable — showing coordinates';
+        });
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       TRIP DETAIL CARD
+       ══════════════════════════════════════════════════════════════ */
+    let tripStops = [];
+    const AUTO_ADDR_STOPS = 8; // look these up automatically; the rest on click
+
+    function renderTripDetail(points, stops, trip) {
+        tripStops = stops;
+        const first = points[0];
+        const last = points[points.length - 1];
+
+        document.getElementById('td-start-time').textContent = fmtDateTime(first.eventTime);
+        document.getElementById('td-end-lbl').textContent = trip?.inProgress ? 'Now' : 'End';
+        document.getElementById('td-end-time').textContent = trip?.inProgress ? 'in progress' : fmtDateTime(last.eventTime);
+        fillAddress(document.getElementById('td-start-addr'), first.latitude, first.longitude);
+        fillAddress(document.getElementById('td-end-addr'), last.latitude, last.longitude);
+
+        const wrap = document.getElementById('td-stops');
+        const list = document.getElementById('td-stops-list');
+        list.innerHTML = '';
+        if (stops.length) {
+            document.getElementById('td-stops-title').textContent =
+                `Stops (${stops.length})`;
+            stops.forEach((st, i) => {
+                const row = document.createElement('button');
+                row.type = 'button';
+                row.className = 'td-stop';
+                row.innerHTML = `<span class="td-stop-n">${i + 1}</span>
+                    <span class="td-stop-body">
+                        <span class="td-stop-time" style="display:block">${escHtml(fmtTime(st.start))} – ${escHtml(fmtTime(st.end))} · ${escHtml(fmtDuration(st.durationMin))}</span>
+                        <span class="td-addr pending" style="display:block"></span>
+                    </span>`;
+                row.addEventListener('click', () => openStop(i));
+                list.appendChild(row);
+
+                const addrEl = row.querySelector('.td-addr');
+                if (i < AUTO_ADDR_STOPS) {
+                    fillAddress(addrEl, st.lat, st.lng);
+                } else {
+                    addrEl.textContent = 'Tap to see address';
+                }
+            });
+            wrap.hidden = false;
+        } else {
+            wrap.hidden = true;
+        }
+        document.getElementById('trip-detail').classList.remove('hidden');
+    }
+
+    function hideTripDetail() {
+        document.getElementById('trip-detail').classList.add('hidden');
+        tripStops = [];
     }
 
     /* ══════════════════════════════════════════════════════════════
@@ -1674,6 +2119,8 @@
             setLiveStatus('connected', 'Connected');
             setLiveConnBtn(true);
             document.getElementById('live-bar').classList.remove('hidden');
+            document.getElementById('ls-state').textContent = 'Waiting…';
+            showLastKnown(); // a parked vehicle shows up straight away
 
         } catch (e) {
             console.error('SignalR start:', e);
@@ -1711,7 +2158,39 @@
         }
     }
 
-    function onLiveUpdate(data) {
+    /** First fix for the Live tab (and for shared vehicles): the last known position. */
+    async function showLastKnown() {
+        const vid = currentVehicleId;
+        try {
+            const res = await fetch(`/trips/${vid}/location`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+            });
+            if (res.status === 401) {
+                window.location.href = '/login?expired=1';
+                return;
+            }
+            if (vid !== currentVehicleId || !liveActive) return; // user moved on
+            const json = await res.json().catch(() => ({}));
+            if (!res.ok || !json.success) {
+                document.getElementById('ls-state').textContent =
+                    res.status === 403 ? 'Access ended' : 'Unavailable';
+                if (json.message) setLiveStatus('connected', json.message);
+                return;
+            }
+            if (!json.data) {
+                document.getElementById('ls-state').textContent = 'No location yet';
+                return;
+            }
+            onLiveUpdate(json.data, true);
+        } catch (_) {
+            /* the live stream will still deliver the next fix */
+        }
+    }
+
+    function onLiveUpdate(data, isSnapshot) {
         if (!map) return;
         const lat = +(data.latitude ?? data.lat ?? 0);
         const lng = +(data.longitude ?? data.lng ?? data.lon ?? 0);
@@ -1721,7 +2200,7 @@
             lat,
             lng
         };
-        const heading = data.heading || 0;
+        const heading = +(data.heading ?? data.Heading ?? 0) || 0;
 
         if (!liveMarker) {
             liveMarker = new google.maps.Marker({
@@ -1738,10 +2217,16 @@
             liveMarker.setIcon(makeArrowIcon(heading, 6));
         }
 
-        document.getElementById('ls-speed').textContent = (+(data.speed || 0)).toFixed(1) + ' km/h';
+        document.getElementById('ls-speed').textContent = (+(data.speed ?? data.Speed ?? 0)).toFixed(1) + ' km/h';
         document.getElementById('ls-heading').textContent = heading.toFixed(0) + '°';
-        document.getElementById('ls-ignition').textContent = data.ignitionOn ? 'ON' : 'OFF';
-        document.getElementById('ls-updated').textContent = new Date().toLocaleTimeString('en-GB', { timeZone: LK_TZ });
+        const ign = data.ignitionOn ?? data.ignitionStatus ?? data.IgnitionStatus;
+        const ignOn = ign === true || ign === 1 || /^(on|true|1)$/i.test(String(ign));
+        document.getElementById('ls-ignition').textContent = ignOn ? 'ON' : 'OFF';
+        document.getElementById('ls-state').textContent = (+(data.speed ?? data.Speed ?? 0)) > 2 ? 'Moving' : 'Parked';
+        const stamp = isSnapshot ? (data.lastUpdate ?? data.LastUpdate ?? null) : null;
+        document.getElementById('ls-updated').textContent = stamp ?
+            fmtDateTime(stamp) :
+            new Date().toLocaleTimeString('en-GB', { timeZone: LK_TZ });
     }
 
     function setLiveStatus(state, text) {
@@ -1759,6 +2244,7 @@
     }
 
     function hideLiveBar() {
+        document.getElementById('ls-state').textContent = '–';
         document.getElementById('live-bar').classList.add('hidden');
     }
 
@@ -1784,6 +2270,13 @@
         }
         stopMarkers.forEach(m => m.setMap(null));
         stopMarkers = [];
+        if (openInfo) {
+            openInfo.close();
+            openInfo = null;
+        }
+        stopInfos = [];
+        addrEpoch++;
+        hideTripDetail();
         tripPoints = [];
         currentTrip = null;
     }
@@ -1867,6 +2360,145 @@
     }
 
     /* ══════════════════════════════════════════════════════════════
+       MONTH → WEEK → DAY DRILL-DOWN  (mirrors the Android date picker)
+       Works on plain 'YYYY-MM-DD' strings in Sri Lanka calendar days, so the
+       browser's own time zone never shifts a date.
+       ══════════════════════════════════════════════════════════════ */
+    const DD_MONTHS_BACK = 12;
+    let ddLevel = 'month';
+    let ddMonth = null; // {y, m} (m = 0..11)
+    let ddWeek = null; // {start, end} day numbers within ddMonth
+    let ddOpener = null;
+
+    const pad2 = n => String(n).padStart(2, '0');
+    const dayKey = (y, m, d) => `${y}-${pad2(m + 1)}-${pad2(d)}`;
+    const utcFmt = (y, m, d, opts) => new Date(Date.UTC(y, m, d)).toLocaleDateString('en-US', {
+        ...opts,
+        timeZone: 'UTC'
+    });
+
+    function ddToday() {
+        const [y, m, d] = lkDayKey(Date.now()).split('-').map(Number);
+        return {
+            y,
+            m: m - 1,
+            d
+        };
+    }
+
+    function openDrill() {
+        ddOpener = document.activeElement;
+        document.getElementById('dd-overlay').classList.remove('hidden');
+        drillMonths();
+        document.querySelector('#dd-rows .dd-row')?.focus();
+    }
+
+    function closeDrill() {
+        document.getElementById('dd-overlay').classList.add('hidden');
+        if (ddOpener && ddOpener.focus) ddOpener.focus();
+    }
+
+    function drillBack() {
+        if (ddLevel === 'day') drillWeeks(ddMonth);
+        else if (ddLevel === 'week') drillMonths();
+    }
+
+    function ddRow(label, onClick, opts = {}) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'dd-row';
+        b.disabled = !!opts.disabled;
+        b.innerHTML = `<span>${escHtml(label)}</span>${opts.tag ? `<span class="dd-tag">${escHtml(opts.tag)}</span>` : ''}`;
+        if (!opts.disabled) b.addEventListener('click', onClick);
+        document.getElementById('dd-rows').appendChild(b);
+    }
+
+    function ddHead(title, canBack) {
+        document.getElementById('dd-title').textContent = title;
+        document.getElementById('dd-back').hidden = !canBack;
+        document.getElementById('dd-rows').innerHTML = '';
+        document.getElementById('dd-rows').scrollTop = 0;
+    }
+
+    function drillMonths() {
+        ddLevel = 'month';
+        ddHead('Select a month', false);
+        const t = ddToday();
+        let y = t.y,
+            m = t.m;
+        for (let i = 0; i < DD_MONTHS_BACK; i++) {
+            const mm = {
+                y,
+                m
+            };
+            ddRow(utcFmt(y, m, 1, {
+                month: 'long',
+                year: 'numeric'
+            }), () => drillWeeks(mm));
+            m--;
+            if (m < 0) {
+                m = 11;
+                y--;
+            }
+        }
+    }
+
+    function drillWeeks(mm) {
+        ddLevel = 'week';
+        ddMonth = mm;
+        ddHead(utcFmt(mm.y, mm.m, 1, {
+            month: 'long',
+            year: 'numeric'
+        }), true);
+        const t = ddToday();
+        const dim = new Date(Date.UTC(mm.y, mm.m + 1, 0)).getUTCDate();
+        const isCurrent = mm.y === t.y && mm.m === t.m;
+        const lastDay = isCurrent ? t.d : dim; // no weeks in the future
+
+        const weeks = [];
+        for (let start = 1; start <= lastDay; start += 7) {
+            weeks.push({
+                start,
+                end: Math.min(start + 6, lastDay)
+            });
+        }
+        weeks.reverse().forEach(w => {
+            const label = `${utcFmt(mm.y, mm.m, w.start, {month: 'short', day: 'numeric'})} – ${utcFmt(mm.y, mm.m, w.end, {month: 'short', day: 'numeric'})}`;
+            ddRow(label, () => drillDays(w));
+        });
+    }
+
+    function drillDays(w) {
+        ddLevel = 'day';
+        ddWeek = w;
+        const mm = ddMonth;
+        ddHead(`${utcFmt(mm.y, mm.m, w.start, {month: 'short', day: 'numeric'})} – ${utcFmt(mm.y, mm.m, w.end, {month: 'short', day: 'numeric'})}`, true);
+        const today = lkDayKey(Date.now());
+        for (let d = w.end; d >= w.start; d--) {
+            const key = dayKey(mm.y, mm.m, d);
+            ddRow(utcFmt(mm.y, mm.m, d, {
+                weekday: 'long',
+                month: 'short',
+                day: 'numeric'
+            }), () => pickDay(key), {
+                disabled: key > today,
+                tag: key === today ? 'Today' : ''
+            });
+        }
+    }
+
+    function pickDay(key) {
+        document.getElementById('date-from').value = key;
+        document.getElementById('date-to').value = key;
+        closeDrill();
+        loadTrips();
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && !document.getElementById('dd-overlay').classList.contains('hidden')) closeDrill();
+    });
+
+    /* ══════════════════════════════════════════════════════════════
        PAGE INIT
        ══════════════════════════════════════════════════════════════ */
     document.addEventListener('DOMContentLoaded', () => {
@@ -1875,6 +2507,31 @@
         document.getElementById('date-from').value = lkDayKey(Date.now() - 6 * 864e5);
         document.getElementById('date-to').value = lkDayKey(Date.now());
     });
+
+    /* Deep link from the Sharing page: /trips?vehicle=<id>&mode=live opens that
+       (shared) vehicle on the Live tab and starts streaming. Only a vehicle that is
+       already in this user's own dropdown can be chosen — anything else is ignored,
+       and the API still checks access on every call. */
+    function applyDeepLink() {
+        const q = new URLSearchParams(location.search);
+        const wanted = (q.get('vehicle') || '').toLowerCase();
+        if (!wanted) return;
+        const sel = document.getElementById('vehicle-select');
+        const opt = [...sel.options].find(o => !o.disabled && o.value.toLowerCase() === wanted);
+        if (!opt) return;
+        sel.value = opt.value;
+        applyVehicleFromSelect();
+        if (q.get('mode') === 'live') {
+            setMode('live');
+            whenSignalR(startLive);
+        }
+    }
+
+    // The SignalR script is loaded after the Maps script, so wait for it if needed.
+    function whenSignalR(cb, tries = 50) {
+        if (window.signalR) return cb();
+        if (tries > 0) setTimeout(() => whenSignalR(cb, tries - 1), 100);
+    }
 </script>
 
 {{-- ── Google Maps API (defined AFTER initMap is declared above) ── --}}

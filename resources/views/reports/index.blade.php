@@ -332,89 +332,217 @@
         }
     }
 
+    /* ── Report type tabs + quick ranges ── */
+    .rpt-tabs {
+        display: flex;
+        gap: .25rem;
+        background: #f3f4f6;
+        padding: .25rem;
+        border-radius: .75rem;
+        margin-bottom: 1rem;
+        width: 100%;
+        max-width: 30rem;
+    }
+
+    .rpt-tab {
+        flex: 1 1 0;
+        min-width: 0;
+        padding: .5rem .5rem;
+        font-size: .8125rem;
+        font-weight: 600;
+        color: #6b7280;
+        background: transparent;
+        border: none;
+        border-radius: .5rem;
+        cursor: pointer;
+        text-align: center;
+        transition: background .12s, color .12s;
+    }
+
+    .rpt-tab.active {
+        background: #fff;
+        color: #FA6908;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, .1);
+    }
+
+    .rpt-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .375rem;
+        align-self: flex-end;
+    }
+
+    .rpt-chip {
+        padding: .4375rem .75rem;
+        font-size: .75rem;
+        font-weight: 600;
+        color: #374151;
+        background: #fff;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 999px;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .rpt-chip:hover {
+        border-color: #FA6908;
+        color: #FA6908;
+    }
+
+    .rpt-sub {
+        font-size: .75rem;
+        color: #9ca3af;
+        margin: -.25rem 0 1rem;
+    }
+
+    .rpt-shared-tag {
+        display: inline-block;
+        margin-left: .375rem;
+        padding: .0625rem .375rem;
+        font-size: .625rem;
+        font-weight: 700;
+        color: #0369a1;
+        background: #e0f2fe;
+        border-radius: 999px;
+        vertical-align: middle;
+    }
+
+    .rpt-type-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: .375rem;
+        padding: .1875rem .625rem;
+        border-radius: 999px;
+        background: #f3f4f6;
+        color: #374151;
+        font-size: .75rem;
+        font-weight: 600;
+        margin: 0 .375rem .375rem 0;
+    }
+
+    .rpt-type-chip b {
+        color: #FA6908;
+    }
+
+    .rpt-addr {
+        font-weight: 600;
+        color: #021F4A;
+        line-height: 1.3;
+        margin-bottom: 2px;
+    }
+    .rpt-addr.pending { color: #9ca3af; font-weight: 500; }
+    .rpt-addr-btn {
+        background: none;
+        border: 0;
+        padding: 0;
+        font: inherit;
+        font-weight: 600;
+        color: #FA6908;
+        cursor: pointer;
+    }
+
+    .rpt-map-link {
+        color: #0369a1;
+        text-decoration: none;
+        font-size: .75rem;
+    }
+
+    .rpt-map-link:hover {
+        text-decoration: underline;
+    }
+
+    .rpt-table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
     /* ── Responsive ── */
-    @media (max-width: 640px) {
+    @media (max-width: 767px) {
         .rpt-controls {
-            flex-direction: column;
+            padding: 1rem;
+            gap: .75rem;
+        }
+
+        .rpt-field {
+            width: 100%;
         }
 
         .rpt-select,
         .rpt-date {
             min-width: 0;
             width: 100%;
+            font-size: 16px;
+            /* stops iOS zooming into the field */
+        }
+
+        .rpt-chips {
+            width: 100%;
+            align-self: stretch;
         }
 
         .rpt-load-btn {
             width: 100%;
             text-align: center;
-        }
-    }
-
-    /* ── Print / PDF styles ── */
-    @media print {
-
-        /* Freeze the page: hide sidebar, header, controls, only show results */
-        body * {
-            visibility: hidden !important;
+            padding: .75rem 1rem;
         }
 
-        #rpt-print-header,
-        #rpt-print-header *,
-        #rpt-results,
-        #rpt-results * {
-            visibility: visible !important;
-        }
-
-        #rpt-print-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            padding: .5cm 1cm .25cm;
-            background: #fff;
-            border-bottom: 2px solid #FA6908;
-        }
-
-        #rpt-results {
-            position: absolute;
-            top: 2.5cm;
-            left: 0;
-            right: 0;
-            padding: 0 1cm;
-        }
-
-        /* Hide export buttons when printing */
-        .rpt-export-group {
-            display: none !important;
-        }
-
-        .rpt-card {
-            box-shadow: none;
-            border: 1px solid #e5e7eb;
-            break-inside: avoid;
+        .rpt-tiles {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: .625rem;
         }
 
         .rpt-tile {
-            break-inside: avoid;
+            padding: .875rem;
         }
 
-        @page {
-            margin: 1cm;
-            size: A4 landscape;
+        .rpt-tile-value {
+            font-size: 1.25rem;
+        }
+
+        .rpt-card {
+            padding: 1rem;
+        }
+
+        .rpt-empty {
+            padding: 3rem 1.25rem;
+        }
+
+        /* Tables become stacked cards: no sideways scrolling on a phone */
+        table.rpt-table.stack,
+        table.rpt-table.stack tbody {
+            display: block;
+        }
+
+        table.rpt-table.stack thead {
+            display: none;
+        }
+
+        table.rpt-table.stack tr {
+            display: block;
+            padding: .625rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        table.rpt-table.stack td {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: .1875rem 0;
+            text-align: right;
+        }
+
+        table.rpt-table.stack td::before {
+            content: attr(data-label);
+            color: #9ca3af;
+            font-size: .6875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            text-align: left;
+            flex-shrink: 0;
         }
     }
 </style>
-
-{{-- Hidden print header (shown only during print) --}}
-<div id="rpt-print-header" style="display:none">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-        <div>
-            <div style="font-size:1.125rem;font-weight:800;color:#021F4A">ShaloTrack Fleet Report</div>
-            <div id="rpt-print-meta" style="font-size:.75rem;color:#6b7280;margin-top:.2rem"></div>
-        </div>
-        <div style="color:#FA6908;font-weight:700;font-size:.875rem">SHALOTRACK</div>
-    </div>
-</div>
 
 @if($error)
 <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-3">
@@ -426,156 +554,139 @@
 </div>
 @endif
 
+{{-- Report type --}}
+<div class="rpt-tabs" role="tablist" aria-label="Report type">
+    <button class="rpt-tab active" id="tab-km" role="tab" onclick="setType('km')">Trip &amp; KM</button>
+    <button class="rpt-tab" id="tab-stops" role="tab" onclick="setType('stops')">Stops</button>
+    <button class="rpt-tab" id="tab-alerts" role="tab" onclick="setType('alerts')">Alerts</button>
+</div>
+
 {{-- Controls --}}
 <div class="rpt-controls">
-    <div class="rpt-field">
-        <label class="rpt-label">Vehicle</label>
+    <div class="rpt-field" style="flex:1 1 220px">
+        <label class="rpt-label" for="rpt-vehicle">Vehicle</label>
         <select id="rpt-vehicle" class="rpt-select">
             <option value="">— Select vehicle —</option>
             @foreach($vehicles as $v)
-            <option value="{{ $v['vehicleId'] }}">{{ $v['vehicleNumber'] }}{{ isset($v['make']) ? ' · ' . $v['make'] . ' ' . ($v['model'] ?? '') : '' }}</option>
+            <option value="{{ $v['vehicleId'] }}">{{ $v['vehicleNumber'] }}{{ !empty($v['make']) ? ' · ' . trim($v['make'] . ' ' . ($v['model'] ?? '')) : '' }}{{ !empty($v['isShared']) ? ' (shared)' : '' }}</option>
             @endforeach
         </select>
     </div>
     <div class="rpt-field">
-        <label class="rpt-label">From</label>
+        <label class="rpt-label" for="rpt-from">From</label>
         <input type="date" id="rpt-from" class="rpt-date" />
     </div>
     <div class="rpt-field">
-        <label class="rpt-label">To</label>
+        <label class="rpt-label" for="rpt-to">To</label>
         <input type="date" id="rpt-to" class="rpt-date" />
     </div>
-    <button class="rpt-load-btn" id="rpt-load-btn" onclick="loadReport()">
-        Load Report
-    </button>
+    <div class="rpt-chips" aria-label="Quick ranges">
+        <button type="button" class="rpt-chip" onclick="quickRange(0)">Today</button>
+        <button type="button" class="rpt-chip" onclick="quickRange(6)">7 days</button>
+        <button type="button" class="rpt-chip" onclick="quickRange(29)">30 days</button>
+    </div>
+    <button class="rpt-load-btn" id="rpt-load-btn" onclick="loadReport()">Load Report</button>
 </div>
+<p class="rpt-sub">All dates and times are Sri Lanka time. Reports cover up to 90 days at a time.</p>
 
-{{-- Error banner --}}
-<div class="rpt-error" id="rpt-error"></div>
+<div class="rpt-error" id="rpt-error" role="alert"></div>
 
-{{-- Empty / prompt state --}}
 <div class="rpt-empty" id="rpt-empty">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.3"
             d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
     </svg>
-    <p>Select a vehicle and date range to generate a report</p>
-    <p class="sub">Trip history, distance, speed, and more</p>
+    <p id="rpt-empty-title">Select a vehicle and date range to generate a report</p>
+    <p class="sub" id="rpt-empty-sub">Trip history, distance, speed, stops and alerts</p>
 </div>
 
-{{-- Results section (hidden until data loads) --}}
 <div id="rpt-results" style="display:none">
 
-    {{-- Summary tiles --}}
-    <div class="rpt-tiles" id="rpt-tiles">
-        <div class="rpt-tile">
-            <div class="rpt-tile-icon orange">
-                <svg width="18" height="18" fill="none" stroke="#FA6908" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                </svg>
-            </div>
-            <div class="rpt-tile-label">Total Trips</div>
-            <div class="rpt-tile-value"><span id="tile-trips">—</span></div>
-        </div>
-        <div class="rpt-tile">
-            <div class="rpt-tile-icon navy">
-                <svg width="18" height="18" fill="none" stroke="#021F4A" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
-            </div>
-            <div class="rpt-tile-label">Total Distance</div>
-            <div class="rpt-tile-value"><span id="tile-dist">—</span><span class="rpt-tile-unit">km</span></div>
-        </div>
-        <div class="rpt-tile">
-            <div class="rpt-tile-icon green">
-                <svg width="18" height="18" fill="none" stroke="#15803d" stroke-width="2" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                </svg>
-            </div>
-            <div class="rpt-tile-label">Total Drive Time</div>
-            <div class="rpt-tile-value"><span id="tile-time">—</span></div>
-        </div>
-        <div class="rpt-tile">
-            <div class="rpt-tile-icon red">
-                <svg width="18" height="18" fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-            </div>
-            <div class="rpt-tile-label">Max Speed</div>
-            <div class="rpt-tile-value"><span id="tile-maxspeed">—</span><span class="rpt-tile-unit">km/h</span></div>
-        </div>
-        <div class="rpt-tile">
-            <div class="rpt-tile-icon orange">
-                <svg width="18" height="18" fill="none" stroke="#FA6908" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-            </div>
-            <div class="rpt-tile-label">Avg Speed</div>
-            <div class="rpt-tile-value"><span id="tile-avgspeed">—</span><span class="rpt-tile-unit">km/h</span></div>
-        </div>
-        <div class="rpt-tile">
-            <div class="rpt-tile-icon navy">
-                <svg width="18" height="18" fill="none" stroke="#021F4A" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-            </div>
-            <div class="rpt-tile-label">Stops</div>
-            <div class="rpt-tile-value"><span id="tile-stops">—</span></div>
+    {{-- Export bar --}}
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem">
+        <div style="font-size:.875rem;font-weight:700;color:#021F4A" id="rpt-heading"></div>
+        <div class="rpt-export-group">
+            <button class="rpt-export-btn" id="btn-csv" onclick="download('csv')" title="Download as a spreadsheet (CSV)">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                CSV
+            </button>
+            <button class="rpt-export-btn pdf" id="btn-pdf" onclick="download('pdf')" title="Download as a PDF report">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                PDF
+            </button>
         </div>
     </div>
 
-    {{-- Bar chart: distance per day --}}
-    <div class="rpt-card" id="rpt-chart-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:.75rem;flex-wrap:wrap">
-            <div class="rpt-card-title" style="margin:0">Distance Per Day</div>
-            <div class="rpt-export-group">
-                <button class="rpt-export-btn" onclick="exportCsv()" title="Download as CSV spreadsheet">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    Export CSV
-                </button>
-                <button class="rpt-export-btn pdf" onclick="exportPdf()" title="Save as PDF via browser print dialog">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                    </svg>
-                    Export PDF
-                </button>
+    {{-- ── Trip & KM ── --}}
+    <div id="view-km" style="display:none">
+        <div class="rpt-tiles" id="km-tiles"></div>
+
+        <div class="rpt-card" id="km-chart-card">
+            <div class="rpt-card-title">Distance Per Day</div>
+            <div id="rpt-chart-wrap"></div>
+        </div>
+
+        <div class="rpt-card">
+            <div class="rpt-card-title">Daily Breakdown</div>
+            <div class="rpt-table-wrap">
+                <table class="rpt-table stack">
+                    <thead>
+                        <tr><th>Date</th><th>Distance</th><th>Trips</th><th>Stops</th><th>Avg speed</th><th>Max speed</th><th>Ignition on</th></tr>
+                    </thead>
+                    <tbody id="km-daily"></tbody>
+                </table>
             </div>
         </div>
-        <div id="rpt-chart-wrap">
-            <svg id="rpt-chart" height="200"></svg>
+
+        <div class="rpt-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:.5rem;flex-wrap:wrap">
+                <div class="rpt-card-title" style="margin:0">Trip Details</div>
+                <span style="font-size:.6875rem;font-weight:600;color:#9ca3af;letter-spacing:.04em;text-transform:uppercase">↓ Latest First</span>
+            </div>
+            <div class="rpt-table-wrap">
+                <table class="rpt-table stack">
+                    <thead>
+                        <tr><th>#</th><th>Date</th><th>Start</th><th>End</th><th>Duration</th><th>Distance</th><th>Max speed</th><th>Avg speed</th></tr>
+                    </thead>
+                    <tbody id="km-trips"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    {{-- Trips table — latest first --}}
-    <div class="rpt-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:.5rem;flex-wrap:wrap">
-            <div class="rpt-card-title" style="margin:0">Trip Details</div>
-            <span style="font-size:.6875rem;font-weight:600;color:#9ca3af;letter-spacing:.04em;text-transform:uppercase">
-                ↓ Latest First
-            </span>
+    {{-- ── Stops ── --}}
+    <div id="view-stops" style="display:none">
+        <div class="rpt-tiles" id="stops-tiles"></div>
+        <div class="rpt-card">
+            <div class="rpt-card-title">Stops · latest first</div>
+            <div class="rpt-table-wrap">
+                <table class="rpt-table stack">
+                    <thead>
+                        <tr><th>#</th><th>Date</th><th>Arrived</th><th>Departed</th><th>Duration</th><th>Location</th></tr>
+                    </thead>
+                    <tbody id="stops-body"></tbody>
+                </table>
+            </div>
         </div>
-        <div class="rpt-table-wrap">
-            <table class="rpt-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Date</th>
-                        <th>Start Time</th>
-                        <th>End Time</th>
-                        <th>Duration</th>
-                        <th>Distance</th>
-                        <th>Max Speed</th>
-                        <th>Avg Speed</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="rpt-tbody"></tbody>
-            </table>
+    </div>
+
+    {{-- ── Alerts ── --}}
+    <div id="view-alerts" style="display:none">
+        <div class="rpt-tiles" id="alerts-tiles"></div>
+        <div class="rpt-card" id="alerts-types-card">
+            <div class="rpt-card-title">Alerts by type</div>
+            <div id="alerts-types"></div>
+        </div>
+        <div class="rpt-card">
+            <div class="rpt-card-title">All alerts · latest first</div>
+            <div class="rpt-table-wrap">
+                <table class="rpt-table stack">
+                    <thead>
+                        <tr><th>#</th><th>Date</th><th>Time</th><th>Type</th><th>Message</th></tr>
+                    </thead>
+                    <tbody id="alerts-body"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -583,295 +694,322 @@
 <script>
     'use strict';
 
-    // Default date range: last 7 days
-    (function() {
-        const now = new Date();
-        const from = new Date(now);
-        from.setDate(now.getDate() - 7);
-        document.getElementById('rpt-to').value = now.toISOString().slice(0, 10);
-        document.getElementById('rpt-from').value = from.toISOString().slice(0, 10);
-    })();
+    const TZ = 'Asia/Colombo';
+    let _type = 'km';
+    let _last = null; // exactly what is on screen — exports use the same parameters
 
-    let _trips = [];
-    let _vehicle = null;
+    // Sri Lanka "today" as YYYY-MM-DD, whatever the browser's time zone is
+    function lkToday(offsetDays = 0) {
+        const d = new Date(Date.now() - offsetDays * 86400000);
+        return d.toLocaleDateString('en-CA', { timeZone: TZ });
+    }
+
+    function quickRange(daysBack) {
+        document.getElementById('rpt-to').value = lkToday(0);
+        document.getElementById('rpt-from').value = lkToday(daysBack);
+    }
+    quickRange(6);
+
+    const TYPE_TEXT = {
+        km: ['Trip & KM report', 'Distance, speed, trips and daily totals'],
+        stops: ['Stop report', 'Every stop of five minutes or more'],
+        alerts: ['Alert report', 'Overspeed, geofence, ignition and other alerts'],
+    };
+
+    function setType(t) {
+        _type = t;
+        ['km', 'stops', 'alerts'].forEach(k => {
+            document.getElementById('tab-' + k).classList.toggle('active', k === t);
+            document.getElementById('tab-' + k).setAttribute('aria-selected', k === t ? 'true' : 'false');
+        });
+        document.getElementById('rpt-empty-sub').textContent = TYPE_TEXT[t][1];
+        // Switching tabs re-runs the report when the inputs are already filled in
+        if (document.getElementById('rpt-vehicle').value) loadReport();
+        else hideResults();
+    }
+
+    function hideResults() {
+        document.getElementById('rpt-results').style.display = 'none';
+        document.getElementById('rpt-empty').style.display = '';
+    }
 
     async function loadReport() {
         const vehicleId = document.getElementById('rpt-vehicle').value;
-        const fromDate = document.getElementById('rpt-from').value;
-        const toDate = document.getElementById('rpt-to').value;
-        const errEl = document.getElementById('rpt-error');
+        const from = document.getElementById('rpt-from').value;
+        const to = document.getElementById('rpt-to').value;
         const btn = document.getElementById('rpt-load-btn');
 
-        errEl.style.display = 'none';
+        document.getElementById('rpt-error').style.display = 'none';
 
-        if (!vehicleId) {
-            _showErr('Please select a vehicle.');
-            return;
-        }
-        if (!fromDate || !toDate) {
-            _showErr('Please select a date range.');
-            return;
-        }
-        if (fromDate > toDate) {
-            _showErr('"From" date cannot be after "To" date.');
-            return;
-        }
+        if (!vehicleId) return showErr('Please select a vehicle.');
+        if (!from || !to) return showErr('Please select a date range.');
+        if (from > to) return showErr('"From" date cannot be after "To" date.');
+        const days = Math.round((new Date(to) - new Date(from)) / 86400000) + 1;
+        if (days > 90) return showErr('Reports are limited to 90 days at a time. Please choose a shorter range.');
 
-        // Build ISO timestamps (start of from-day, end of to-day)
-        const fromISO = fromDate + 'T00:00:00Z';
-        const toISO = toDate + 'T23:59:59Z';
-
+        const type = _type;
         btn.disabled = true;
         btn.textContent = 'Loading…';
         document.getElementById('rpt-empty').style.display = 'none';
         document.getElementById('rpt-results').style.display = 'none';
 
         try {
-            const url = `/reports/data?vehicleId=${encodeURIComponent(vehicleId)}&from=${encodeURIComponent(fromISO)}&to=${encodeURIComponent(toISO)}`;
-            const res = await fetch(url, {
+            const qs = new URLSearchParams({ type, vehicleId, from, to });
+            const res = await fetch('/reports/view?' + qs, {
                 credentials: 'include',
-                headers: {
-                    'Accept': 'application/json'
-                },
+                headers: { 'Accept': 'application/json' },
             });
-
-            if (res.status === 401) {
-                window.location.href = '/login?expired=1';
-                return;
-            }
+            if (res.status === 401) { window.location.href = '/login?expired=1'; return; }
 
             const payload = await res.json().catch(() => ({}));
-
-            if (!payload.success) {
-                _showErr(payload.message ?? 'Failed to load report data.');
-                return;
+            if (!res.ok || !payload.success) {
+                return showErr(payload.message || (res.status === 429 ? 'Too many requests — please wait a moment.' : 'Failed to load report data.'));
             }
+            if (type !== _type) return; // user switched tab while loading
 
-            const data = payload.data ?? {};
+            const sel = document.getElementById('rpt-vehicle');
+            _last = { type, vehicleId, from, to };
+            document.getElementById('rpt-heading').textContent =
+                TYPE_TEXT[type][0] + ' · ' + sel.options[sel.selectedIndex].text + ' · ' + fmtRange(from, to);
 
-            // Filter out in-progress trips, then sort LATEST FIRST
-            _trips = (data.trips ?? [])
-                .filter(t => !t.inProgress)
-                .sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
-
-            _vehicle = vehicleId;
-            _renderReport(data);
-
+            ['km', 'stops', 'alerts'].forEach(k => document.getElementById('view-' + k).style.display = k === type ? '' : 'none');
+            const ok = ({ km: renderKm, stops: renderStops, alerts: renderAlerts })[type](payload.data);
+            if (ok === false) return;   // empty report — showEmpty() already explained why
+            document.getElementById('rpt-results').style.display = '';
         } catch (e) {
-            _showErr('Network error — please check your connection.');
+            showErr('Network error — please check your connection.');
         } finally {
             btn.disabled = false;
             btn.textContent = 'Load Report';
         }
     }
 
-    function _renderReport(data) {
-        const trips = _trips;
-
-        if (trips.length === 0) {
-            document.getElementById('rpt-empty').style.display = '';
-            document.getElementById('rpt-empty').querySelector('p').textContent =
-                'No completed trips found for the selected period.';
-            document.getElementById('rpt-empty').querySelector('.sub').textContent =
-                'Try extending the date range or checking a different vehicle.';
-            return;
-        }
-
-        // ── Aggregates ──────────────────────────────────────────────────────
-        const totalDist = trips.reduce((s, t) => s + (t.distanceKm ?? 0), 0);
-        const totalMins = trips.reduce((s, t) => s + (t.durationMinutes ?? 0), 0);
-        const maxSpeed = Math.max(...trips.map(t => t.maxSpeed ?? 0));
-        const avgSpeed = trips.reduce((s, t) => s + (t.avgSpeed ?? 0), 0) / trips.length;
-        const stopCount = data.stopCount ?? 0;
-
-        // ── Tiles ────────────────────────────────────────────────────────────
-        document.getElementById('tile-trips').textContent = trips.length;
-        document.getElementById('tile-dist').textContent = totalDist.toFixed(1);
-        document.getElementById('tile-time').textContent = _fmtDuration(totalMins);
-        document.getElementById('tile-maxspeed').textContent = maxSpeed.toFixed(0);
-        document.getElementById('tile-avgspeed').textContent = avgSpeed.toFixed(1);
-        document.getElementById('tile-stops').textContent = stopCount;
-
-        // ── Chart: distance per day (always chronological on chart) ─────────
-        const byDay = {};
-        trips.forEach(t => {
-            const day = (t.startTime ?? '').slice(0, 10);
-            if (day) byDay[day] = (byDay[day] ?? 0) + (t.distanceKm ?? 0);
-        });
-        const days = Object.keys(byDay).sort(); // chart always oldest→newest
-        const values = days.map(d => byDay[d]);
-        _renderBarChart(days, values);
-
-        // ── Table: latest first (trips already sorted) ───────────────────────
-        const tbody = document.getElementById('rpt-tbody');
-        tbody.innerHTML = '';
-        trips.forEach((t, i) => {
-            const start = new Date(t.startTime ?? '');
-            const end = new Date(t.endTime ?? '');
-            const row = document.createElement('tr');
-            if (i % 2 === 1) row.style.background = '#fafafa';
-            row.innerHTML = `
-                <td style="color:#9ca3af;font-size:.75rem">${i + 1}</td>
-                <td style="font-weight:600;color:#021F4A">${_fmtDate(start)}</td>
-                <td>${_fmtTime(start)}</td>
-                <td>${t.endTime ? _fmtTime(end) : '<span style="color:#9ca3af">—</span>'}</td>
-                <td>${_fmtDuration(t.durationMinutes ?? 0)}</td>
-                <td><strong>${(t.distanceKm ?? 0).toFixed(2)}</strong> km</td>
-                <td>${(t.maxSpeed ?? 0).toFixed(0)} km/h</td>
-                <td>${(t.avgSpeed ?? 0).toFixed(1)} km/h</td>
-                <td><span class="rpt-badge ${t.inProgress ? 'rpt-badge-orange' : 'rpt-badge-green'}">${t.inProgress ? 'In Progress' : 'Completed'}</span></td>
-            `;
-            tbody.appendChild(row);
-        });
-
-        document.getElementById('rpt-results').style.display = '';
+    // ── Renderers ────────────────────────────────────────────────────────────
+    function tile(label, value, unit, tone) {
+        return `<div class="rpt-tile"><div class="rpt-tile-label">${esc(label)}</div>
+            <div class="rpt-tile-value"${tone ? ` style="color:${tone}"` : ''}>${esc(value)}${unit ? `<span class="rpt-tile-unit">${esc(unit)}</span>` : ''}</div></div>`;
     }
 
-    function _renderBarChart(days, values) {
+    function renderKm(d) {
+        const s = d.summary;
+        if (!s.trips && !s.distanceKm && !s.stops) {
+            return showEmpty('No trips were recorded for this vehicle in the selected period.');
+        }
+        document.getElementById('km-tiles').innerHTML =
+            tile('Total distance', s.distanceKm.toFixed(2), 'km') +
+            tile('Trips', s.trips) +
+            tile('Stops', s.stops) +
+            tile('Driving time', s.drivingLabel) +
+            tile('Idle time', s.idleLabel) +
+            tile('Ignition on', s.ignitionLabel) +
+            tile('Max speed', s.maxSpeed.toFixed(0), 'km/h') +
+            tile('Average speed', s.avgSpeed.toFixed(1), 'km/h') +
+            tile('Overspeed alerts', s.overspeed, '', s.overspeed > 0 ? '#dc2626' : '');
+
+        const chartCard = document.getElementById('km-chart-card');
+        chartCard.style.display = d.daily.length > 1 ? '' : 'none';
+        if (d.daily.length > 1) renderBarChart(d.daily.map(r => r.label), d.daily.map(r => r.distanceKm));
+
+        const dash = '<span style="color:#9ca3af">—</span>';
+        document.getElementById('km-daily').innerHTML = d.daily.map(r => `<tr>
+            <td data-label="Date" style="font-weight:600;color:#021F4A">${esc(r.weekday)}, ${esc(r.label)}</td>
+            <td data-label="Distance">${r.distanceKm > 0 ? '<strong>' + r.distanceKm.toFixed(2) + '</strong> km' : dash}</td>
+            <td data-label="Trips">${r.trips || dash}</td>
+            <td data-label="Stops">${r.stops || dash}</td>
+            <td data-label="Avg speed">${r.avgSpeed > 0 ? r.avgSpeed.toFixed(1) + ' km/h' : dash}</td>
+            <td data-label="Max speed">${r.maxSpeed > 0 ? r.maxSpeed.toFixed(0) + ' km/h' : dash}</td>
+            <td data-label="Ignition on">${r.ignitionMin > 0 ? esc(r.ignitionLabel) : dash}</td></tr>`).join('');
+
+        document.getElementById('km-trips').innerHTML = d.trips.length ? d.trips.map((t, i) => `<tr>
+            <td data-label="#" style="color:#9ca3af">${i + 1}</td>
+            <td data-label="Date" style="font-weight:600;color:#021F4A">${esc(t.date)}</td>
+            <td data-label="Start">${esc(t.start)}</td>
+            <td data-label="End">${t.inProgress ? '<span class="rpt-badge rpt-badge-orange">In progress</span>' : (t.end ? esc(t.end) : dash)}</td>
+            <td data-label="Duration">${esc(t.duration)}</td>
+            <td data-label="Distance"><strong>${t.distanceKm.toFixed(2)}</strong> km</td>
+            <td data-label="Max speed">${t.maxSpeed} km/h</td>
+            <td data-label="Avg speed">${t.avgSpeed.toFixed(1)} km/h</td></tr>`).join('')
+            : `<tr><td colspan="8" style="text-align:center;color:#9ca3af;padding:1.5rem">No individual trips in this period.</td></tr>`;
+    }
+
+    function mapLink(lat, lng) {
+        if (lat === null || lng === null) return '<span style="color:#9ca3af">—</span>';
+        return `<a class="rpt-map-link" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps?q=${encodeURIComponent(lat)},${encodeURIComponent(lng)}">${lat.toFixed(5)}, ${lng.toFixed(5)} ↗</a>`;
+    }
+
+    function renderStops(d) {
+        if (!d.stops.length) return showEmpty('No stops were recorded for this vehicle in the selected period.');
+        const s = d.summary;
+        document.getElementById('stops-tiles').innerHTML =
+            tile('Total stops', s.count) + tile('Total stopped time', s.totalLabel) +
+            tile('Longest stop', s.longestLabel) + tile('Average stop', s.averageLabel);
+        document.getElementById('stops-body').innerHTML = d.stops.map((x, i) => `<tr>
+            <td data-label="#" style="color:#9ca3af">${i + 1}</td>
+            <td data-label="Date" style="font-weight:600;color:#021F4A">${esc(x.date)}</td>
+            <td data-label="Arrived">${esc(x.arrived)}</td>
+            <td data-label="Departed">${x.inProgress ? '<span class="rpt-badge rpt-badge-orange">Still stopped</span>' : (x.departed ? esc(x.departed) : '—')}</td>
+            <td data-label="Duration"><strong>${esc(x.duration)}</strong></td>
+            <td data-label="Location">${addrCell(x.lat, x.lng, i)}${mapLink(x.lat, x.lng)}</td></tr>`).join('');
+        resolveStopAddresses();
+    }
+
+    /* ── Stop addresses (coordinates → place name) ─────────────────────────────
+       Same approach as the Trips page: ask /geocode/reverse one place at a time
+       (the server caches and paces the free OpenStreetMap lookups). The first
+       AUTO_ADDR stops resolve on their own; the rest on tap. Downloads use
+       whatever addresses are already cached, so view the report first if you
+       want them in the PDF/CSV. */
+    const AUTO_ADDR = 60;
+    let addrRun = 0;
+
+    function addrCell(lat, lng, i) {
+        if (lat === null || lng === null) return '';
+        return i < AUTO_ADDR ?
+            `<div class="rpt-addr pending" data-lat="${lat}" data-lng="${lng}">Finding address…</div>` :
+            `<div class="rpt-addr" data-lat="${lat}" data-lng="${lng}"><button type="button" class="rpt-addr-btn" onclick="resolveOne(this.parentElement)">Show address</button></div>`;
+    }
+
+    async function lookupAddress(lat, lng) {
+        try {
+            const res = await fetch(`/geocode/reverse?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+            });
+            if (res.status === 401) { window.location.href = '/login?expired=1'; return { address: null, cached: true }; }
+            if (res.status === 429) return { address: null, cached: false, backoff: true };
+            if (!res.ok) return { address: null, cached: true };
+            return await res.json();
+        } catch (_) {
+            return { address: null, cached: true };
+        }
+    }
+
+    async function resolveOne(el) {
+        el.classList.add('pending');
+        el.textContent = 'Finding address…';
+        const r = await lookupAddress(el.dataset.lat, el.dataset.lng);
+        el.classList.remove('pending');
+        el.textContent = r.address || 'Address unavailable';
+    }
+
+    async function resolveStopAddresses() {
+        const run = ++addrRun;
+        for (const el of document.querySelectorAll('#stops-body .rpt-addr.pending')) {
+            if (run !== addrRun || !document.body.contains(el)) return; // a newer report replaced this one
+            const r = await lookupAddress(el.dataset.lat, el.dataset.lng);
+            el.classList.remove('pending');
+            el.textContent = r.address || 'Address unavailable';
+            if (r.backoff) await new Promise(res => setTimeout(res, 5000));
+            else if (!r.cached) await new Promise(res => setTimeout(res, 1100)); // be polite to the provider
+        }
+    }
+
+    function renderAlerts(d) {
+        if (!d.total) return showEmpty('No alerts were triggered for this vehicle in the selected period.');
+        const types = Object.entries(d.counts);
+        const unread = d.alerts.filter(a => !a.isRead).length;
+        document.getElementById('alerts-tiles').innerHTML =
+            tile('Total alerts', d.total) + tile('Alert types', types.length) + tile('Unread', unread);
+        document.getElementById('alerts-types').innerHTML = types
+            .map(([t, n]) => `<span class="rpt-type-chip">${esc(t)} <b>${n}</b></span>`).join('');
+        document.getElementById('alerts-body').innerHTML = d.alerts.map((a, i) => `<tr>
+            <td data-label="#" style="color:#9ca3af">${i + 1}</td>
+            <td data-label="Date" style="font-weight:600;color:#021F4A">${esc(a.date)}</td>
+            <td data-label="Time">${esc(a.time)}</td>
+            <td data-label="Type"><span class="rpt-badge rpt-badge-orange">${esc(a.type)}</span></td>
+            <td data-label="Message" style="text-align:left">${esc(a.message)}</td></tr>`).join('');
+    }
+
+    function renderBarChart(labels, values) {
         const wrap = document.getElementById('rpt-chart-wrap');
-        const svgW = wrap.clientWidth || 800;
-        const svgH = 200;
-        const padL = 48;
-        const padR = 12;
-        const padT = 16;
-        const padB = 40;
-        const chartW = svgW - padL - padR;
-        const chartH = svgH - padT - padB;
-        const n = days.length;
+        const svgW = Math.max(280, wrap.clientWidth || 800);
+        const svgH = 200, padL = 44, padR = 10, padT = 14, padB = 36;
+        const chartW = svgW - padL - padR, chartH = svgH - padT - padB;
+        const n = labels.length;
         const maxVal = Math.max(...values, 0.1);
-        const barGap = Math.min(8, Math.max(2, chartW / n * 0.2));
-        const barW = Math.max(4, (chartW - barGap * (n - 1)) / n);
+        const gap = Math.min(8, Math.max(2, chartW / n * 0.2));
+        const barW = Math.max(3, (chartW - gap * (n - 1)) / n);
+        const every = Math.max(1, Math.ceil(n / Math.max(3, Math.floor(chartW / 54))));
 
-        let markup = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">`;
-
-        // Y-axis gridlines + labels
-        const yTicks = 4;
-        for (let i = 0; i <= yTicks; i++) {
-            const y = padT + chartH - (i / yTicks) * chartH;
-            const val = (maxVal * i / yTicks).toFixed(1);
-            markup += `<line x1="${padL}" y1="${y}" x2="${padL + chartW}" y2="${y}" stroke="#f3f4f6" stroke-width="1"/>`;
-            markup += `<text x="${padL - 6}" y="${y + 4}" text-anchor="end" font-size="10" fill="#9ca3af">${val}</text>`;
+        let m = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" role="img" aria-label="Distance per day">`;
+        for (let i = 0; i <= 4; i++) {
+            const y = padT + chartH - (i / 4) * chartH;
+            m += `<line x1="${padL}" y1="${y}" x2="${padL + chartW}" y2="${y}" stroke="#f3f4f6"/>`;
+            m += `<text x="${padL - 6}" y="${y + 4}" text-anchor="end" font-size="10" fill="#9ca3af">${(maxVal * i / 4).toFixed(1)}</text>`;
         }
-
-        // Bars
         for (let i = 0; i < n; i++) {
-            const x = padL + i * (barW + barGap);
-            const bH = Math.max(2, (values[i] / maxVal) * chartH);
-            const y = padT + chartH - bH;
-            markup += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${bH.toFixed(1)}" rx="3" fill="#FA6908" opacity="0.85"/>`;
-
-            if (n <= 14 || i === 0 || i === n - 1 || i % Math.ceil(n / 7) === 0) {
-                const label = days[i].slice(5); // MM-DD
-                markup += `<text x="${(x + barW / 2).toFixed(1)}" y="${svgH - 6}" text-anchor="middle" font-size="10" fill="#6b7280">${label}</text>`;
-            }
+            const x = padL + i * (barW + gap);
+            const bH = values[i] > 0 ? Math.max(2, (values[i] / maxVal) * chartH) : 0;
+            if (bH) m += `<rect x="${x.toFixed(1)}" y="${(padT + chartH - bH).toFixed(1)}" width="${barW.toFixed(1)}" height="${bH.toFixed(1)}" rx="3" fill="#FA6908" opacity=".85"><title>${esc(labels[i])}: ${values[i].toFixed(2)} km</title></rect>`;
+            if (i % every === 0 || i === n - 1) m += `<text x="${(x + barW / 2).toFixed(1)}" y="${svgH - 8}" text-anchor="middle" font-size="10" fill="#6b7280">${esc(labels[i])}</text>`;
         }
-
-        // Axis lines
-        markup += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + chartH}" stroke="#e5e7eb" stroke-width="1"/>`;
-        markup += `<line x1="${padL}" y1="${padT + chartH}" x2="${padL + chartW}" y2="${padT + chartH}" stroke="#e5e7eb" stroke-width="1"/>`;
-        markup += `<text x="12" y="${padT + chartH / 2}" text-anchor="middle" font-size="10" fill="#9ca3af" transform="rotate(-90,12,${padT + chartH / 2})">km</text>`;
-
-        markup += '</svg>';
-        wrap.innerHTML = markup;
+        m += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + chartH}" stroke="#e5e7eb"/><line x1="${padL}" y1="${padT + chartH}" x2="${padL + chartW}" y2="${padT + chartH}" stroke="#e5e7eb"/>`;
+        m += `<text x="12" y="${padT + chartH / 2}" text-anchor="middle" font-size="10" fill="#9ca3af" transform="rotate(-90,12,${padT + chartH / 2})">km</text></svg>`;
+        wrap.innerHTML = m;
     }
 
-    function exportCsv() {
-        if (!_trips.length) return;
-        const header = ['#', 'Date', 'Start', 'End', 'Duration (min)', 'Distance (km)', 'Max Speed (km/h)', 'Avg Speed (km/h)', 'Status'];
-        const rows = _trips.map((t, i) => {
-            const start = new Date(t.startTime ?? '');
-            const end = new Date(t.endTime ?? '');
-            return [
-                i + 1,
-                _fmtDate(start),
-                t.startTime ? start.toISOString() : '',
-                t.endTime ? end.toISOString() : '',
-                (t.durationMinutes ?? 0).toFixed(1),
-                (t.distanceKm ?? 0).toFixed(3),
-                (t.maxSpeed ?? 0).toFixed(1),
-                (t.avgSpeed ?? 0).toFixed(1),
-                t.inProgress ? 'In Progress' : 'Completed',
-            ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
-        });
-        const csv = [header.join(','), ...rows].join('\n');
-        const blob = new Blob([csv], {
-            type: 'text/csv;charset=utf-8;'
-        });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        const from = document.getElementById('rpt-from').value;
-        const to = document.getElementById('rpt-to').value;
-        a.href = url;
-        a.download = `shalotrack-report-${from}-to-${to}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
-    }
-
-    function exportPdf() {
-        if (!_trips.length) return;
-
-        // Populate print header with context
-        const vehicleSel = document.getElementById('rpt-vehicle');
-        const vehicleLabel = vehicleSel.options[vehicleSel.selectedIndex]?.text ?? '';
-        const from = document.getElementById('rpt-from').value;
-        const to = document.getElementById('rpt-to').value;
-        const generated = new Date().toLocaleString('en-GB', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-
-        document.getElementById('rpt-print-meta').textContent =
-            `Vehicle: ${vehicleLabel}  ·  Period: ${from} to ${to}  ·  Generated: ${generated}`;
-        document.getElementById('rpt-print-header').style.display = '';
-
-        window.print();
-
-        // Restore after dialog closes
-        setTimeout(() => {
-            document.getElementById('rpt-print-header').style.display = 'none';
-        }, 1000);
+    // ── Downloads (server-rendered PDF / CSV of exactly what is on screen) ──
+    async function download(format) {
+        if (!_last) return;
+        const btn = document.getElementById(format === 'pdf' ? 'btn-pdf' : 'btn-csv');
+        const old = btn.innerHTML;
+        btn.disabled = true;
+        btn.textContent = format === 'pdf' ? 'Building PDF…' : 'Preparing…';
+        try {
+            const qs = new URLSearchParams({ ..._last, format });
+            const res = await fetch('/reports/export?' + qs, { credentials: 'include' });
+            if (res.status === 401) { window.location.href = '/login?expired=1'; return; }
+            if (!res.ok) {
+                const j = await res.json().catch(() => ({}));
+                throw new Error(j.message || (res.status === 429 ? 'Too many downloads — please wait a minute.' : 'Could not generate the file.'));
+            }
+            const blob = await res.blob();
+            const name = (res.headers.get('Content-Disposition') || '').match(/filename="?([^";]+)"?/)?.[1]
+                || `shalotrack-${_last.type}-${_last.from}-to-${_last.to}.${format}`;
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = name;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 2000);
+        } catch (e) {
+            showErr(e.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = old;
+        }
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
-    function _fmtDate(d) {
-        if (isNaN(d)) return '—';
-        return d.toLocaleDateString('en-GB', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric'
-        });
+    function esc(s) {
+        return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     }
 
-    function _fmtTime(d) {
-        if (isNaN(d)) return '—';
-        return d.toLocaleTimeString('en-GB', {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+    function fmtRange(from, to) {
+        const f = d => new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' });
+        return from === to ? f(from) : f(from) + ' – ' + f(to);
     }
 
-    function _fmtDuration(mins) {
-        if (!mins && mins !== 0) return '—';
-        const h = Math.floor(mins / 60);
-        const m = Math.round(mins % 60);
-        return h > 0 ? `${h}h ${m}m` : `${m}m`;
-    }
-
-    function _showErr(msg) {
+    function showErr(msg) {
         const el = document.getElementById('rpt-error');
         el.textContent = msg;
         el.style.display = '';
-        document.getElementById('rpt-empty').style.display = '';
+        if (document.getElementById('rpt-results').style.display === 'none') {
+            document.getElementById('rpt-empty').style.display = '';
+        }
     }
 
-    // Allow Enter key on controls
+    function showEmpty(msg) {
+        document.getElementById('rpt-results').style.display = 'none';
+        document.getElementById('rpt-empty').style.display = '';
+        document.getElementById('rpt-empty-title').textContent = msg;
+        document.getElementById('rpt-empty-sub').textContent = 'Try a longer date range or a different vehicle.';
+        return false;
+    }
+
     ['rpt-from', 'rpt-to', 'rpt-vehicle'].forEach(id => {
-        document.getElementById(id)?.addEventListener('keydown', e => {
-            if (e.key === 'Enter') loadReport();
-        });
+        document.getElementById(id)?.addEventListener('keydown', e => { if (e.key === 'Enter') loadReport(); });
     });
 </script>
 

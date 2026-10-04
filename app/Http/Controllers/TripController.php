@@ -145,6 +145,42 @@ class TripController extends Controller
     }
 
     /**
+     * GET /trips/{vehicleId}/location
+     * Last known position, so the Live tab can show a parked (or just-shared)
+     * vehicle immediately instead of waiting for its next SignalR push — the
+     * Android shared-vehicle map does the same first fetch. The API enforces
+     * owner / accepted-share access; 403 and 404 are passed through as states.
+     */
+    public function location(string $vehicleId)
+    {
+        try {
+            $response = $this->api->getVehicleLocation($vehicleId);
+            $loc = $response['data'] ?? $response;
+
+            return response()->json([
+                'success' => true,
+                'data'    => is_array($loc) ? $loc : null,
+            ])->header('Cache-Control', 'no-store');
+        } catch (\Exception $e) {
+            $code = (int) $e->getCode();
+            if ($code === 401) {
+                return response()->json(['success' => false, 'expired' => true], 401);
+            }
+            if ($code === 404) {
+                return response()->json(['success' => true, 'data' => null]);   // no fix yet
+            }
+            if ($code === 403) {
+                return response()->json(['success' => false, 'message' => 'You do not have access to this vehicle.'], 403);
+            }
+            if ($code === 402) {
+                return response()->json(['success' => false, 'message' => 'Subscription expired — renew to use live tracking.'], 402);
+            }
+            Log::error('TripController: location failed', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Could not load the last known location.'], 422);
+        }
+    }
+
+    /**
      * GET /trips/{vehicleId}/report?from=&to=
      *
      * Generates an A4-landscape PDF report of all trips for the given vehicle
