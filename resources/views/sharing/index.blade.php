@@ -1,5 +1,8 @@
 @extends('layouts.app')
 
+@section('title', 'Vehicle Sharing — ShaloTrack Fleet')
+@section('page-title', 'Vehicle Sharing')
+
 @section('content')
 @php
 $myShares = $myShares ?? [];
@@ -693,8 +696,19 @@ $pendingCount = count($pendingInvites);
             justify-content: center;
         }
 
+        .sh-tabs {
+            gap: 0;
+        }
+
         .sh-tab {
-            padding: .625rem .875rem;
+            flex: 1 1 0;
+            min-width: 0;
+            white-space: normal;
+            text-align: center;
+            justify-content: center;
+            gap: .375rem;
+            padding: .625rem .25rem;
+            font-size: .75rem;
         }
 
         .sh-card {
