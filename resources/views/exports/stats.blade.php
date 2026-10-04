@@ -133,5 +133,8 @@
         @endforeach
     </tbody>
 </table>
+@if(!empty($tripsCut))
+<p class="mut" style="margin-top:6px;font-size:9px">Showing the latest {{ $tripsCut['shown'] }} of {{ $tripsCut['total'] }} rows. Download the CSV for every row.</p>
+@endif
 @endif
 @endsection

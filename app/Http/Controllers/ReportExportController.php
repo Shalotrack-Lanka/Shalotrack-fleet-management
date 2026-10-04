@@ -23,7 +23,26 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ReportExportController extends Controller
 {
+    /**
+     * A PDF is built in memory (the container's PHP limit is 160 MB on a 1 GB box), so
+     * long tables are capped. CSV is streamed row by row and always has everything.
+     */
+    private const PDF_MAX_ROWS = 250;
+
     public function __construct(private ReportBuilder $reports, private ReverseGeocoder $geocoder) {}
+
+    /**
+     * @param array<int,mixed> $rows newest first
+     * @return array{0:array<int,mixed>,1:?array{shown:int,total:int}}
+     */
+    private function capForPdf(array $rows): array
+    {
+        $total = count($rows);
+        if ($total <= self::PDF_MAX_ROWS) {
+            return [$rows, null];
+        }
+        return [array_slice($rows, 0, self::PDF_MAX_ROWS), ['shown' => self::PDF_MAX_ROWS, 'total' => $total]];
+    }
 
     // ── GET|POST /stats/{vehicleId}/export?period=today|week|month|all&format=pdf|csv ──
 
@@ -150,6 +169,8 @@ class ReportExportController extends Controller
             ];
         }
 
+        [$trips, $tripsCut] = $trips === null ? [null, null] : $this->capForPdf($trips);
+
         return PdfExport::download('exports.stats', [
             'reportTitle' => $title,
             'vehicle'     => $vehicle,
@@ -157,6 +178,7 @@ class ReportExportController extends Controller
             'generatedAt' => LocalTime::now()->format('d M Y, h:i A'),
             'stats'       => $stats,
             'trips'       => $trips,
+            'tripsCut'    => $tripsCut,
             'charts'      => $charts,
         ], $name . '.pdf');
     }
@@ -196,12 +218,15 @@ class ReportExportController extends Controller
             return CsvExport::download($name . '.csv', $rows);
         }
 
+        [$stops, $cut] = $this->capForPdf($stops);
+
         return PdfExport::download('exports.stops', [
             'reportTitle' => 'Stop Report',
             'vehicle'     => $vehicle,
             'rangeLabel'  => $range,
             'generatedAt' => LocalTime::now()->format('d M Y, h:i A'),
             'stops'       => $stops,
+            'cut'         => $cut,
         ], $name . '.pdf');
     }
 
@@ -234,12 +259,15 @@ class ReportExportController extends Controller
             return CsvExport::download($name . '.csv', $rows);
         }
 
+        [$report['alerts'], $cut] = $this->capForPdf($report['alerts']);
+
         return PdfExport::download('exports.alerts', [
             'reportTitle' => 'Alert Report',
             'vehicle'     => $vehicle,
             'rangeLabel'  => $range,
             'generatedAt' => LocalTime::now()->format('d M Y, h:i A'),
             'report'      => $report,
+            'cut'         => $cut,
         ], $name . '.pdf');
     }
 
