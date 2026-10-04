@@ -604,6 +604,25 @@
         margin-left: auto;
     }
 
+    .ls-follow {
+        align-self: center;
+        padding: 5px 12px;
+        border-radius: 14px;
+        border: 1px solid #3b5a8a;
+        background: transparent;
+        color: #cbd5e1;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .04em;
+        cursor: pointer;
+    }
+
+    .ls-follow.on {
+        background: var(--orange);
+        border-color: var(--orange);
+        color: #fff;
+    }
+
     /* Playback bar */
     .playback-bar {
         display: flex;
@@ -1203,6 +1222,8 @@
                 <span class="ls-label">Last update</span>
                 <span class="ls-value" id="ls-updated">–</span>
             </div>
+            <button type="button" id="ls-follow" class="ls-follow on" onclick="toggleFollow()"
+                title="Keep the vehicle in view">Follow: On</button>
             <div class="ls-item ls-right">
                 <span class="ls-label">SignalR</span>
                 <span class="ls-value orange" id="ls-conn">Disconnected</span>
@@ -1316,6 +1337,11 @@
         });
 
         // Apply initial vehicle from the <select>
+        // Dragging the map means "let me look around" — stop auto-following.
+        map.addListener('dragstart', () => {
+            if (liveFollow) setFollow(false);
+        });
+
         const sel = document.getElementById('vehicle-select');
         if (sel && sel.value) applyVehicleFromSelect();
         applyDeepLink();
@@ -2103,8 +2129,17 @@
 
             signalrConn.on('LocationUpdated', onLiveUpdate);
             signalrConn.onreconnecting(() => setLiveStatus('connecting', 'Reconnecting…'));
-            signalrConn.onreconnected(() => {
-                setLiveStatus('connected', 'Connected');
+            signalrConn.onreconnected(async () => {
+                // SignalR groups belong to the connection, so a reconnect silently drops
+                // us from the vehicle's group — without this the map would freeze.
+                try {
+                    await signalrConn.invoke('JoinVehicleGroup', currentVehicleId);
+                    setLiveStatus('connected', 'Connected');
+                    showLastKnown();
+                } catch (e) {
+                    console.error('rejoin after reconnect:', e);
+                    setLiveStatus('disconnected', 'Lost the live feed — press Disconnect, then Connect.');
+                }
             });
             signalrConn.onclose(() => {
                 liveActive = false;
@@ -2120,6 +2155,8 @@
             setLiveConnBtn(true);
             document.getElementById('live-bar').classList.remove('hidden');
             document.getElementById('ls-state').textContent = 'Waiting…';
+            resetLiveMotion();
+            setFollow(true);
             showLastKnown(); // a parked vehicle shows up straight away
 
         } catch (e) {
@@ -2152,10 +2189,7 @@
         setLiveStatus('disconnected', 'Disconnected');
         setLiveConnBtn(false);
         hideLiveBar();
-        if (liveMarker) {
-            liveMarker.setMap(null);
-            liveMarker = null;
-        }
+        resetLiveMotion();
     }
 
     /** First fix for the Live tab (and for shared vehicles): the last known position. */
@@ -2202,20 +2236,8 @@
         };
         const heading = +(data.heading ?? data.Heading ?? 0) || 0;
 
-        if (!liveMarker) {
-            liveMarker = new google.maps.Marker({
-                position: pos,
-                map,
-                title: currentVehiclePlate,
-                zIndex: 50,
-                icon: makeArrowIcon(heading, 6),
-            });
-            map.panTo(pos);
-            if (map.getZoom() < 14) map.setZoom(15);
-        } else {
-            liveMarker.setPosition(pos);
-            liveMarker.setIcon(makeArrowIcon(heading, 6));
-        }
+        const devMs = Date.parse(data.lastUpdate ?? data.LastUpdate ?? '');
+        moveLiveMarker(pos, heading, devMs, !!isSnapshot);
 
         document.getElementById('ls-speed').textContent = (+(data.speed ?? data.Speed ?? 0)).toFixed(1) + ' km/h';
         document.getElementById('ls-heading').textContent = heading.toFixed(0) + '°';
@@ -2224,9 +2246,253 @@
         document.getElementById('ls-ignition').textContent = ignOn ? 'ON' : 'OFF';
         document.getElementById('ls-state').textContent = (+(data.speed ?? data.Speed ?? 0)) > 2 ? 'Moving' : 'Parked';
         const stamp = isSnapshot ? (data.lastUpdate ?? data.LastUpdate ?? null) : null;
-        document.getElementById('ls-updated').textContent = stamp ?
-            fmtDateTime(stamp) :
-            new Date().toLocaleTimeString('en-GB', { timeZone: LK_TZ });
+        if (stamp) {
+            liveLastPushAt = 0;
+            document.getElementById('ls-updated').textContent = fmtDateTime(stamp);
+        } else {
+            liveLastPushAt = Date.now();
+            renderLiveAge();
+        }
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       SMOOTH LIVE MARKER
+       The device reports every few seconds, so setting the marker straight to each
+       new fix makes it hop. Like the Android app, we glide from where the marker
+       is NOW to the new fix over the real time between the two fixes (0.5–25 s),
+       at constant speed, turning the arrow the short way round. A new fix that
+       arrives mid-glide simply retargets from the current spot, so it never snaps.
+       GPS noise (< 3 m) and impossible jumps (> ~200 km/h) are ignored.
+       ══════════════════════════════════════════════════════════════ */
+    const LIVE_MIN_MS = 500;
+    const LIVE_MAX_MS = 25000;
+    const LIVE_MIN_MOVE_M = 3;
+    const LIVE_MAX_SPEED_MPS = 55.6;
+    const LIVE_SPEED_CHECK_MS = 2000;
+    const LIVE_TRAIL_MAX = 600;
+    const REDUCED_MOTION = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+    let liveAnim = null; // {from, to, h0, dh, t0, dur}
+    let liveRaf = 0;
+    let liveHeading = 0; // heading the arrow is showing right now
+    let liveShownDeg = null; // last heading actually painted (icon is only rebuilt when it changes)
+    let liveTrail = null; // google.maps.Polyline of where the vehicle has been since Connect
+    let liveFollow = true;
+    let liveLast = null; // {wall, devMs, pos} of the last ACCEPTED fix
+    let liveLastPushAt = 0;
+    let liveAgeTimer = null;
+    let livePanAt = 0;
+
+    function haversineM(a, b) {
+        const R = 6371000,
+            rad = Math.PI / 180;
+        const dLat = (b.lat - a.lat) * rad,
+            dLng = (b.lng - a.lng) * rad;
+        const x = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) ** 2;
+        return 2 * R * Math.asin(Math.min(1, Math.sqrt(x)));
+    }
+
+    /** Signed shortest turn from one compass bearing to another (350→10 is +20, not −340). */
+    function headingDelta(from, to) {
+        return ((to - from + 540) % 360) - 180;
+    }
+
+    function livePosNow() {
+        const p = liveMarker && liveMarker.getPosition ? liveMarker.getPosition() : null;
+        return p ? {
+            lat: p.lat(),
+            lng: p.lng()
+        } : null;
+    }
+
+    function paintLiveHeading(deg) {
+        if (!liveMarker) return;
+        if (liveShownDeg !== null && Math.abs(headingDelta(liveShownDeg, deg)) < 1.5) return;
+        liveShownDeg = deg;
+        liveMarker.setIcon(makeArrowIcon(deg, 6));
+    }
+
+    function trailTip(pos) {
+        if (!liveTrail) return;
+        const path = liveTrail.getPath();
+        path.setAt(path.getLength() - 1, new google.maps.LatLng(pos.lat, pos.lng));
+    }
+
+    function trailAdd(pos) {
+        if (!liveTrail) return;
+        const path = liveTrail.getPath();
+        while (path.getLength() >= LIVE_TRAIL_MAX) path.removeAt(0);
+        path.push(new google.maps.LatLng(pos.lat, pos.lng));
+    }
+
+    function followIfNeeded(pos, ahead) {
+        if (!liveFollow || !map) return;
+        const b = map.getBounds && map.getBounds();
+        if (!b) return;
+        const ne = b.getNorthEast(),
+            sw = b.getSouthWest();
+        const dLat = (ne.lat() - sw.lat()) * 0.2,
+            dLng = (ne.lng() - sw.lng()) * 0.2;
+        const inside = pos.lat < ne.lat() - dLat && pos.lat > sw.lat() + dLat &&
+            pos.lng < ne.lng() - dLng && pos.lng > sw.lng() + dLng;
+        const now = Date.now();
+        if (!inside && now - livePanAt > 1000) {
+            livePanAt = now;
+            map.panTo(ahead || pos); // glide toward where it is heading
+        }
+    }
+
+    function liveFrame(ts) {
+        liveRaf = 0;
+        if (!liveAnim || !liveMarker) return;
+        const a = liveAnim;
+        const f = Math.max(0, Math.min(1, (ts - a.t0) / a.dur));
+        const pos = {
+            lat: a.from.lat + (a.to.lat - a.from.lat) * f,
+            lng: a.from.lng + (a.to.lng - a.from.lng) * f,
+        };
+        liveMarker.setPosition(pos);
+        liveHeading = (a.h0 + a.dh * f + 360) % 360;
+        paintLiveHeading(liveHeading);
+        trailTip(pos);
+        followIfNeeded(pos, a.to);
+        if (f < 1) {
+            liveRaf = requestAnimationFrame(liveFrame);
+        } else {
+            liveAnim = null;
+        }
+    }
+
+    function moveLiveMarker(pos, heading, devMs, isSnapshot) {
+        const wall = Date.now();
+
+        if (!liveMarker) {
+            liveMarker = new google.maps.Marker({
+                position: pos,
+                map,
+                title: currentVehiclePlate,
+                zIndex: 50,
+                icon: makeArrowIcon(heading, 6),
+            });
+            liveShownDeg = heading;
+            liveHeading = heading;
+            liveTrail = new google.maps.Polyline({
+                path: [new google.maps.LatLng(pos.lat, pos.lng), new google.maps.LatLng(pos.lat, pos.lng)],
+                geodesic: true,
+                strokeColor: ORANGE,
+                strokeOpacity: .55,
+                strokeWeight: 3,
+                zIndex: 5,
+                map,
+            });
+            liveLast = {
+                wall,
+                devMs,
+                pos
+            };
+            map.panTo(pos);
+            if (map.getZoom() < 14) map.setZoom(15);
+            return;
+        }
+
+        const cur = livePosNow() || liveLast.pos;
+        const dist = haversineM(liveLast.pos, pos);
+
+        // GPS noise floor: stay put, but still let the arrow turn.
+        if (dist < LIVE_MIN_MOVE_M) {
+            if (!liveAnim) {
+                liveHeading = heading;
+                paintLiveHeading(heading);
+            }
+            return;
+        }
+
+        // Real time between the two fixes: the device's own clock when both fixes carry
+        // one (immune to network jitter), otherwise when they reached us.
+        const devDelta = (Number.isFinite(devMs) && Number.isFinite(liveLast.devMs)) ? devMs - liveLast.devMs : NaN;
+        const elapsedMs = (devDelta > 0 && devDelta <= 60000) ? devDelta : wall - liveLast.wall;
+
+        if (elapsedMs >= LIVE_SPEED_CHECK_MS && dist / (elapsedMs / 1000) > LIVE_MAX_SPEED_MPS) {
+            return; // implausible jump (bad GPS fix) — keep the last good position
+        }
+
+        liveLast = {
+            wall,
+            devMs,
+            pos
+        };
+
+        // After a long silence (or for people who asked for less motion) just move there.
+        const snap = REDUCED_MOTION || elapsedMs > LIVE_MAX_MS || document.hidden;
+        if (snap) {
+            if (liveRaf) cancelAnimationFrame(liveRaf);
+            liveRaf = 0;
+            liveAnim = null;
+            liveMarker.setPosition(pos);
+            liveHeading = heading;
+            paintLiveHeading(heading);
+            trailAdd(pos);
+            followIfNeeded(pos, pos);
+            return;
+        }
+
+        trailAdd(cur); // the trail follows where the marker really went, even if a glide was cut short
+        liveAnim = {
+            from: cur,
+            to: pos,
+            h0: liveHeading,
+            dh: headingDelta(liveHeading, heading),
+            t0: performance.now(),
+            dur: Math.max(LIVE_MIN_MS, Math.min(elapsedMs, LIVE_MAX_MS)),
+        };
+        if (!liveRaf) liveRaf = requestAnimationFrame(liveFrame);
+    }
+
+    function resetLiveMotion() {
+        if (liveRaf) cancelAnimationFrame(liveRaf);
+        liveRaf = 0;
+        liveAnim = null;
+        liveLast = null;
+        liveShownDeg = null;
+        liveLastPushAt = 0;
+        if (liveAgeTimer) {
+            clearInterval(liveAgeTimer);
+            liveAgeTimer = null;
+        }
+        if (liveTrail) {
+            liveTrail.setMap(null);
+            liveTrail = null;
+        }
+        if (liveMarker) {
+            liveMarker.setMap(null);
+            liveMarker = null;
+        }
+    }
+
+    /** "14:02:31 · 12s ago" — so a quiet vehicle doesn't look like a frozen page. */
+    function renderLiveAge() {
+        if (!liveLastPushAt) return;
+        const age = Math.max(0, Math.round((Date.now() - liveLastPushAt) / 1000));
+        const t = new Date(liveLastPushAt).toLocaleTimeString('en-GB', {
+            timeZone: LK_TZ
+        });
+        document.getElementById('ls-updated').textContent = age >= 5 ? `${t} · ${age}s ago` : t;
+        if (!liveAgeTimer) liveAgeTimer = setInterval(renderLiveAge, 1000);
+    }
+
+    function toggleFollow() {
+        setFollow(!liveFollow);
+        if (liveFollow) {
+            const p = livePosNow();
+            if (p && map) map.panTo(p);
+        }
+    }
+
+    function setFollow(on) {
+        liveFollow = on;
+        const b = document.getElementById('ls-follow');
+        b.textContent = 'Follow: ' + (on ? 'On' : 'Off');
+        b.classList.toggle('on', on);
     }
 
     function setLiveStatus(state, text) {
