@@ -18,6 +18,7 @@ use App\Http\Controllers\SavedPlaceController;
 use App\Http\Controllers\StatsController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportExportController;
+use App\Http\Controllers\GeocodeController;
 use App\Http\Controllers\RenewalController;
 use App\Http\Controllers\SosController;
 
@@ -60,7 +61,9 @@ Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(func
     // Trip History
     Route::get('/trips',                              [TripController::class, 'index'])->name('trips');
     Route::get('/trips/{vehicleId}/points',           [TripController::class, 'points']);
+    Route::get('/trips/{vehicleId}/location',         [TripController::class, 'location'])->whereUuid('vehicleId')->middleware('throttle:60,1');
     Route::get('/trips/{vehicleId}/summary',          [TripController::class, 'summary']);
+    Route::get('/geocode/reverse', [GeocodeController::class, 'reverse'])->middleware('throttle:90,1')->name('geocode.reverse');
     Route::get('/trips/{vehicleId}/report',           [TripController::class, 'report']);
 
     // Reports

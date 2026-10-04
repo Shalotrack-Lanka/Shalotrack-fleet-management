@@ -35,7 +35,7 @@
             <th>Arrived</th>
             <th>Departed</th>
             <th class="n">Duration</th>
-            <th>Location (lat, lng)</th>
+            <th>Location</th>
         </tr>
     </thead>
     <tbody>
@@ -46,7 +46,10 @@
             <td>{{ $st['start']->format('h:i A') }}</td>
             <td>{{ $st['inProgress'] ? 'Still stopped' : ($st['end'] ? $st['end']->format('h:i A') : '—') }}</td>
             <td class="n">{{ LocalTime::duration($st['minutes']) }}</td>
-            <td>{{ ($st['lat'] !== null && $st['lng'] !== null) ? number_format((float) $st['lat'], 5) . ', ' . number_format((float) $st['lng'], 5) : '—' }}</td>
+            <td>
+                @if(!empty($st['address']))<strong>{{ $st['address'] }}</strong><br>@endif
+                <span class="{{ !empty($st['address']) ? 'mut' : '' }}">{{ ($st['lat'] !== null && $st['lng'] !== null) ? number_format((float) $st['lat'], 5) . ', ' . number_format((float) $st['lng'], 5) : '—' }}</span>
+            </td>
         </tr>
         @endforeach
     </tbody>
