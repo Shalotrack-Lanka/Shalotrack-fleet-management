@@ -273,6 +273,52 @@ class ShalotrackApiService
     }
 
     // -------------------------------------------------------------------------
+    // Renewals (api/Renewals — enum NAMES as strings, not ordinals)
+    // duration: ThreeMonths | SixMonths | OneYear | TwoYears | ThreeYears | SixYears
+    // The server owns pricing; the client never sends an amount.
+    // -------------------------------------------------------------------------
+
+    public function getRenewalPackages(): array
+    {
+        return $this->get('/api/Renewals/packages');
+    }
+
+    public function getMyRenewals(): array
+    {
+        return $this->get('/api/Renewals');
+    }
+
+    public function createRenewal(string $vehicleId, string $duration, ?string $paymentReference): array
+    {
+        return $this->post('/api/Renewals', array_filter([
+            'vehicleId'        => $vehicleId,
+            'duration'         => $duration,
+            'paymentReference' => $paymentReference,
+        ], fn($v) => $v !== null));
+    }
+
+    /**
+     * Forward a bank slip to the API. The part MUST be named "file".
+     * $bytes is the raw upload; the file name is chosen by the caller from the
+     * sniffed content type, never from the browser-supplied name.
+     */
+    public function uploadRenewalSlip(string $renewalId, string $bytes, string $mime, string $fileName): array
+    {
+        $response = Http::withToken(Session::get('firebase_token'))
+            ->timeout(max($this->timeout, 30))   // slips are up to 2 MB
+            ->acceptJson()
+            ->attach('file', $bytes, $fileName, ['Content-Type' => $mime])
+            ->post($this->baseUrl . "/api/Renewals/{$renewalId}/slip");
+
+        return $this->handle($response, 'POST', "/api/Renewals/{$renewalId}/slip");
+    }
+
+    public function cancelRenewal(string $renewalId): array
+    {
+        return $this->patch("/api/Renewals/{$renewalId}/cancel");
+    }
+
+    // -------------------------------------------------------------------------
     // Emergency Contacts
     // -------------------------------------------------------------------------
 
@@ -372,6 +418,19 @@ class ShalotrackApiService
             ->withHeaders(['Content-Type' => 'application/json']);
     }
 
+    private static function apiMessage(mixed $body): ?string
+    {
+        if (!is_array($body)) {
+            return null;
+        }
+        $message = is_string($body['message'] ?? null) ? trim($body['message']) : null;
+        $first   = (is_array($body['errors'] ?? null) && is_string($body['errors'][0] ?? null))
+            ? trim($body['errors'][0]) : null;
+
+        $text = trim(($message ?? '') . ' ' . ($first ?? ''));
+        return $text === '' ? null : mb_substr($text, 0, 300);
+    }
+
     private function handle(Response $response, string $method, string $path): array
     {
         if ($response->successful()) {
@@ -391,7 +450,10 @@ class ShalotrackApiService
             $status === 403 => throw new \Exception('FORBIDDEN', 403),
             $status === 404 => throw new \Exception('NOT_FOUND', 404),
             $status >= 500  => throw new \Exception('API_ERROR', 500),
-            default         => throw new \Exception('REQUEST_FAILED', $status),
+            // 4xx: carry the API's own customer-facing message (same fields the
+            // mobile app reads: "message" + first of "errors[]") so controllers
+            // can show e.g. "You already have an open renewal for this vehicle".
+            default         => throw new \Exception(self::apiMessage($body) ?? 'REQUEST_FAILED', $status),
         };
     }
 }

@@ -226,15 +226,8 @@
         }
 
         @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: .5;
-            }
+            0%, 100% { opacity: 1; }
+            50%       { opacity: .5; }
         }
 
         .skeleton-box {
@@ -332,29 +325,12 @@
             height: 18px;
         }
 
-        .tile-icon.orange {
-            background: #fff7f0;
-        }
-
-        .tile-icon.orange svg {
-            fill: #FA6908;
-        }
-
-        .tile-icon.navy {
-            background: #eef2ff;
-        }
-
-        .tile-icon.navy svg {
-            fill: #021F4A;
-        }
-
-        .tile-icon.red {
-            background: #fef2f2;
-        }
-
-        .tile-icon.red svg {
-            fill: #ef4444;
-        }
+        .tile-icon.orange { background: #fff7f0; }
+        .tile-icon.orange svg { fill: #FA6908; }
+        .tile-icon.navy   { background: #eef2ff; }
+        .tile-icon.navy svg   { fill: #021F4A; }
+        .tile-icon.red    { background: #fef2f2; }
+        .tile-icon.red svg    { fill: #ef4444; }
 
         /* ── Chart cards ─────────────────────────────────────────────────────────── */
         .chart-grid {
@@ -364,13 +340,8 @@
         }
 
         @media (min-width: 900px) {
-            .chart-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .chart-grid .chart-card.full {
-                grid-column: 1 / -1;
-            }
+            .chart-grid { grid-template-columns: 1fr 1fr; }
+            .chart-grid .chart-card.full { grid-column: 1 / -1; }
         }
 
         .chart-card {
@@ -399,7 +370,7 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.45);
+            background: rgba(0,0,0,0.45);
             z-index: 40;
         }
 
@@ -501,6 +472,16 @@
                             d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                     </svg>
                     Sharing
+                </a>
+
+                <a href="/renewals" onclick="closeSidebar()"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
+                          {{ request()->is('renewals*') ? 'bg-[#FA6908] text-white' : 'text-blue-200 hover:bg-blue-900 hover:text-white' }}">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Renewals
                 </a>
 
                 <a href="/complaints" onclick="closeSidebar()"
