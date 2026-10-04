@@ -319,6 +319,16 @@ class ShalotrackApiService
     }
 
     // -------------------------------------------------------------------------
+    // SOS — POST api/SOS/{vehicleId}/trigger. No body: the API resolves the
+    // location itself from CurrentLocations, exactly as for the Android app.
+    // -------------------------------------------------------------------------
+
+    public function triggerSos(string $vehicleId): array
+    {
+        return $this->post("/api/SOS/{$vehicleId}/trigger");
+    }
+
+    // -------------------------------------------------------------------------
     // Emergency Contacts
     // -------------------------------------------------------------------------
 
@@ -444,6 +454,15 @@ class ShalotrackApiService
             'status' => $status,
             'body'   => $body,
         ]);
+
+        // 402 + SUBSCRIPTION_RENEWAL_REQUIRED: a vehicle's subscription lapsed.
+        // Remember it in the session so the layout can show a "Renew now" banner
+        // on the next page render (same signal the Android app's interceptor
+        // turns into its app-wide renewal prompt).
+        if ($status === 402 && str_contains((string) $response->body(), 'SUBSCRIPTION_RENEWAL_REQUIRED')) {
+            Session::put('renewal_required', true);
+            throw new \Exception('RENEWAL_REQUIRED', 402);
+        }
 
         match (true) {
             $status === 401 => throw new \Exception('UNAUTHENTICATED', 401),

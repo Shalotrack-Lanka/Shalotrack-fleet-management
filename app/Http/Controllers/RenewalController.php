@@ -31,6 +31,10 @@ class RenewalController extends Controller
 
     public function index()
     {
+        // The customer is on the renewal page — the "renew now" nudge has done its job.
+        // If a vehicle is still lapsed, the next 402 from the API sets it again.
+        Session::forget('renewal_required');
+
         try {
             $profile    = $this->api->getMyProfile();
             $customerId = $profile['data']['customerId'] ?? null;

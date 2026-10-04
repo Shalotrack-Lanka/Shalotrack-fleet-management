@@ -18,6 +18,7 @@ use App\Http\Controllers\SavedPlaceController;
 use App\Http\Controllers\StatsController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RenewalController;
+use App\Http\Controllers\SosController;
 
 // ---- Public ----
 Route::get('/', fn() => view('landing'))->name('home');
@@ -94,6 +95,11 @@ Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(func
     Route::post('/renewals',                  [RenewalController::class, 'store'])->middleware('throttle:10,1');
     Route::post('/renewals/{id}/slip',        [RenewalController::class, 'uploadSlip'])->middleware('throttle:10,1');
     Route::post('/renewals/{id}/cancel',      [RenewalController::class, 'cancel'])->middleware('throttle:10,1');
+
+    // SOS — hold-to-confirm in the UI; throttled so it can't be spammed.
+    Route::post('/sos/{vehicleId}', [SosController::class, 'trigger'])
+        ->whereUuid('vehicleId')
+        ->middleware('throttle:3,1');
 
     // Profile
     Route::get('/profile',  [ProfileController::class, 'index'])->name('profile');

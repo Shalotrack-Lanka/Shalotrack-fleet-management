@@ -338,6 +338,20 @@
 
 </div>
 
+{{-- ─── SOS ─────────────────────────────────────────── --}}
+@if(!empty($dashboard['vehicles']))
+<div style="margin-bottom:20px;padding:12px 16px;background:#fef2f2;border:1px solid #fecaca;border-radius:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <div style="flex:1;min-width:200px;">
+        <p style="font-size:13px;font-weight:600;color:#991b1b;">Emergency SOS</p>
+        <p style="font-size:12px;color:#b91c1c;margin-top:2px;">Sends a distress signal for a vehicle. You must press and hold for 3 seconds to confirm.</p>
+    </div>
+    <button type="button" onclick="openSosModal()"
+        style="padding:9px 20px;background:#dc2626;color:#fff;font-size:13px;font-weight:700;border:none;border-radius:10px;cursor:pointer;">
+        SOS
+    </button>
+</div>
+@endif
+
 {{-- ─── MAP + VEHICLES ──────────────────────────────── --}}
 <div class="dash-grid">
 
@@ -922,6 +936,187 @@
             }
         }
 
+    })();
+</script>
+
+{{-- ─── SOS MODAL ────────────────────────────────────── --}}
+<div id="sos-modal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/50" onclick="closeSosModal()"></div>
+    <div class="absolute inset-0 flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-sm relative p-6 text-center max-h-[90vh] overflow-y-auto">
+
+            {{-- Step 1: choose vehicle + hold to confirm --}}
+            <div id="sos-step-confirm">
+                <h3 class="font-semibold text-gray-800 mb-1">Send SOS</h3>
+                <p class="text-xs text-gray-500 mb-4">Choose the vehicle, then press and hold the button for 3 seconds.</p>
+                <select id="sos-vehicle" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-red-500 mb-5"></select>
+
+                <button id="sos-hold" type="button" aria-label="Press and hold for 3 seconds to send SOS"
+                    style="position:relative;width:132px;height:132px;border-radius:50%;border:none;background:#dc2626;color:#fff;font-weight:800;font-size:18px;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden;">
+                    <span id="sos-fill" style="position:absolute;left:0;right:0;bottom:0;height:0%;background:#7f1d1d;transition:none;"></span>
+                    <span style="position:relative;line-height:1.2;">Hold<br>for SOS</span>
+                </button>
+                <p id="sos-error" class="text-red-600 text-sm mt-4 hidden"></p>
+                <button onclick="closeSosModal()" class="mt-5 text-sm text-gray-400 hover:text-gray-600">Cancel</button>
+            </div>
+
+            {{-- Step 2: sent --}}
+            <div id="sos-step-sent" class="hidden">
+                <div style="width:48px;height:48px;border-radius:50%;background:#f0fdf4;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+                    <svg width="24" height="24" fill="none" stroke="#16a34a" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <h3 class="font-semibold text-gray-800 mb-1">SOS sent</h3>
+                <p class="text-sm text-gray-500 mb-4">The monitoring centre has been alerted. You can also call your emergency contacts:</p>
+                <div id="sos-contacts" class="space-y-2 text-left mb-4"></div>
+                <a href="/emergency-contacts" id="sos-no-contacts" class="hidden text-sm text-[#FA6908] font-medium">Add emergency contacts →</a>
+                <button onclick="closeSosModal()" class="block w-full mt-2 py-2.5 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* SOS — mirrors the Android press-and-hold-3s flow. */
+    (function() {
+        const SOS_CSRF = '{{ csrf_token() }}';
+        const HOLD_MS = 3000;
+        const holdBtn = document.getElementById('sos-hold');
+        const fill = document.getElementById('sos-fill');
+        if (!holdBtn) return;
+
+        let raf = null,
+            startedAt = 0,
+            sending = false;
+
+        window.openSosModal = function() {
+            const sel = document.getElementById('sos-vehicle');
+            sel.innerHTML = '';
+            /* Demo vehicles are read-only; the API decides ownership/sharing rules. */
+            (vehiclesRaw || []).filter(v => !(v.isDemoVehicle ?? v.isDemo ?? false)).forEach(v => {
+                const o = document.createElement('option');
+                o.value = v.vehicleId;
+                o.textContent = v.vehicleNumber + (v.isShared ? ' (shared)' : '');
+                sel.appendChild(o);
+            });
+            document.getElementById('sos-error').classList.add('hidden');
+            document.getElementById('sos-step-confirm').classList.remove('hidden');
+            document.getElementById('sos-step-sent').classList.add('hidden');
+            document.getElementById('sos-modal').classList.remove('hidden');
+        };
+
+        window.closeSosModal = function() {
+            cancelHold();
+            document.getElementById('sos-modal').classList.add('hidden');
+        };
+
+        function setProgress(p) {
+            fill.style.height = Math.round(p * 100) + '%';
+        }
+
+        function cancelHold() {
+            if (raf) cancelAnimationFrame(raf);
+            raf = null;
+            setProgress(0);
+        }
+
+        function startHold() {
+            if (sending || raf) return;
+            if (!document.getElementById('sos-vehicle').value) return;
+            startedAt = performance.now();
+            const tick = (now) => {
+                const p = Math.min(1, (now - startedAt) / HOLD_MS);
+                setProgress(p);
+                if (p >= 1) {
+                    raf = null;
+                    send();
+                } else {
+                    raf = requestAnimationFrame(tick);
+                }
+            };
+            raf = requestAnimationFrame(tick);
+        }
+
+        holdBtn.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            startHold();
+        });
+        ['pointerup', 'pointercancel', 'pointerleave'].forEach(t => holdBtn.addEventListener(t, cancelHold));
+        holdBtn.addEventListener('contextmenu', e => e.preventDefault());
+        /* Keyboard users: hold Space/Enter for 3 seconds. */
+        holdBtn.addEventListener('keydown', (e) => {
+            if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) {
+                e.preventDefault();
+                startHold();
+            }
+        });
+        holdBtn.addEventListener('keyup', cancelHold);
+
+        async function send() {
+            sending = true;
+            const errEl = document.getElementById('sos-error');
+            errEl.classList.add('hidden');
+            const vid = document.getElementById('sos-vehicle').value;
+            try {
+                const res = await fetch('/sos/' + encodeURIComponent(vid), {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': SOS_CSRF
+                    },
+                });
+                if (res.status === 401) {
+                    window.location.href = '/login?expired=1';
+                    return;
+                }
+                const data = await res.json().catch(() => ({}));
+                if (res.ok && data.success) {
+                    showSent(data.contacts || []);
+                } else {
+                    errEl.textContent = res.status === 429 ?
+                        'Too many SOS attempts. Wait a minute, then try again — or call your emergency contacts directly.' :
+                        (data.message || "Couldn't send SOS. Please try again.");
+                    errEl.classList.remove('hidden');
+                }
+            } catch (_) {
+                errEl.textContent = 'Network error — SOS could not be sent. Try again.';
+                errEl.classList.remove('hidden');
+            } finally {
+                sending = false;
+                setProgress(0);
+            }
+        }
+
+        function showSent(contacts) {
+            document.getElementById('sos-step-confirm').classList.add('hidden');
+            document.getElementById('sos-step-sent').classList.remove('hidden');
+            const box = document.getElementById('sos-contacts');
+            box.innerHTML = '';
+            const valid = contacts.filter(c => c.phoneNumber);
+            document.getElementById('sos-no-contacts').classList.toggle('hidden', valid.length > 0);
+            valid.forEach(c => {
+                const a = document.createElement('a');
+                a.href = 'tel:' + String(c.phoneNumber).replace(/[^0-9+]/g, '');
+                a.className = 'flex items-center justify-between px-3 py-2.5 border border-gray-200 rounded-lg hover:bg-gray-50';
+                const left = document.createElement('div');
+                const n = document.createElement('p');
+                n.className = 'text-sm font-semibold text-gray-800';
+                n.textContent = c.name + (c.relationship ? ' · ' + c.relationship : '');
+                const p = document.createElement('p');
+                p.className = 'text-xs text-gray-500';
+                p.textContent = c.phoneNumber;
+                left.appendChild(n);
+                left.appendChild(p);
+                const call = document.createElement('span');
+                call.className = 'text-sm font-semibold text-green-600';
+                call.textContent = 'Call';
+                a.appendChild(left);
+                a.appendChild(call);
+                box.appendChild(a);
+            });
+        }
     })();
 </script>
 

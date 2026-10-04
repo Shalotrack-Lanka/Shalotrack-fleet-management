@@ -59,6 +59,14 @@ class DashboardController extends Controller
                 return redirect('/login?expired=1');
             }
 
+            if ($e->getCode() === 402) {
+                return view('dashboard.index', [
+                    'error'     => 'A subscription has expired, so your dashboard is paused. Renew it from the Renewals page.',
+                    'dashboard' => null,
+                    'phone'     => Session::get('firebase_phone'),
+                ]);
+            }
+
             return view('dashboard.index', [
                 'error'     => 'Could not connect to the server. Please refresh the page.',
                 'dashboard' => null,
