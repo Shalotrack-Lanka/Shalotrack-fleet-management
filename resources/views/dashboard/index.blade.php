@@ -485,7 +485,7 @@
         };
     });
 
-    if (deletedIds.size) recalcStats(); // online/offline/moving tiles must exclude deleted vehicles
+    if (deletedIds.size) recalcStats();   // online/offline/moving tiles must exclude deleted vehicles
 
     /* ── Map state ─────────────────────────────────────────── */
     let gmap = null;
@@ -950,6 +950,7 @@
                 <h3 class="font-semibold text-gray-800 mb-1">Send SOS</h3>
                 <p class="text-xs text-gray-500 mb-4">Choose the vehicle, then press and hold the button for 3 seconds.</p>
                 <select id="sos-vehicle" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-red-500 mb-5"></select>
+                <p id="sos-none" class="hidden text-sm text-gray-500 mb-2">SOS can only be sent for vehicles you own. Shared and demo vehicles are not eligible.</p>
 
                 <button id="sos-hold" type="button" aria-label="Press and hold for 3 seconds to send SOS"
                     style="position:relative;width:132px;height:132px;border-radius:50%;border:none;background:#dc2626;color:#fff;font-weight:800;font-size:18px;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden;">
@@ -963,9 +964,7 @@
             {{-- Step 2: sent --}}
             <div id="sos-step-sent" class="hidden">
                 <div style="width:48px;height:48px;border-radius:50%;background:#f0fdf4;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
-                    <svg width="24" height="24" fill="none" stroke="#16a34a" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
+                    <svg width="24" height="24" fill="none" stroke="#16a34a" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
                 </div>
                 <h3 class="font-semibold text-gray-800 mb-1">SOS sent</h3>
                 <p class="text-sm text-gray-500 mb-4">The monitoring centre has been alerted. You can also call your emergency contacts:</p>
@@ -993,13 +992,19 @@
         window.openSosModal = function() {
             const sel = document.getElementById('sos-vehicle');
             sel.innerHTML = '';
-            /* Demo vehicles are read-only; the API decides ownership/sharing rules. */
-            (vehiclesRaw || []).filter(v => !(v.isDemoVehicle ?? v.isDemo ?? false)).forEach(v => {
+            /* SOS is for vehicles the customer OWNS: the API rejects it for shared
+               vehicles, and demo vehicles are read-only. */
+            const eligible = (vehiclesRaw || []).filter(v => !v.isShared && !(v.isDemoVehicle ?? v.isDemo ?? false));
+            eligible.forEach(v => {
                 const o = document.createElement('option');
                 o.value = v.vehicleId;
-                o.textContent = v.vehicleNumber + (v.isShared ? ' (shared)' : '');
+                o.textContent = v.vehicleNumber;
                 sel.appendChild(o);
             });
+            const none = eligible.length === 0;
+            sel.classList.toggle('hidden', none);
+            document.getElementById('sos-hold').classList.toggle('hidden', none);
+            document.getElementById('sos-none').classList.toggle('hidden', !none);
             document.getElementById('sos-error').classList.add('hidden');
             document.getElementById('sos-step-confirm').classList.remove('hidden');
             document.getElementById('sos-step-sent').classList.add('hidden');
