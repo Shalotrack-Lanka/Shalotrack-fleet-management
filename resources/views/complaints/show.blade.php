@@ -45,7 +45,7 @@ $authorMeta = [
     data-complaint-id="{{ $complaint['complaintId'] }}"
     data-reply-count="{{ count($complaint['replies'] ?? []) }}">
 
-    <div class="px-6 py-4 border-b border-gray-100">
+    <div class="px-4 sm:px-6 py-4 border-b border-gray-100">
         <p class="text-sm font-semibold text-gray-800">{{ $category }} — {{ $complaint['vehicleNumber'] ?? 'Vehicle' }}</p>
         <p class="text-xs text-gray-400 mt-0.5">
             {{ $complaint['make'] ?? '' }} {{ $complaint['model'] ?? '' }}
@@ -57,13 +57,13 @@ $authorMeta = [
     </div>
 
     {{-- Original complaint description --}}
-    <div class="px-6 py-4 bg-gray-50 border-b border-gray-100">
+    <div class="px-4 sm:px-6 py-4 bg-gray-50 border-b border-gray-100">
         <p class="text-sm text-gray-700 whitespace-pre-line">{{ $complaint['description'] ?? '' }}</p>
         <p class="text-xs text-gray-400 mt-2">Filed {{ $complaint['createdAt'] ?? '' }}</p>
     </div>
 
     {{-- Reply thread --}}
-    <div id="reply-thread" class="px-6 py-4 space-y-3 max-h-[420px] overflow-y-auto">
+    <div id="reply-thread" class="px-4 sm:px-6 py-4 space-y-3 max-h-[420px] overflow-y-auto">
         @forelse($complaint['replies'] ?? [] as $reply)
         @php $meta = $authorMeta[$reply['authorType'] ?? 2] ?? $authorMeta[2]; @endphp
         <div class="flex {{ $meta['align'] }}">
@@ -79,7 +79,7 @@ $authorMeta = [
     </div>
 
     {{-- Composer --}}
-    <div class="px-6 py-4 border-t border-gray-100">
+    <div class="px-4 sm:px-6 py-4 border-t border-gray-100">
         @if($isClosed)
         <p class="text-sm text-gray-400 text-center py-2">
             This complaint is {{ strtolower($status['label']) }} and can no longer receive replies.

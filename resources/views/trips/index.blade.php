@@ -706,15 +706,51 @@
 
     /* ── Responsive ── */
     @media (max-width: 820px) {
+        /* Phones: stop pinning everything to 100vh (mobile browser chrome makes
+           that unreliable and squeezed the map to nothing). The page now flows
+           and scrolls normally: vehicle/trip list on top, then the map. */
         .trip-wrap {
             grid-template-columns: 1fr;
-            grid-template-rows: 260px 1fr;
+            grid-template-rows: auto auto;
+            height: auto;
+            overflow: visible;
         }
 
         .t-sidebar {
-            height: 260px;
+            height: 340px;
             border-right: none;
             border-bottom: 1px solid #e2e8f0;
+        }
+
+        .t-main {
+            overflow: visible;
+        }
+
+        #map {
+            flex: none;
+            height: 60vh;
+            height: 60dvh;
+            min-height: 320px;
+        }
+
+        /* Control bars wrap instead of clipping; the .hidden states (height:0)
+           still win because these rules only apply when NOT hidden. */
+        .live-bar:not(.hidden) {
+            height: auto;
+            flex-wrap: wrap;
+            gap: 6px 18px;
+            padding: 8px 14px;
+        }
+
+        .playback-bar:not(.hidden) {
+            height: auto;
+            flex-wrap: wrap;
+            padding: 8px 14px;
+        }
+
+        .pb-scrubber {
+            flex: 1 1 140px;
+            min-width: 0;
         }
 
         .trip-tiles {

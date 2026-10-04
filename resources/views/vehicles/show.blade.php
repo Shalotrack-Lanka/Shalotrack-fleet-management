@@ -24,10 +24,18 @@
     </a>
 </div>
 
-<div class="grid grid-cols-3 gap-6">
+<style>
+    /* Live map: tall on desktop, ~55% of the screen on phones */
+    .vd-map { width: 100%; height: 500px; }
+    @media (max-width: 1023px) {
+        .vd-map { height: 55vh; height: 55dvh; min-height: 300px; }
+    }
+</style>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
 
     {{-- ── Left column: details ─────────────────────────────────────────── --}}
-    <div class="space-y-6">
+    <div class="space-y-4 md:space-y-6 order-2 lg:order-1">
 
         {{-- Vehicle Details --}}
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
@@ -86,8 +94,8 @@
     </div>
 
     {{-- ── Right col: Google Map ────────────────────────────────────────── --}}
-    <div class="col-span-2 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+    <div class="lg:col-span-2 order-1 lg:order-2 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="px-4 md:px-6 py-4 border-b border-gray-100 flex items-center justify-between gap-3">
             <h3 class="font-semibold text-gray-800">Live Location</h3>
             @if($vehicle['hasGpsDevice'] ?? false)
             <span class="flex items-center gap-1.5 text-xs text-gray-400" id="last-update-label">
@@ -98,7 +106,7 @@
             <span class="text-xs text-gray-400">No GPS device linked</span>
             @endif
         </div>
-        <div id="gmap" class="w-full" style="height:500px;"></div>
+        <div id="gmap" class="vd-map"></div>
     </div>
 
 </div>
