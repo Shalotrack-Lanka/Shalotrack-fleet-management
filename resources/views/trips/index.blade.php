@@ -25,8 +25,11 @@
     .trip-wrap {
         display: grid;
         grid-template-columns: var(--sidebar-w) 1fr;
-        height: calc(100vh - 64px);
-        /* 64 px = nav bar */
+        /* 160px = top bar (~88) + the page's own vertical padding (64) + breathing room;
+           the old 64px ignored both and made the whole page scroll */
+        height: calc(100vh - 160px);
+        height: calc(100dvh - 160px);
+        min-height: 560px;
         overflow: hidden;
         background: #f4f6f9;
     }
@@ -717,10 +720,30 @@
             overflow: visible;
         }
 
+        /* The sidebar sizes to its content on phones; only the trip LIST scrolls
+           (a fixed 340px box left ~100px for the list — one card at a time). */
         .t-sidebar {
-            height: 340px;
+            height: auto;
             border-right: none;
             border-bottom: 1px solid #e2e8f0;
+        }
+
+        .sb-panel {
+            flex: none;
+            overflow: visible;
+        }
+
+        .trips-scroll {
+            flex: none;
+            max-height: min(46vh, 380px);
+            max-height: min(46dvh, 380px);
+            min-height: 96px;
+        }
+
+        /* 16px fields stop iOS from zooming in when you tap them */
+        .date-range-row input[type="date"],
+        .vehicle-select {
+            font-size: 16px;
         }
 
         .t-main {
@@ -786,7 +809,7 @@
                 $plate = $v['vehicleNumber'] ?? $v['vehicleId'] ?? 'Vehicle';
                 $make = trim(($v['make'] ?? '') . ' ' . ($v['model'] ?? ''));
                 $vid = $v['vehicleId'] ?? '';
-                $label = $plate . ($isDemo ? ' [DEMO]' : '') . ($make ? ' — ' . $make : '');
+                $label = $plate . ($isDemo ? ' [DEMO]' : '') . ($make ? ' — ' . $make : '') . (!empty($v['isShared']) ? ' (shared)' : '');
                 @endphp
                 <option
                     value="{{ $vid }}"
@@ -1106,8 +1129,8 @@
             return;
         }
 
-        const fromDt = fromDate + 'T00:00';
-        const toDt = toDate + 'T23:59';
+        const fromDt = lkStartIso(fromDate);   // Sri Lanka midnight → UTC
+        const toDt = lkEndIso(toDate);
 
         const btn = document.getElementById('btn-load');
         btn.disabled = true;
@@ -1173,8 +1196,8 @@
             return;
         }
 
-        const todayMs = new Date().setHours(0, 0, 0, 0);
-        const yestMs = todayMs - 864e5;
+        const todayKey = lkDayKey(Date.now());
+        const yestKey = lkDayKey(Date.now() - 864e5);
 
         // Attach original index, then sort newest → oldest
         const indexed = trips.map((t, i) => ({
@@ -1187,21 +1210,24 @@
         const groups = new Map();
         indexed.forEach(trip => {
             const d = new Date(trip.startTime);
-            const dayMs = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+            const dayKey = lkDayKey(d);
             let label;
-            if (dayMs === todayMs) label = 'Today · ' + d.toLocaleDateString('en-GB', {
+            if (dayKey === todayKey) label = 'Today · ' + d.toLocaleDateString('en-GB', {
                 day: '2-digit',
-                month: 'short'
+                month: 'short',
+                timeZone: LK_TZ
             });
-            else if (dayMs === yestMs) label = 'Yesterday · ' + d.toLocaleDateString('en-GB', {
+            else if (dayKey === yestKey) label = 'Yesterday · ' + d.toLocaleDateString('en-GB', {
                 day: '2-digit',
-                month: 'short'
+                month: 'short',
+                timeZone: LK_TZ
             });
             else label = d.toLocaleDateString('en-GB', {
                 weekday: 'short',
                 day: '2-digit',
                 month: 'short',
-                year: 'numeric'
+                year: 'numeric',
+                timeZone: LK_TZ
             });
 
             if (!groups.has(label)) groups.set(label, []);
@@ -1284,6 +1310,11 @@
 
         // Show summary tiles immediately (stops shown after detectStops)
         showTiles(trip);
+
+        // On phones the list sits above the map — bring the route into view
+        if (window.innerWidth <= 820) {
+            document.querySelector('.t-main')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
 
         // Clear old map overlays and stop any playback
         resetHistoryState();
@@ -1572,7 +1603,8 @@
             new Date(tripPoints[i].eventTime).toLocaleTimeString('en-GB', {
                 hour: '2-digit',
                 minute: '2-digit',
-                second: '2-digit'
+                second: '2-digit',
+                timeZone: LK_TZ
             }) :
             '–';
         document.getElementById('pb-time').textContent =
@@ -1709,7 +1741,7 @@
         document.getElementById('ls-speed').textContent = (+(data.speed || 0)).toFixed(1) + ' km/h';
         document.getElementById('ls-heading').textContent = heading.toFixed(0) + '°';
         document.getElementById('ls-ignition').textContent = data.ignitionOn ? 'ON' : 'OFF';
-        document.getElementById('ls-updated').textContent = new Date().toLocaleTimeString('en-GB');
+        document.getElementById('ls-updated').textContent = new Date().toLocaleTimeString('en-GB', { timeZone: LK_TZ });
     }
 
     function setLiveStatus(state, text) {
@@ -1771,11 +1803,26 @@
         };
     }
 
+    /* ── Sri Lanka time ─────────────────────────────────────────────
+       The API speaks UTC. Customers think in Sri Lanka time (UTC+05:30, no DST),
+       so every time we SHOW is converted to it, and every date range we SEND is
+       built from Sri Lanka midnight — whatever the browser's own time zone is. */
+    const LK_TZ = 'Asia/Colombo';
+
+    function lkDayKey(d) { // 'YYYY-MM-DD' of an instant, in Sri Lanka
+        return new Date(d).toLocaleDateString('en-CA', { timeZone: LK_TZ });
+    }
+
+    function lkStartIso(day) { return new Date(day + 'T00:00:00+05:30').toISOString(); }
+
+    function lkEndIso(day) { return new Date(day + 'T23:59:59+05:30').toISOString(); }
+
     function fmtTime(dtStr) {
         if (!dtStr) return '–';
         return new Date(dtStr).toLocaleTimeString('en-GB', {
             hour: '2-digit',
-            minute: '2-digit'
+            minute: '2-digit',
+            timeZone: LK_TZ
         });
     }
 
@@ -1785,7 +1832,8 @@
             day: '2-digit',
             month: 'short',
             hour: '2-digit',
-            minute: '2-digit'
+            minute: '2-digit',
+            timeZone: LK_TZ
         });
     }
 
@@ -1797,8 +1845,9 @@
     }
 
     function toLocalDt(dtStr) {
-        // Normalise to YYYY-MM-DDTHH:MM (what the controller expects)
-        return new Date(dtStr).toISOString().slice(0, 16);
+        // Full-precision UTC instant ("…Z"). The old version cut it to minutes,
+        // which could clip the last seconds of a trip.
+        return new Date(dtStr).toISOString();
     }
 
     function escHtml(s) {
@@ -1822,13 +1871,9 @@
        ══════════════════════════════════════════════════════════════ */
     document.addEventListener('DOMContentLoaded', () => {
         // Default date range: last 7 days
-        const today = new Date();
-        const from = new Date();
-        from.setDate(today.getDate() - 6);
-        const fmt = d => d.toISOString().slice(0, 10);
-
-        document.getElementById('date-from').value = fmt(from);
-        document.getElementById('date-to').value = fmt(today);
+        // Last 7 days, counted in Sri Lanka time (not the browser's zone, and not UTC)
+        document.getElementById('date-from').value = lkDayKey(Date.now() - 6 * 864e5);
+        document.getElementById('date-to').value = lkDayKey(Date.now());
     });
 </script>
 

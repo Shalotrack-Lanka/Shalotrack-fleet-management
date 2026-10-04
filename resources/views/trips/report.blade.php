@@ -316,7 +316,7 @@
             <div class="header-left">
                 <div class="report-title">VEHICLE TRIP REPORT</div>
                 <div class="report-subtitle">
-                    ShaloTrack Fleet Management · Generated {{ now()->format('d M Y, h:i A') }}
+                    ShaloTrack Fleet Management · Generated {{ \App\Support\LocalTime::now()->format('d M Y, h:i A') }} (Sri Lanka time)
                 </div>
             </div>
             <div class="header-right">
@@ -355,10 +355,10 @@
         <div class="info-card info-card-date">
             <div class="card-label">Report Period</div>
             <div class="card-value">
-                From: <strong>{{ \Carbon\Carbon::parse($from)->format('d M Y, H:i') }}</strong>
+                From: <strong>{{ \App\Support\LocalTime::format($from, 'd M Y, H:i') }}</strong>
             </div>
             <div class="card-value" style="margin-top:4px;">
-                To: &nbsp;&nbsp;<strong>{{ \Carbon\Carbon::parse($to)->format('d M Y, H:i') }}</strong>
+                To: &nbsp;&nbsp;<strong>{{ \App\Support\LocalTime::format($to, 'd M Y, H:i') }}</strong>
             </div>
         </div>
 
@@ -419,9 +419,9 @@
             @foreach($trips as $i => $trip)
             <tr>
                 <td class="bold">{{ $i + 1 }}</td>
-                <td>{{ \Carbon\Carbon::parse($trip['startTime'])->format('d M y, H:i') }}</td>
+                <td>{{ \App\Support\LocalTime::format($trip['startTime'], 'd M y, H:i') }}</td>
                 <td>
-                    {{ \Carbon\Carbon::parse($trip['endTime'])->format('d M y, H:i') }}
+                    {{ \App\Support\LocalTime::format($trip['endTime'], 'd M y, H:i') }}
                     @if($trip['inProgress'] ?? false)
                     <span class="badge-inprogress">Live</span>
                     @endif
@@ -471,8 +471,8 @@
                 @foreach($stops as $i => $stop)
                 <tr>
                     <td class="bold">{{ $i + 1 }}</td>
-                    <td>{{ \Carbon\Carbon::parse($stop['startTime'] ?? '')->format('d M y, H:i') }}</td>
-                    <td>{{ \Carbon\Carbon::parse($stop['endTime']   ?? '')->format('d M y, H:i') }}</td>
+                    <td>{{ \App\Support\LocalTime::format($stop['startTime'] ?? '', 'd M y, H:i') }}</td>
+                    <td>{{ \App\Support\LocalTime::format($stop['endTime']   ?? '', 'd M y, H:i') }}</td>
                     <td class="right">
                         @php
                         $dur = (float) ($stop['durationMinutes'] ?? 0);
@@ -500,7 +500,7 @@
             @endif
         </div>
         <div class="footer-right">
-            Generated: {{ now()->format('d M Y, H:i:s') }}
+            Generated: {{ \App\Support\LocalTime::now()->format('d M Y, H:i:s') }}
             &nbsp;·&nbsp; shalotrack.com
         </div>
     </div>

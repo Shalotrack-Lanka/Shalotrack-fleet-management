@@ -159,8 +159,85 @@ class ShalotrackApiService
     }
 
     // -------------------------------------------------------------------------
+    // Vehicles the signed-in customer can TRACK (owned + accepted shares)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Owned vehicles plus vehicles other customers have shared with this customer
+     * (accepted shares only), all in one list with the same keys.
+     *
+     * Trip history, stats and reports are allowed by the API for owner, accepted
+     * share and demo vehicle alike, so every portal screen that lets the customer
+     * pick "a vehicle to look at" should use this instead of getVehiclesByCustomer().
+     * Shared entries carry isShared=true and ownerName so the UI can label them.
+     *
+     * A failure to load shares is NOT fatal: the owned list is still returned.
+     * An owned-list failure is thrown as before (callers already handle 401 etc.).
+     */
+    public function getTrackableVehicles(string $customerId): array
+    {
+        $response = $this->getVehiclesByCustomer($customerId);
+        $owned    = $response['data'] ?? $response;
+        $owned    = is_array($owned) ? array_values($owned) : [];
+
+        $shared = [];
+        try {
+            $sharesRes = $this->getSharedWithMe();
+            $shares    = $sharesRes['data'] ?? $sharesRes;
+            $shares    = is_array($shares) ? $shares : [];
+
+            $ownedIds = array_map(fn($v) => strtolower((string) ($v['vehicleId'] ?? '')), $owned);
+
+            foreach ($shares as $sh) {
+                if (($sh['status'] ?? '') !== 'Accepted' || empty($sh['vehicleId'])) {
+                    continue;
+                }
+                if (in_array(strtolower((string) $sh['vehicleId']), $ownedIds, true)) {
+                    continue; // never list a vehicle twice
+                }
+                $shared[] = [
+                    'vehicleId'     => $sh['vehicleId'],
+                    'vehicleNumber' => $sh['vehicleNumber'] ?? 'Unknown',
+                    'make'          => $sh['make']  ?? '',
+                    'model'         => $sh['model'] ?? '',
+                    'year'          => $sh['year']  ?? null,
+                    'vehicleType'   => $sh['vehicleType'] ?? null,
+                    'hasGpsDevice'  => true,   // shared for tracking, so a GPS device is linked
+                    'isDemoVehicle' => false,
+                    'isShared'      => true,
+                    'ownerName'     => $sh['otherPartyName'] ?? null,
+                    'shareId'       => $sh['shareId'] ?? null,
+                    'color'         => null,
+                    'fuelType'      => null,
+                    'imei'          => null,
+                ];
+            }
+        } catch (\Throwable $e) {
+            if ((int) $e->getCode() === 401) {
+                throw $e;   // session expired — let the caller redirect to login
+            }
+            Log::warning('getTrackableVehicles: shared vehicles unavailable', ['error' => $e->getMessage()]);
+        }
+
+        return array_merge($owned, $shared);
+    }
+
+    // -------------------------------------------------------------------------
     // Alerts
     // -------------------------------------------------------------------------
+
+    /**
+     * GET /api/Alerts/report — bounded [from, to] window with per-type counts.
+     * Same endpoint the Android "Alert Report" uses. $from / $to are UTC ISO strings.
+     */
+    public function getAlertReport(string $vehicleId, string $from, string $to): array
+    {
+        return $this->get('/api/Alerts/report', [
+            'vehicleId' => $vehicleId,
+            'from'      => $from,
+            'to'        => $to,
+        ]);
+    }
 
     public function getMyAlerts(int $page = 1, int $pageSize = 20, ?string $vehicleId = null): array
     {
