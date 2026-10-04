@@ -49,5 +49,8 @@
         @endforeach
     </tbody>
 </table>
+@if(!empty($cut))
+<p class="mut" style="margin-top:6px;font-size:9px">Showing the latest {{ $cut['shown'] }} of {{ $cut['total'] }} rows. Download the CSV for every row.</p>
+@endif
 @endif
 @endsection

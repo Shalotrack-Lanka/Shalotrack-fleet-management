@@ -34,7 +34,7 @@ class ReverseGeocoder
     /** Cached address only — never calls the network. Used by PDF/CSV exports. */
     public function peek(float $lat, float $lng): ?string
     {
-        $v = Cache::get($this->key($lat, $lng));
+        $v = $this->cacheGet($this->key($lat, $lng));
         return is_string($v) && $v !== '' ? $v : null;
     }
 
@@ -50,7 +50,7 @@ class ReverseGeocoder
         }
 
         $key    = $this->key($lat, $lng);
-        $cached = Cache::get($key);
+        $cached = $this->cacheGet($key);
         if ($cached !== null) {
             return $cached === '' ? null : $cached;   // '' = remembered miss
         }
@@ -58,8 +58,28 @@ class ReverseGeocoder
         $fromCache = false;
 
         $address = $this->lookup($lat, $lng);
-        Cache::put($key, $address ?? '', $address ? self::HIT_TTL : self::MISS_TTL);
+        $this->cachePut($key, $address ?? '', $address ? self::HIT_TTL : self::MISS_TTL);
         return $address;
+    }
+
+    /** A broken cache store must never break a page or an export — treat it as a miss. */
+    private function cacheGet(string $key): mixed
+    {
+        try {
+            return Cache::get($key);
+        } catch (\Throwable $e) {
+            Log::warning('ReverseGeocoder: cache read failed', ['error' => $e->getMessage()]);
+            return null;
+        }
+    }
+
+    private function cachePut(string $key, string $value, int $ttl): void
+    {
+        try {
+            Cache::put($key, $value, $ttl);
+        } catch (\Throwable $e) {
+            Log::warning('ReverseGeocoder: cache write failed', ['error' => $e->getMessage()]);
+        }
     }
 
     private function lookup(float $lat, float $lng): ?string
