@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\VehicleAlertSettingsController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\VehicleReminderController;
 use App\Http\Middleware\FirebaseAuthenticated;
@@ -56,6 +57,14 @@ Route::middleware([FirebaseAuthenticated::class, 'throttle:portal'])->group(func
     Route::delete('/reminders/{reminderId}', [VehicleReminderController::class, 'destroy'])
         ->whereUuid('reminderId')
         ->middleware('throttle:reminders');
+
+    // Per-vehicle speed limit and idle alert (owner only; the API enforces ownership and
+    // answers 404 for anything else). Fleet only validates and forwards.
+    Route::get('/vehicles/{id}/alert-settings', [VehicleAlertSettingsController::class, 'show'])
+        ->whereUuid('id');
+    Route::put('/vehicles/{id}/alert-settings', [VehicleAlertSettingsController::class, 'save'])
+        ->whereUuid('id')
+        ->middleware('throttle:alert-settings');
 
     // Current location — HTTP fallback poll on vehicles/show when SignalR
     // is unavailable. Path matches what the page already calls.

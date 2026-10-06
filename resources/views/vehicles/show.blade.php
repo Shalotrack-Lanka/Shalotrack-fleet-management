@@ -111,6 +111,34 @@
         </div>
         @endif
 
+        {{-- Alert settings: speed limit + idle alert. Owner only, needs a GPS device (the API enforces ownership too). --}}
+        @if(($vehicle['hasGpsDevice'] ?? false) && !($vehicle['isShared'] ?? false) && !($vehicle['isDemoVehicle'] ?? false))
+        <div id="alert-settings-card" class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+            <h3 class="font-semibold text-gray-800 mb-1">Alert settings</h3>
+            <p class="text-xs text-gray-400 mb-4">Applies to everyone who gets this vehicle's alerts, including people it is shared with.</p>
+            <form id="alert-settings-form" class="space-y-4" autocomplete="off" novalidate>
+                <div>
+                    <label for="as-speed" class="block text-xs text-gray-400 mb-1">Speed limit (km/h)</label>
+                    <input id="as-speed" type="number" inputmode="numeric" step="1" required class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+                    <p id="as-speed-hint" class="text-xs text-gray-400 mt-1"></p>
+                </div>
+                <div>
+                    <label class="flex items-center gap-2 text-sm text-gray-700">
+                        <input id="as-idle-on" type="checkbox" class="rounded border-gray-300">
+                        Alert me when the engine is on but the vehicle is not moving
+                    </label>
+                    <div id="as-idle-row" class="hidden mt-2">
+                        <label for="as-idle-min" class="block text-xs text-gray-400 mb-1">After how many minutes</label>
+                        <input id="as-idle-min" type="number" inputmode="numeric" step="1" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+                        <p id="as-idle-hint" class="text-xs text-gray-400 mt-1"></p>
+                    </div>
+                </div>
+                <p id="as-msg" class="hidden text-xs" role="status"></p>
+                <button id="as-save" type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50">Save</button>
+            </form>
+        </div>
+        @endif
+
         {{-- GPS Device --}}
         @if($vehicle['hasGpsDevice'] ?? false)
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
@@ -513,6 +541,101 @@
 
         renderReminders();
         loadReminders();
+    })();
+
+    // ── Alert settings (speed limit + idle alert) ─────────────────────────────
+    let alertSettings = null;
+
+    function asMsg(text, isError) {
+        const el = document.getElementById('as-msg');
+        if (!el) return;
+        el.textContent = text || '';
+        el.className = 'text-xs ' + (isError ? 'text-red-600' : 'text-green-700') + (text ? '' : ' hidden');
+    }
+
+    function renderAlertSettings(s) {
+        alertSettings = s;
+        const speed = document.getElementById('as-speed');
+        speed.min = s.minSpeedLimitKmh; speed.max = s.maxSpeedLimitKmh;
+        speed.value = s.speedLimitKmh;
+        document.getElementById('as-speed-hint').textContent =
+            'Between ' + s.minSpeedLimitKmh + ' and ' + s.maxSpeedLimitKmh + '. Default ' + s.defaultSpeedLimitKmh + '.';
+
+        const on = document.getElementById('as-idle-on');
+        on.checked = s.idleAlertEnabled;
+        const min = document.getElementById('as-idle-min');
+        min.min = s.minIdleMinutes; min.max = s.maxIdleMinutes;
+        min.value = s.idleAlertMinutes;
+        document.getElementById('as-idle-hint').textContent =
+            'Between ' + s.minIdleMinutes + ' and ' + s.maxIdleMinutes + ' minutes.';
+        document.getElementById('as-idle-row').classList.toggle('hidden', !s.idleAlertEnabled);
+    }
+
+    async function asFetch(url, options) {
+        const res = await fetch(url, Object.assign({
+            credentials: 'include',
+            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+        }, options));
+        if (res.status === 401) { window.location.href = '/login?expired=1'; return null; }
+        let body = null;
+        try { body = await res.json(); } catch { /* non-JSON error page */ }
+        return { ok: res.ok, status: res.status, body };
+    }
+
+    (function initAlertSettings() {
+        const form = document.getElementById('alert-settings-form');
+        if (!form || !vehicleId) return;
+
+        document.getElementById('as-idle-on').addEventListener('change', (e) => {
+            document.getElementById('as-idle-row').classList.toggle('hidden', !e.target.checked);
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            asMsg('');
+            const speed = Number(document.getElementById('as-speed').value);
+            const idleOn = document.getElementById('as-idle-on').checked;
+            const idleMin = Number(document.getElementById('as-idle-min').value);
+            const s = alertSettings || { minSpeedLimitKmh: 20, maxSpeedLimitKmh: 200, minIdleMinutes: 3, maxIdleMinutes: 120 };
+
+            if (!Number.isInteger(speed) || speed < s.minSpeedLimitKmh || speed > s.maxSpeedLimitKmh) {
+                asMsg('Speed limit must be a whole number between ' + s.minSpeedLimitKmh + ' and ' + s.maxSpeedLimitKmh + '.', true); return;
+            }
+            if (idleOn && (!Number.isInteger(idleMin) || idleMin < s.minIdleMinutes || idleMin > s.maxIdleMinutes)) {
+                asMsg('Idle time must be a whole number between ' + s.minIdleMinutes + ' and ' + s.maxIdleMinutes + ' minutes.', true); return;
+            }
+
+            const btn = document.getElementById('as-save');
+            btn.disabled = true;
+            try {
+                const res = await asFetch(`/api/vehicles/${vehicleId}/alert-settings`, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        speedLimitKmh: speed,
+                        idleAlertEnabled: idleOn,
+                        idleAlertMinutes: idleOn ? idleMin : (s.idleAlertMinutes || 10),
+                    }),
+                });
+                if (!res) return;
+                if (res.ok && res.body && res.body.settings) {
+                    renderAlertSettings(res.body.settings);
+                    asMsg('Saved.', false);
+                } else {
+                    const first = res.body && res.body.errors ? Object.values(res.body.errors)[0] : null;
+                    asMsg((Array.isArray(first) ? first[0] : null) || (res.body && res.body.message) || 'Could not save the alert settings.', true);
+                }
+            } catch { asMsg('Network problem. Please try again.', true); }
+            finally { btn.disabled = false; }
+        });
+
+        (async () => {
+            try {
+                const res = await asFetch(`/api/vehicles/${vehicleId}/alert-settings`, { method: 'GET' });
+                if (!res) return;
+                if (res.ok && res.body && res.body.settings) renderAlertSettings(res.body.settings);
+                else if (res.status === 403 || res.status === 404) document.getElementById('alert-settings-card').classList.add('hidden');
+            } catch { /* network blip: leave the form as it is */ }
+        })();
     })();
 
     // ── HTTP fallback poll ─────────────────────────────────────────────────────

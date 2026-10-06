@@ -48,6 +48,9 @@ class AppServiceProvider extends ServiceProvider
         // Reminder saves/deletes: tiny, human-speed actions — a low cap stops scripted spam.
         RateLimiter::for('reminders', fn (Request $r) => Limit::perMinute(20)->by('reminders:' . $key($r)));
 
+        // Alert-settings saves: human-speed edits — a low cap stops scripted spam.
+        RateLimiter::for('alert-settings', fn (Request $r) => Limit::perMinute(20)->by('alert-settings:' . $key($r)));
+
         // Force HTTPS for every generated URL (asset(), route(), redirects,
         // @vite tags) in production.
         //
