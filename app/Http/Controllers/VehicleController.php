@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Services\ShalotrackApiService;
+use App\Support\DeviceHealth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
@@ -132,6 +134,42 @@ class VehicleController extends Controller
             return response()->json($this->api->getVehicleLocation($id));
         } catch (\Exception $e) {
             return $this->jsonApiError($e, 'location', 'Location unavailable.');
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Vehicle health (AJAX) — GET /api/vehicles/{id}/health
+    //
+    // Summarises the device's battery / power / GPS fix / last contact. Only the
+    // summary leaves the server (no IMEI, no device id — see DeviceHealth).
+    // Cached 15 s per user+vehicle: the card polls, and the underlying numbers
+    // only change when the device reports, so this removes repeat API calls.
+    // The key includes a hash of the Firebase uid because ownership differs per
+    // user — one user's cached answer must never be served to another.
+    // -------------------------------------------------------------------------
+
+    public function health(string $id)
+    {
+        $key = 'device_health:' . hash('sha256', (string) Session::get('firebase_uid')) . ':' . $id;
+
+        try {
+            $summary = Cache::remember($key, 15, function () use ($id) {
+                try {
+                    $res    = $this->api->getVehicleDeviceStatus($id);
+                    $record = $res['data'] ?? null;
+                    return is_array($record) ? DeviceHealth::summarize($record) : DeviceHealth::unavailable();
+                } catch (\Exception $e) {
+                    // No device / not visible to this user (shared viewers get 404): hide the card, not an error.
+                    if (in_array((int) $e->getCode(), [403, 404], true)) {
+                        return DeviceHealth::unavailable();
+                    }
+                    throw $e;
+                }
+            });
+
+            return response()->json($summary);
+        } catch (\Exception $e) {
+            return $this->jsonApiError($e, 'health', 'Health unavailable.');
         }
     }
 

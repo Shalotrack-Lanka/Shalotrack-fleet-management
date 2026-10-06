@@ -71,6 +71,19 @@
             </dl>
         </div>
 
+        {{-- Vehicle health: filled in by JS from /api/vehicles/{id}/health (hidden when no device / no access) --}}
+        @if(($vehicle['hasGpsDevice'] ?? false) && !($vehicle['isShared'] ?? false))
+        <div id="health-card" class="hidden bg-white rounded-xl border border-gray-100 shadow-sm p-6" aria-live="polite">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="font-semibold text-gray-800">Vehicle Health</h3>
+                <span id="health-badge" class="text-xs font-semibold px-2 py-1 rounded-full"></span>
+            </div>
+            <p id="health-headline" class="text-sm text-gray-600 mb-4"></p>
+            <dl id="health-items" class="space-y-3"></dl>
+            <p id="health-updated" class="text-xs text-gray-400 mt-4"></p>
+        </div>
+        @endif
+
         {{-- GPS Device --}}
         @if($vehicle['hasGpsDevice'] ?? false)
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
@@ -118,26 +131,10 @@
 
 <script>
     const vehicleId = '{{ $vehicle["vehicleId"]     ?? "" }}'.toLowerCase();
-    const hasGps = {
-        {
-            ($vehicle['hasGpsDevice'] ?? false) ? 'true' : 'false'
-        }
-    };
-    const vehicleNum = {
-        {
-            json_encode($vehicle['vehicleNumber'] ?? '')
-        }
-    };
-    const vehicleMake = {
-        {
-            json_encode($vehicle['make'] ?? '')
-        }
-    };
-    const vehicleMod = {
-        {
-            json_encode($vehicle['model'] ?? '')
-        }
-    };
+    const hasGps = {{ ($vehicle['hasGpsDevice'] ?? false) ? 'true' : 'false' }};
+    const vehicleNum = @json($vehicle['vehicleNumber'] ?? '');
+    const vehicleMake = @json($vehicle['make'] ?? '');
+    const vehicleMod = @json($vehicle['model'] ?? '');
     const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
     let gmap = null;
@@ -179,14 +176,18 @@
     }
 
     // ── Place or update marker ─────────────────────────────────────────────────
+    function esc(s) {
+        return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
     function applyLocation(lat, lng, speed, ignition, lastUpdate) {
         const pos = {
             lat,
             lng
         };
         const popup = `<div style="min-width:160px;font-family:system-ui,sans-serif;padding:4px 2px">
-            <p style="font-weight:700;font-size:14px;color:#021F4A;margin:0 0 2px">${vehicleNum}</p>
-            <p style="font-size:12px;color:#6B7280;margin:0 0 4px">${vehicleMake} ${vehicleMod}</p>
+            <p style="font-weight:700;font-size:14px;color:#021F4A;margin:0 0 2px">${esc(vehicleNum)}</p>
+            <p style="font-size:12px;color:#6B7280;margin:0 0 4px">${esc(vehicleMake)} ${esc(vehicleMod)}</p>
             <p style="font-size:12px;margin:0">
                 ${Math.round(speed ?? 0)} km/h &nbsp;·&nbsp;
                 ${ignition ? 'Ignition on' : 'Ignition off'}
@@ -256,6 +257,70 @@
         // Start SignalR; fall back to polling if it fails
         initSignalR();
     }
+
+    // ── Vehicle health card ──────────────────────────────────────────────
+    // Renders with textContent only (never innerHTML): every value comes from the
+    // server but is still treated as untrusted text.
+    const HEALTH_STYLE = {
+        ok:      { badge: 'Healthy',   cls: 'text-green-700 bg-green-50 border border-green-200', val: 'text-green-700' },
+        warn:    { badge: 'Attention', cls: 'text-amber-700 bg-amber-50 border border-amber-200', val: 'text-amber-700' },
+        bad:     { badge: 'Problem',   cls: 'text-red-700 bg-red-50 border border-red-200',       val: 'text-red-700' },
+        offline: { badge: 'Offline',   cls: 'text-gray-600 bg-gray-100 border border-gray-200',   val: 'text-gray-500' },
+        info:    { badge: '',          cls: '',                                                   val: 'text-gray-700' },
+    };
+    let healthTimer = null;
+
+    function renderHealth(h) {
+        const card = document.getElementById('health-card');
+        if (!card) return;
+        if (!h || h.available === false) { card.classList.add('hidden'); return; }
+
+        const st = HEALTH_STYLE[h.level] || HEALTH_STYLE.info;
+        const badge = document.getElementById('health-badge');
+        badge.textContent = st.badge;
+        badge.className = 'text-xs font-semibold px-2 py-1 rounded-full ' + st.cls;
+        document.getElementById('health-headline').textContent = h.headline || '';
+
+        const dl = document.getElementById('health-items');
+        dl.replaceChildren();
+        (h.items || []).forEach(it => {
+            const row = document.createElement('div');
+            row.className = 'flex items-center justify-between text-sm';
+            const dt = document.createElement('dt');
+            dt.className = 'text-gray-400';
+            dt.textContent = it.label;
+            const dd = document.createElement('dd');
+            dd.className = 'font-medium text-right ' + (HEALTH_STYLE[it.state] || HEALTH_STYLE.info).val;
+            dd.textContent = it.value;
+            row.append(dt, dd);
+            dl.appendChild(row);
+        });
+
+        document.getElementById('health-updated').textContent =
+            h.lastContact ? 'Last contact ' + h.lastContact + (h.lastContactAgo ? ' (' + h.lastContactAgo + ')' : '') : '';
+        card.classList.remove('hidden');
+    }
+
+    async function loadHealth() {
+        if (!hasGps || !vehicleId || !document.getElementById('health-card')) return;
+        try {
+            const res = await fetch(`/api/vehicles/${vehicleId}/health`, {
+                credentials: 'include',
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF },
+            });
+            if (res.status === 401) { window.location.href = '/login?expired=1'; return; }
+            if (!res.ok) return;            // keep whatever is on screen; the card is informational
+            renderHealth(await res.json());
+        } catch { /* network blip: keep last state */ }
+    }
+
+    // Poll gently, and not at all while the tab is hidden (saves the API and the user's data).
+    function startHealthPoll() {
+        loadHealth();
+        healthTimer = setInterval(() => { if (!document.hidden) loadHealth(); }, 30000);
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) loadHealth(); });
+    }
+    startHealthPoll();
 
     // ── HTTP fallback poll ─────────────────────────────────────────────────────
     async function loadLocationOnce() {
@@ -373,9 +438,12 @@
     }
 </script>
 
-{{-- SignalR CDN (SRI-pinned via jsdelivr) --}}
+{{-- SignalR CDN (SRI-pinned via jsdelivr). The hash is sha384 of @microsoft/signalr@8.0.7
+     dist/browser/signalr.min.js, computed from the npm package. A WRONG hash makes the browser
+     refuse to run the script, which silently kills live tracking — tests/Unit/ViewIntegrityTest
+     now fails the build if any integrity= attribute is malformed. --}}
 <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"
-    integrity="sha256-Fh4C2R5TmKO0C85CNAO5IHIY5Vr5Z0ItIBo9SjNGpA=" crossorigin="anonymous"></script>
+    integrity="sha384-mU1xC5yC2LldSW74Rj1Ax8wPiLw/28V5eh51uKJMlBbRVsOtUYd4xyzNsgIAJARB" crossorigin="anonymous"></script>
 
 {{-- Google Maps (defined before async load — initMap is the callback) --}}
 <script async defer
