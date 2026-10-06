@@ -322,6 +322,19 @@ $completeness = (int) round(($filled / count($fields)) * 100);
         @endif
     </div>
 
+    {{-- ── Notifications ───────────────────────────────────────────────────── --}}
+    <div id="weekly-card" class="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
+        <div class="min-w-0">
+            <p class="text-sm font-semibold text-[#021F4A]">Weekly summary</p>
+            <p class="text-xs text-gray-400 mt-0.5">A push notification every Monday with last week's distance, trips and overspeed alerts.</p>
+            <p id="weekly-error" class="hidden text-xs text-red-600 mt-1" role="alert"></p>
+        </div>
+        <button id="weekly-toggle" type="button" role="switch" aria-checked="false" aria-label="Weekly summary notification" disabled
+            class="relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full bg-gray-300 transition disabled:opacity-50">
+            <span id="weekly-knob" class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition translate-x-0.5"></span>
+        </button>
+    </div>
+
 </div>
 
 @endif
@@ -530,6 +543,68 @@ $completeness = (int) round(($filled / count($fields)) * 100);
             showToast('Could not copy. Please copy manually.', 'error');
         }
     }
+
+    // ── Weekly summary switch ─────────────────────────────────────────────────
+    (function initWeeklySummary() {
+        const btn = document.getElementById('weekly-toggle');
+        if (!btn) return;
+        const knob = document.getElementById('weekly-knob');
+        const err = document.getElementById('weekly-error');
+        let enabled = false;
+
+        function paint() {
+            btn.setAttribute('aria-checked', enabled ? 'true' : 'false');
+            btn.classList.toggle('bg-[#FA6908]', enabled);
+            btn.classList.toggle('bg-gray-300', !enabled);
+            knob.classList.toggle('translate-x-5', enabled);
+            knob.classList.toggle('translate-x-0.5', !enabled);
+        }
+        function showError(msg) {
+            err.textContent = msg || '';
+            err.classList.toggle('hidden', !msg);
+        }
+        async function call(method, body) {
+            const res = await fetch('/api/weekly-summary', {
+                method,
+                credentials: 'include',
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+                body: body ? JSON.stringify(body) : undefined,
+            });
+            if (res.status === 401) { window.location.href = '/login?expired=1'; return null; }
+            let data = null;
+            try { data = await res.json(); } catch { /* non-JSON error page */ }
+            return { ok: res.ok, data };
+        }
+
+        btn.addEventListener('click', async () => {
+            const next = !enabled;
+            btn.disabled = true;
+            showError('');
+            try {
+                const r = await call('PUT', { enabled: next });
+                if (r && r.ok && r.data && r.data.success) {
+                    enabled = !!r.data.enabled;
+                    paint();
+                } else if (r) {
+                    showError((r.data && r.data.message) || 'Could not save. Please try again.');
+                }
+            } catch { showError('Network problem. Please try again.'); }
+            finally { btn.disabled = false; }
+        });
+
+        (async () => {
+            try {
+                const r = await call('GET');
+                if (r && r.ok && r.data && r.data.success) {
+                    enabled = !!r.data.enabled;
+                    paint();
+                    btn.disabled = false;
+                } else {
+                    document.getElementById('weekly-card').classList.add('hidden'); // not available: hide, do not show a broken switch
+                }
+            } catch { /* network blip: leave the switch disabled */ }
+        })();
+    })();
 </script>
 
 @endsection

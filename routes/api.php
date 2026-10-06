@@ -3,6 +3,7 @@
 use App\Http\Controllers\VehicleAlertSettingsController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\VehicleReminderController;
+use App\Http\Controllers\WeeklySummaryController;
 use App\Http\Middleware\FirebaseAuthenticated;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
@@ -64,6 +65,12 @@ Route::middleware([FirebaseAuthenticated::class, 'throttle:portal'])->group(func
         ->whereUuid('id');
     Route::put('/vehicles/{id}/alert-settings', [VehicleAlertSettingsController::class, 'save'])
         ->whereUuid('id')
+        ->middleware('throttle:alert-settings');
+
+    // Weekly summary push: the signed-in customer's own on/off switch (profile page). No id in
+    // the URL on purpose: the API always acts on the caller's own record.
+    Route::get('/weekly-summary', [WeeklySummaryController::class, 'show']);
+    Route::put('/weekly-summary', [WeeklySummaryController::class, 'save'])
         ->middleware('throttle:alert-settings');
 
     // Current location — HTTP fallback poll on vehicles/show when SignalR
