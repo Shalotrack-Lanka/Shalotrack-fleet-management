@@ -84,6 +84,33 @@
         </div>
         @endif
 
+        {{-- Reminders: revenue licence / insurance / service. Owner only (the API enforces it too). --}}
+        @if(!($vehicle['isShared'] ?? false) && !($vehicle['isDemoVehicle'] ?? false))
+        <div id="reminders-card" class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+            <div class="flex items-center justify-between mb-1">
+                <h3 class="font-semibold text-gray-800">Reminders</h3>
+            </div>
+            <p class="text-xs text-gray-400 mb-4">Get a push notification on your phone before these are due.</p>
+            <ul id="reminders-list" class="space-y-3"></ul>
+            <form id="reminder-form" class="hidden mt-4 pt-4 border-t border-gray-100 space-y-3" autocomplete="off" novalidate>
+                <p id="reminder-form-title" class="text-sm font-medium text-gray-700"></p>
+                <div>
+                    <label for="reminder-date" class="block text-xs text-gray-400 mb-1">Due date</label>
+                    <input id="reminder-date" type="date" required class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+                </div>
+                <div>
+                    <label for="reminder-notes" class="block text-xs text-gray-400 mb-1">Note (optional, only you see it)</label>
+                    <input id="reminder-notes" type="text" maxlength="200" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+                </div>
+                <p id="reminder-error" class="hidden text-xs text-red-600" role="alert"></p>
+                <div class="flex items-center gap-2">
+                    <button id="reminder-save" type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50">Save</button>
+                    <button id="reminder-cancel" type="button" class="px-4 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100">Cancel</button>
+                </div>
+            </form>
+        </div>
+        @endif
+
         {{-- GPS Device --}}
         @if($vehicle['hasGpsDevice'] ?? false)
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
@@ -321,6 +348,172 @@
         document.addEventListener('visibilitychange', () => { if (!document.hidden) loadHealth(); });
     }
     startHealthPoll();
+
+    // ── Reminders (revenue licence / insurance / service) ─────────────────────
+    const REMINDER_TYPES = [
+        { type: 0, label: 'Revenue licence' },
+        { type: 1, label: 'Insurance' },
+        { type: 2, label: 'Service due' },
+    ];
+    let reminderByType = {};
+    let reminderEditing = null;
+
+    function reminderDaysText(d) {
+        if (d === null || d === undefined) return '';
+        if (d < 0)  return Math.abs(d) === 1 ? 'Overdue by 1 day' : 'Overdue by ' + Math.abs(d) + ' days';
+        if (d === 0) return 'Due today';
+        if (d === 1) return 'Due tomorrow';
+        return 'In ' + d + ' days';
+    }
+    function reminderTone(d) {
+        if (d === null || d === undefined) return 'text-gray-500';
+        if (d < 0) return 'text-red-700';
+        if (d <= 14) return 'text-amber-700';
+        return 'text-green-700';
+    }
+    function reminderBtn(text, onClick) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'text-xs font-medium text-blue-600 hover:underline';
+        b.textContent = text;
+        b.addEventListener('click', onClick);
+        return b;
+    }
+
+    function renderReminders() {
+        const ul = document.getElementById('reminders-list');
+        if (!ul) return;
+        ul.replaceChildren();
+        REMINDER_TYPES.forEach(t => {
+            const r = reminderByType[t.type];
+            const li = document.createElement('li');
+            li.className = 'flex items-start justify-between gap-3 text-sm';
+
+            const left = document.createElement('div');
+            const name = document.createElement('div');
+            name.className = 'text-gray-700 font-medium';
+            name.textContent = t.label;
+            const sub = document.createElement('div');
+            sub.className = 'text-xs ' + (r ? reminderTone(r.daysLeft) : 'text-gray-400');
+            sub.textContent = r ? (r.dueDate + ' · ' + reminderDaysText(r.daysLeft)) : 'Not set';
+            left.append(name, sub);
+            if (r && r.notes) {
+                const n = document.createElement('div');
+                n.className = 'text-xs text-gray-400 truncate max-w-[14rem]';
+                n.textContent = r.notes;
+                left.appendChild(n);
+            }
+
+            const right = document.createElement('div');
+            right.className = 'flex items-center gap-3 shrink-0';
+            right.appendChild(reminderBtn(r ? 'Edit' : 'Set', () => openReminderForm(t)));
+            if (r) right.appendChild(reminderBtn('Remove', () => removeReminder(r)));
+
+            li.append(left, right);
+            ul.appendChild(li);
+        });
+    }
+
+    function reminderError(msg) {
+        const el = document.getElementById('reminder-error');
+        if (!el) return;
+        el.textContent = msg || '';
+        el.classList.toggle('hidden', !msg);
+    }
+
+    function openReminderForm(t) {
+        reminderEditing = t;
+        const r = reminderByType[t.type];
+        document.getElementById('reminder-form-title').textContent = t.label;
+        const date = document.getElementById('reminder-date');
+        date.value = r ? r.dueDate : '';
+        document.getElementById('reminder-notes').value = r && r.notes ? r.notes : '';
+        reminderError('');
+        document.getElementById('reminder-form').classList.remove('hidden');
+        date.focus();
+    }
+    function closeReminderForm() {
+        reminderEditing = null;
+        document.getElementById('reminder-form').classList.add('hidden');
+        reminderError('');
+    }
+
+    async function reminderFetch(url, options) {
+        const res = await fetch(url, Object.assign({
+            credentials: 'include',
+            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+        }, options));
+        if (res.status === 401) { window.location.href = '/login?expired=1'; return null; }
+        let body = null;
+        try { body = await res.json(); } catch { /* non-JSON error page */ }
+        return { ok: res.ok, status: res.status, body };
+    }
+
+    async function loadReminders() {
+        if (!document.getElementById('reminders-card') || !vehicleId) return;
+        try {
+            const r = await reminderFetch(`/api/vehicles/${vehicleId}/reminders`, { method: 'GET' });
+            if (!r) return;
+            if (!r.ok) {
+                // Not the owner / not available: hide the card rather than show an error.
+                if (r.status === 403 || r.status === 404) document.getElementById('reminders-card').classList.add('hidden');
+                return;
+            }
+            reminderByType = {};
+            (r.body.reminders || []).forEach(x => { reminderByType[x.type] = x; });
+            renderReminders();
+        } catch { /* network blip: leave the card as it is */ }
+    }
+
+    async function removeReminder(r) {
+        if (!confirm('Remove this reminder?')) return;
+        try {
+            const res = await reminderFetch(`/api/reminders/${r.reminderId}`, { method: 'DELETE' });
+            if (!res) return;
+            if (res.ok) { delete reminderByType[r.type]; renderReminders(); closeReminderForm(); }
+            else reminderError((res.body && res.body.message) || 'Could not remove the reminder.');
+        } catch { reminderError('Network problem. Please try again.'); }
+    }
+
+    (function initReminders() {
+        const form = document.getElementById('reminder-form');
+        if (!form) return;
+        document.getElementById('reminder-cancel').addEventListener('click', closeReminderForm);
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!reminderEditing) return;
+            const dueDate = document.getElementById('reminder-date').value;
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) { reminderError('Choose a due date.'); return; }
+
+            const btn = document.getElementById('reminder-save');
+            btn.disabled = true;
+            reminderError('');
+            try {
+                const res = await reminderFetch(`/api/vehicles/${vehicleId}/reminders`, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        type: reminderEditing.type,
+                        dueDate: dueDate,
+                        notes: document.getElementById('reminder-notes').value.trim() || null,
+                    }),
+                });
+                if (!res) return;
+                if (res.ok && res.body && res.body.reminder) {
+                    reminderByType[res.body.reminder.type] = res.body.reminder;
+                    renderReminders();
+                    closeReminderForm();
+                } else {
+                    const first = res.body && res.body.errors ? Object.values(res.body.errors)[0] : null;
+                    reminderError((Array.isArray(first) ? first[0] : null) || (res.body && res.body.message) || 'Could not save the reminder.');
+                }
+            } catch { reminderError('Network problem. Please try again.'); }
+            finally { btn.disabled = false; }
+        });
+
+        renderReminders();
+        loadReminders();
+    })();
 
     // ── HTTP fallback poll ─────────────────────────────────────────────────────
     async function loadLocationOnce() {

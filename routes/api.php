@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\VehicleController;
+use App\Http\Controllers\VehicleReminderController;
 use App\Http\Middleware\FirebaseAuthenticated;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
@@ -44,6 +45,17 @@ Route::middleware([FirebaseAuthenticated::class, 'throttle:portal'])->group(func
     Route::get('/vehicles/{id}/health', [VehicleController::class, 'health'])
         ->whereUuid('id')
         ->middleware('throttle:health');
+
+    // Licence / insurance / service reminders (owner only; the API enforces ownership and
+    // answers 404 for anything else). Fleet only validates and forwards.
+    Route::get('/vehicles/{id}/reminders', [VehicleReminderController::class, 'index'])
+        ->whereUuid('id');
+    Route::put('/vehicles/{id}/reminders', [VehicleReminderController::class, 'save'])
+        ->whereUuid('id')
+        ->middleware('throttle:reminders');
+    Route::delete('/reminders/{reminderId}', [VehicleReminderController::class, 'destroy'])
+        ->whereUuid('reminderId')
+        ->middleware('throttle:reminders');
 
     // Current location — HTTP fallback poll on vehicles/show when SignalR
     // is unavailable. Path matches what the page already calls.
