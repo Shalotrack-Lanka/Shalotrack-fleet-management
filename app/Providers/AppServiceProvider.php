@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -22,6 +25,25 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Vite::prefetch(concurrency: 3);
+
+        // Rate limits are keyed by the signed-in Firebase user, NOT by IP: behind
+        // Cloudflare + ALB the client IP can be forged through X-Forwarded-For, which
+        // would make an IP-keyed limit worthless. Falls back to IP for anonymous callers.
+        $key = fn (Request $r) => ($r->hasSession() ? $r->session()->get('firebase_uid') : null)
+            ? 'u:' . $r->session()->get('firebase_uid')
+            : 'ip:' . $r->ip();
+
+        // Blanket ceiling for every logged-in route (a page makes several calls).
+        RateLimiter::for('portal', fn (Request $r) => Limit::perMinute(240)->by($key($r)));
+
+        // Phone-number invites: an enumeration/spam target — slow and capped per day.
+        RateLimiter::for('invite', fn (Request $r) => [
+            Limit::perMinute(5)->by('invite-m:' . $key($r)),
+            Limit::perDay(30)->by('invite-d:' . $key($r)),
+        ]);
+
+        // Vehicle-health polling: cheap (cached 15 s server-side) but still capped per user.
+        RateLimiter::for('health', fn (Request $r) => Limit::perMinute(30)->by('health:' . $key($r)));
 
         // Force HTTPS for every generated URL (asset(), route(), redirects,
         // @vite tags) in production.

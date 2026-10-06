@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Session;
 |
 */
 
-Route::middleware(FirebaseAuthenticated::class)->group(function () {
+Route::middleware([FirebaseAuthenticated::class, 'throttle:portal'])->group(function () {
 
     // SignalR token — used by dashboard, vehicles/show and trips pages.
     // The SignalR JS client cannot send custom headers on the WebSocket
@@ -38,6 +38,12 @@ Route::middleware(FirebaseAuthenticated::class)->group(function () {
     // vehicles/index to read currentAssignmentId.
     Route::get('/vehicles/{id}', [VehicleController::class, 'showJson'])
         ->whereUuid('id');
+
+    // Vehicle health summary (battery / power / GPS fix / last contact) for the
+    // card on vehicles/show. Summary only — no IMEI or device id is returned.
+    Route::get('/vehicles/{id}/health', [VehicleController::class, 'health'])
+        ->whereUuid('id')
+        ->middleware('throttle:health');
 
     // Current location — HTTP fallback poll on vehicles/show when SignalR
     // is unavailable. Path matches what the page already calls.

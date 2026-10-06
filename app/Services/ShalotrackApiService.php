@@ -132,6 +132,15 @@ class ShalotrackApiService
     }
 
     // -------------------------------------------------------------------------
+    // Device status (battery, power, GPS fix, last contact)
+    // -------------------------------------------------------------------------
+
+    public function getVehicleDeviceStatus(string $vehicleId): array
+    {
+        return $this->get("/api/DeviceStatus/vehicle/{$vehicleId}");
+    }
+
+    // -------------------------------------------------------------------------
     // GPS Tracking (Trip History)
     // -------------------------------------------------------------------------
 
@@ -529,7 +538,7 @@ class ShalotrackApiService
 
         Log::error("ShalotrackApiService: {$method} {$path} failed", [
             'status' => $status,
-            'body'   => $body,
+            'body'   => \App\Support\Pii::apiBody($body),   // never the full body: validation errors echo personal data
         ]);
 
         // 402 + SUBSCRIPTION_RENEWAL_REQUIRED: a vehicle's subscription lapsed.
