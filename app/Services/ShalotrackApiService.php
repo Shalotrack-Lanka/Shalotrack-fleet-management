@@ -141,6 +141,20 @@ class ShalotrackApiService
     }
 
     // -------------------------------------------------------------------------
+    // Weekly summary push (the signed-in customer's own on/off switch)
+    // -------------------------------------------------------------------------
+
+    public function getWeeklySummarySetting(): array
+    {
+        return $this->get('/api/WeeklySummary/settings');
+    }
+
+    public function saveWeeklySummarySetting(bool $enabled): array
+    {
+        return $this->put('/api/WeeklySummary/settings', ['enabled' => $enabled]);
+    }
+
+    // -------------------------------------------------------------------------
     // Per-vehicle alert settings (speed limit, idle alert)
     // -------------------------------------------------------------------------
 
