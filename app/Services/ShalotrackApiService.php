@@ -141,6 +141,24 @@ class ShalotrackApiService
     }
 
     // -------------------------------------------------------------------------
+    // Per-vehicle alert settings (speed limit, idle alert)
+    // -------------------------------------------------------------------------
+
+    public function getVehicleAlertSettings(string $vehicleId): array
+    {
+        return $this->get("/api/VehicleAlertSettings/vehicle/{$vehicleId}");
+    }
+
+    public function saveVehicleAlertSettings(string $vehicleId, int $speedLimitKmh, bool $idleEnabled, int $idleMinutes): array
+    {
+        return $this->put("/api/VehicleAlertSettings/vehicle/{$vehicleId}", [
+            'speedLimitKmh'    => $speedLimitKmh,
+            'idleAlertEnabled' => $idleEnabled,
+            'idleAlertMinutes' => $idleMinutes,
+        ]);
+    }
+
+    // -------------------------------------------------------------------------
     // Vehicle reminders (revenue licence / insurance / service due)
     // -------------------------------------------------------------------------
 
