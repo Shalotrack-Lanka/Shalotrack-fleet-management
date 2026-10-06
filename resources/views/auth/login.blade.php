@@ -58,7 +58,7 @@
                             <input
                                 type="tel"
                                 id="phone-input"
-                                placeholder="071 234 5678"
+                                placeholder="71 234 5678" inputmode="numeric" autocomplete="tel-national"
                                 class="flex-1 min-w-0 px-3 py-2.5 text-base sm:text-sm outline-none bg-white"
                                 autofocus
                             />
@@ -147,12 +147,13 @@
         });
 
         // ---- Normalise Sri Lankan phone number to E.164 ----
+        // The +94 prefix is shown beside the box, so the user types only the national number.
+        // All of these give the same result: 712345678 · 0712345678 · 94712345678 · +94 (0)71 234 5678
         function normalisePhone(raw) {
-            const digits = raw.replace(/\D/g, '');
-            if (digits.startsWith('947') && digits.length === 11) return `+${digits}`;
-            if (digits.startsWith('07')  && digits.length === 10)  return `+94${digits.slice(1)}`;
-            if (digits.startsWith('7')   && digits.length === 9)   return `+94${digits}`;
-            return null;
+            let d = raw.replace(/\D/g, '');
+            if (d.startsWith('94')) d = d.slice(2);   // pasted with country code
+            if (d.startsWith('0'))  d = d.slice(1);   // local trunk "0" is dropped in E.164
+            return /^7\d{8}$/.test(d) ? `+94${d}` : null;   // Sri Lankan mobiles: 7X XXX XXXX
         }
 
         // ---- Helpers ----
@@ -179,7 +180,7 @@
             const e164 = normalisePhone(raw);
 
             if (!e164) {
-                showError('phone-error', 'Enter a valid Sri Lankan phone number (e.g. 071 234 5678).');
+                showError('phone-error', 'Enter a valid Sri Lankan phone number (e.g. 71 234 5678).');
                 return;
             }
 
