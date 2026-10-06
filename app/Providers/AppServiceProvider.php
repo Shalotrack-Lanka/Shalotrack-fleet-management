@@ -45,6 +45,9 @@ class AppServiceProvider extends ServiceProvider
         // Vehicle-health polling: cheap (cached 15 s server-side) but still capped per user.
         RateLimiter::for('health', fn (Request $r) => Limit::perMinute(30)->by('health:' . $key($r)));
 
+        // Reminder saves/deletes: tiny, human-speed actions — a low cap stops scripted spam.
+        RateLimiter::for('reminders', fn (Request $r) => Limit::perMinute(20)->by('reminders:' . $key($r)));
+
         // Force HTTPS for every generated URL (asset(), route(), redirects,
         // @vite tags) in production.
         //

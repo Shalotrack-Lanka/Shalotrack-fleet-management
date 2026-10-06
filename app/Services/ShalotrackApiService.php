@@ -141,6 +141,29 @@ class ShalotrackApiService
     }
 
     // -------------------------------------------------------------------------
+    // Vehicle reminders (revenue licence / insurance / service due)
+    // -------------------------------------------------------------------------
+
+    public function getVehicleReminders(string $vehicleId): array
+    {
+        return $this->get("/api/VehicleReminders/vehicle/{$vehicleId}");
+    }
+
+    public function saveVehicleReminder(string $vehicleId, int $type, string $dueDate, ?string $notes): array
+    {
+        return $this->put("/api/VehicleReminders/vehicle/{$vehicleId}", [
+            'type'    => $type,
+            'dueDate' => $dueDate,
+            'notes'   => $notes,
+        ]);
+    }
+
+    public function deleteVehicleReminder(string $reminderId): void
+    {
+        $this->delete("/api/VehicleReminders/{$reminderId}");
+    }
+
+    // -------------------------------------------------------------------------
     // GPS Tracking (Trip History)
     // -------------------------------------------------------------------------
 
