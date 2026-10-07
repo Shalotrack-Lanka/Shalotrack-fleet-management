@@ -139,6 +139,42 @@
         </div>
         @endif
 
+        {{-- Live link: temporary, revocable, no-login link to this vehicle's live position. Owner only (the API enforces it too). --}}
+        @if(($vehicle['hasGpsDevice'] ?? false) && !($vehicle['isShared'] ?? false) && !($vehicle['isDemoVehicle'] ?? false))
+        <div id="live-link-card" class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+            <h3 class="font-semibold text-gray-800 mb-1">Share live location</h3>
+            <p class="text-xs text-gray-400 mb-4">Anyone with the link can see this vehicle's plate number, live position and its route from the moment you create the link, until it ends or you stop it. No login needed.</p>
+            <form id="ll-form" class="flex items-end gap-3" autocomplete="off">
+                <div class="flex-1">
+                    <label for="ll-hours" class="block text-xs text-gray-400 mb-1">Link works for</label>
+                    <select id="ll-hours" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white">
+                        <option value="1">1 hour</option>
+                        <option value="2">2 hours</option>
+                        <option value="4">4 hours</option>
+                        <option value="8">8 hours</option>
+                        <option value="12">12 hours</option>
+                        <option value="24">24 hours</option>
+                    </select>
+                </div>
+                <button id="ll-create" type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50">Create link</button>
+            </form>
+            <p id="ll-msg" class="hidden text-xs mt-3" role="status"></p>
+            <div id="ll-new" class="hidden mt-4 p-3 rounded-lg bg-blue-50 border border-blue-100">
+                <p class="text-xs text-blue-900 mb-2">Copy it now. For security the link is shown only once; if you lose it, stop it and make a new one.</p>
+                <input id="ll-url" type="text" readonly class="w-full border border-blue-200 rounded-lg px-3 py-2 text-xs font-mono bg-white">
+                <div class="flex gap-2 mt-2">
+                    <button id="ll-copy" type="button" class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Copy</button>
+                    <button id="ll-share" type="button" class="hidden px-3 py-1.5 text-xs font-medium text-blue-700 bg-white border border-blue-200 rounded-lg hover:bg-blue-50">Share…</button>
+                </div>
+            </div>
+            <div class="mt-4">
+                <p class="text-xs text-gray-400 mb-2">Active links</p>
+                <ul id="ll-list" class="space-y-2"></ul>
+                <p id="ll-empty" class="text-xs text-gray-400">None.</p>
+            </div>
+        </div>
+        @endif
+
         {{-- GPS Device --}}
         @if($vehicle['hasGpsDevice'] ?? false)
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
@@ -636,6 +672,98 @@
                 else if (res.status === 403 || res.status === 404) document.getElementById('alert-settings-card').classList.add('hidden');
             } catch { /* network blip: leave the form as it is */ }
         })();
+    })();
+
+    // ── Live link (temporary, revocable, no-login) ────────────────────────────
+    // Built with textContent / DOM nodes only. The raw link is shown once, right after creation.
+    (function initLiveLinks() {
+        const card = document.getElementById('live-link-card');
+        if (!card || !vehicleId) return;
+
+        const listEl = document.getElementById('ll-list');
+        const emptyEl = document.getElementById('ll-empty');
+
+        function msg(text, isError) {
+            const el = document.getElementById('ll-msg');
+            el.textContent = text || '';
+            el.className = 'text-xs mt-3 ' + (isError ? 'text-red-600' : 'text-green-700') + (text ? '' : ' hidden');
+        }
+
+        function fmt(iso) {
+            const t = Date.parse(iso);
+            return isNaN(t) ? '—' : new Date(t).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        }
+
+        function renderLinks(links) {
+            listEl.replaceChildren();
+            links.forEach((l) => {
+                const li = document.createElement('li');
+                li.className = 'flex items-center justify-between gap-3 text-xs border border-gray-100 rounded-lg px-3 py-2';
+                const label = document.createElement('span');
+                label.className = 'text-gray-600';
+                label.textContent = 'Ends ' + fmt(l.expiresAt);
+                const stop = document.createElement('button');
+                stop.type = 'button';
+                stop.className = 'text-red-600 font-medium hover:underline';
+                stop.textContent = 'Stop';
+                stop.addEventListener('click', async () => {
+                    stop.disabled = true;
+                    try {
+                        const res = await asFetch('/api/live-links/' + encodeURIComponent(l.linkId), { method: 'DELETE' });
+                        if (!res) return;
+                        if (res.ok) { msg('Link stopped.', false); await refresh(); }
+                        else { msg((res.body && res.body.message) || 'Could not stop the link.', true); stop.disabled = false; }
+                    } catch { msg('Network problem. Please try again.', true); stop.disabled = false; }
+                });
+                li.append(label, stop);
+                listEl.appendChild(li);
+            });
+            emptyEl.classList.toggle('hidden', links.length > 0);
+        }
+
+        async function refresh() {
+            try {
+                const res = await asFetch('/api/vehicles/' + vehicleId + '/live-links', { method: 'GET' });
+                if (!res) return;
+                if (res.ok && res.body && Array.isArray(res.body.links)) renderLinks(res.body.links);
+                else if (res.status === 403 || res.status === 404) card.classList.add('hidden');
+            } catch { /* network blip: keep what is shown */ }
+        }
+
+        document.getElementById('ll-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            msg('');
+            const hours = Number(document.getElementById('ll-hours').value);
+            const btn = document.getElementById('ll-create');
+            btn.disabled = true;
+            try {
+                const res = await asFetch('/api/vehicles/' + vehicleId + '/live-links', {
+                    method: 'POST', body: JSON.stringify({ durationHours: hours }),
+                });
+                if (!res) return;
+                if (res.ok && res.body && res.body.link && res.body.link.url) {
+                    const url = res.body.link.url;
+                    document.getElementById('ll-url').value = url;
+                    document.getElementById('ll-new').classList.remove('hidden');
+                    document.getElementById('ll-share').classList.toggle('hidden', !navigator.share);
+                    await refresh();
+                } else {
+                    msg((res.body && res.body.message) || 'Could not create the link.', true);
+                }
+            } catch { msg('Network problem. Please try again.', true); }
+            finally { btn.disabled = false; }
+        });
+
+        document.getElementById('ll-copy').addEventListener('click', async () => {
+            const input = document.getElementById('ll-url');
+            try { await navigator.clipboard.writeText(input.value); msg('Copied.', false); }
+            catch { input.select(); msg('Press Ctrl+C to copy.', false); }
+        });
+        document.getElementById('ll-share').addEventListener('click', async () => {
+            try { await navigator.share({ title: 'Live location', url: document.getElementById('ll-url').value }); } catch { /* cancelled */ }
+        });
+
+        refresh();
     })();
 
     // ── HTTP fallback poll ─────────────────────────────────────────────────────

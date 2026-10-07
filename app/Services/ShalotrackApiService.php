@@ -141,6 +141,52 @@ class ShalotrackApiService
     }
 
     // -------------------------------------------------------------------------
+    // Temporary live-location links (owner side, authenticated)
+    // -------------------------------------------------------------------------
+
+    public function getLiveShares(string $vehicleId): array
+    {
+        return $this->get("/api/LiveShare/vehicle/{$vehicleId}");
+    }
+
+    public function createLiveShare(string $vehicleId, int $hours): array
+    {
+        return $this->post("/api/LiveShare/vehicle/{$vehicleId}", ['durationHours' => $hours]);
+    }
+
+    public function revokeLiveShare(string $linkId): void
+    {
+        $this->delete("/api/LiveShare/{$linkId}");
+    }
+
+    /**
+     * The anonymous public read for a live link. Deliberately does NOT use handle()/client():
+     * there is no session token here, and handle() logs the request path, which contains the
+     * link token. Nothing about this call (token, body) is ever logged.
+     *
+     * @throws \Exception NOT_FOUND (404) for any expired/stopped/unknown link, RATE_LIMITED (429),
+     *                    API_ERROR (500) for anything else.
+     */
+    public function getPublicLive(string $token, bool $withTrail): array
+    {
+        $response = Http::timeout($this->timeout)
+            ->acceptJson()
+            ->get($this->baseUrl . '/api/public/live/' . rawurlencode($token), [
+                'trail' => $withTrail ? 'true' : 'false',
+            ]);
+
+        if ($response->successful()) {
+            return $response->json() ?? [];
+        }
+
+        match (true) {
+            $response->status() === 404 => throw new \Exception('NOT_FOUND', 404),
+            $response->status() === 429 => throw new \Exception('RATE_LIMITED', 429),
+            default                     => throw new \Exception('API_ERROR', 500),
+        };
+    }
+
+    // -------------------------------------------------------------------------
     // Weekly summary push (the signed-in customer's own on/off switch)
     // -------------------------------------------------------------------------
 

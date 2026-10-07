@@ -21,6 +21,7 @@ use App\Http\Controllers\ReportExportController;
 use App\Http\Controllers\GeocodeController;
 use App\Http\Controllers\RenewalController;
 use App\Http\Controllers\SosController;
+use App\Http\Controllers\PublicLiveController;
 
 // ---- Public ----
 Route::get('/', fn() => view('landing'))->name('home');
@@ -40,6 +41,25 @@ Route::get('/logout-and-login', function () {
     Session::flush();
     return redirect('/login');
 })->name('logout.login');
+
+// ---- Public live link (no login) ----
+// Anyone holding the link token can open this. No session, cookies or CSRF are involved at all
+// (a stateless viewer must not get a session row or Set-Cookie). Read-only; the API decides
+// whether the token is valid, and every failure looks the same.
+Route::middleware('throttle:live-public')
+    ->withoutMiddleware([
+        \Illuminate\Cookie\Middleware\EncryptCookies::class,
+        \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+        \Illuminate\Session\Middleware\StartSession::class,
+        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+        \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
+    ])
+    ->group(function () {
+        Route::get('/live/{token}',      [PublicLiveController::class, 'page'])
+            ->where('token', '[A-Za-z0-9_-]{43}')->name('live.page');
+        Route::get('/live/{token}/data', [PublicLiveController::class, 'data'])
+            ->where('token', '[A-Za-z0-9_-]{43}')->name('live.data');
+    });
 
 // ---- Protected ----
 Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(function () {
