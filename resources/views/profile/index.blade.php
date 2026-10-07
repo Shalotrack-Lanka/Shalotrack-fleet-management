@@ -342,10 +342,17 @@ $completeness = (int) round(($filled / count($fields)) * 100);
             <p class="text-xs text-gray-400 mt-0.5">Download a copy of the personal data we hold about you (profile, vehicles, places, complaints, renewals and recent alerts). Location history is available from Trip History.</p>
             <p id="export-error" class="hidden text-xs text-red-600 mt-1" role="alert"></p>
         </div>
-        <button id="export-btn" type="button"
-            class="flex-shrink-0 px-4 py-2 rounded-lg bg-[#021F4A] text-white text-xs font-semibold hover:opacity-90 transition disabled:opacity-50">
-            Download my data
-        </button>
+        <div class="flex items-center gap-2 flex-shrink-0">
+            <select id="export-format" aria-label="Download format"
+                class="px-2 py-2 rounded-lg border border-gray-200 bg-white text-xs text-[#021F4A] focus:outline-none focus:ring-2 focus:ring-[#FA6908]/40">
+                <option value="pdf">PDF (readable)</option>
+                <option value="json">JSON (technical)</option>
+            </select>
+            <button id="export-btn" type="button"
+                class="px-4 py-2 rounded-lg bg-[#021F4A] text-white text-xs font-semibold hover:opacity-90 transition disabled:opacity-50">
+                Download
+            </button>
+        </div>
     </div>
 
 </div>
@@ -570,7 +577,8 @@ $completeness = (int) round(($filled / count($fields)) * 100);
             btn.disabled = true;
             showError('');
             try {
-                const res = await fetch('/api/account/export', {
+                const format = document.getElementById('export-format').value === 'json' ? 'json' : 'pdf';
+                const res = await fetch('/api/account/export?format=' + format, {
                     credentials: 'include',
                     headers: { 'Accept': 'application/json' },
                 });
@@ -585,7 +593,7 @@ $completeness = (int) round(($filled / count($fields)) * 100);
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'shalotrack-my-data-' + new Date().toISOString().slice(0, 10) + '.json';
+                a.download = 'shalotrack-my-data-' + new Date().toISOString().slice(0, 10) + '.' + format;
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
