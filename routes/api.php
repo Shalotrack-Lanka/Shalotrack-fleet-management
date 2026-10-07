@@ -89,6 +89,13 @@ Route::middleware([FirebaseAuthenticated::class, 'throttle:portal'])->group(func
     Route::get('/account/export', [AccountController::class, 'export'])
         ->middleware('throttle:account-export');
 
+    // Delete my account. Status is cheap; request and cancel are capped at 5 an hour.
+    Route::get('/account/deletion', [AccountController::class, 'deletionStatus']);
+    Route::post('/account/delete', [AccountController::class, 'requestDeletion'])
+        ->middleware('throttle:account-delete');
+    Route::post('/account/deletion/cancel', [AccountController::class, 'cancelDeletion'])
+        ->middleware('throttle:account-delete');
+
     // Current location — HTTP fallback poll on vehicles/show when SignalR
     // is unavailable. Path matches what the page already calls.
     Route::get('/CurrentLocations/vehicle/{id}', [VehicleController::class, 'location'])

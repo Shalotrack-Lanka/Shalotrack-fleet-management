@@ -129,6 +129,9 @@ Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(func
         ->whereUuid('vehicleId')
         ->middleware('throttle:3,1');
 
+    // Account deletion: the page a customer lands on while deletion is scheduled (cancel from here).
+    Route::get('/account/deletion', [\App\Http\Controllers\AccountController::class, 'deletionPage'])->name('account.deletion');
+
     // Profile
     Route::get('/profile',  [ProfileController::class, 'index'])->name('profile');
     Route::put('/profile',  [ProfileController::class, 'update']);

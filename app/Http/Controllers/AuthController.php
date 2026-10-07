@@ -103,14 +103,32 @@ class AuthController extends Controller
             }
         }
 
+        // Is this account waiting for deletion? Then the only place it may go is the cancel page.
+        Session::forget('deletion_pending');
+        $deletionPending = false;
+        if ($hasProfile) { // a 403 from the profile call (locked account) also leaves this true
+            try {
+                $status = app(\App\Services\ShalotrackApiService::class)->getDeletionStatus();
+                $deletionPending = (bool) ($status['data']['pending'] ?? false);
+            } catch (\Exception $ignored) {
+                // Not available: treat as not pending; the API still enforces the lock.
+            }
+        }
+        if ($deletionPending) {
+            Session::put('deletion_pending', true);
+            $hasProfile = true;
+        }
+
+        $target = $deletionPending ? '/account/deletion' : ($hasProfile ? '/dashboard' : '/register');
+
         if ($request->expectsJson()) {
             return response()->json([
                 'success'  => true,
-                'redirect' => $hasProfile ? '/dashboard' : '/register',
+                'redirect' => $target,
             ]);
         }
 
-        return $hasProfile ? redirect('/dashboard') : redirect('/register');
+        return redirect($target);
     }
 
     /**
