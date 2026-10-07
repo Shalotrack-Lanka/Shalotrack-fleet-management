@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\LiveShareController;
 use App\Http\Controllers\VehicleAlertSettingsController;
 use App\Http\Controllers\VehicleController;
@@ -83,6 +84,10 @@ Route::middleware([FirebaseAuthenticated::class, 'throttle:portal'])->group(func
     Route::get('/weekly-summary', [WeeklySummaryController::class, 'show']);
     Route::put('/weekly-summary', [WeeklySummaryController::class, 'save'])
         ->middleware('throttle:alert-settings');
+
+    // Download my data (profile page). No id in the URL: the API acts on the caller's own record.
+    Route::get('/account/export', [AccountController::class, 'export'])
+        ->middleware('throttle:account-export');
 
     // Current location — HTTP fallback poll on vehicles/show when SignalR
     // is unavailable. Path matches what the page already calls.

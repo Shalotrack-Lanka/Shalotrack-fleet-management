@@ -335,6 +335,19 @@ $completeness = (int) round(($filled / count($fields)) * 100);
         </button>
     </div>
 
+    {{-- ── Your data ───────────────────────────────────────────────────────── --}}
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
+        <div class="min-w-0">
+            <p class="text-sm font-semibold text-[#021F4A]">Your data</p>
+            <p class="text-xs text-gray-400 mt-0.5">Download a copy of the personal data we hold about you (profile, vehicles, places, complaints, renewals and recent alerts). Location history is available from Trip History.</p>
+            <p id="export-error" class="hidden text-xs text-red-600 mt-1" role="alert"></p>
+        </div>
+        <button id="export-btn" type="button"
+            class="flex-shrink-0 px-4 py-2 rounded-lg bg-[#021F4A] text-white text-xs font-semibold hover:opacity-90 transition disabled:opacity-50">
+            Download my data
+        </button>
+    </div>
+
 </div>
 
 @endif
@@ -543,6 +556,44 @@ $completeness = (int) round(($filled / count($fields)) * 100);
             showToast('Could not copy. Please copy manually.', 'error');
         }
     }
+
+    // ── Download my data ──────────────────────────────────────────────────────
+    (function initExport() {
+        const btn = document.getElementById('export-btn');
+        if (!btn) return;
+        const err = document.getElementById('export-error');
+        function showError(msg) {
+            err.textContent = msg || '';
+            err.classList.toggle('hidden', !msg);
+        }
+        btn.addEventListener('click', async () => {
+            btn.disabled = true;
+            showError('');
+            try {
+                const res = await fetch('/api/account/export', {
+                    credentials: 'include',
+                    headers: { 'Accept': 'application/json' },
+                });
+                if (res.status === 401) { window.location.href = '/login?expired=1'; return; }
+                if (!res.ok) {
+                    let msg = 'Could not prepare your data. Please try again.';
+                    try { const d = await res.json(); if (d && d.message) msg = d.message; } catch { /* non-JSON */ }
+                    showError(msg);
+                    return;
+                }
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'shalotrack-my-data-' + new Date().toISOString().slice(0, 10) + '.json';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 5000);
+            } catch { showError('Network problem. Please try again.'); }
+            finally { btn.disabled = false; }
+        });
+    })();
 
     // ── Weekly summary switch ─────────────────────────────────────────────────
     (function initWeeklySummary() {
