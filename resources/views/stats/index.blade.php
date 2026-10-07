@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+@section('page-title', 'Vehicle Stats')
 @section('title', 'Vehicle Statistics')
 
 @section('content')
@@ -927,7 +928,7 @@
 </div>{{-- /.stats-wrap --}}
 
 {{-- Chart.js — MUST be inline here, NOT in @push('scripts') --}}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+@vendorScript('chart')
 <script>
     // ══════════════════════════════════════════════════════════════════════════════
     // State
