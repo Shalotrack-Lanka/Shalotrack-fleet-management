@@ -57,6 +57,8 @@ RUN npm ci --no-audit --no-fund
 
 COPY vite.config.js tailwind.config.js postcss.config.js ./
 COPY resources ./resources
+# scripts/copy-vendor.mjs (run by `npm run build`) self-hosts SignalR + Chart.js into public/build/vendor
+COPY scripts ./scripts
 RUN npm run build
 
 # -----------------------------------------------------------------------------

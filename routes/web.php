@@ -42,6 +42,18 @@ Route::get('/logout-and-login', function () {
     return redirect('/login');
 })->name('logout.login');
 
+// ---- CSP violation reports (browser-sent, no session/CSRF; throttled; logs one line each) ----
+Route::post('/csp-report', [\App\Http\Controllers\CspReportController::class, 'store'])
+    ->middleware('throttle:30,1')
+    ->withoutMiddleware([
+        \Illuminate\Cookie\Middleware\EncryptCookies::class,
+        \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+        \Illuminate\Session\Middleware\StartSession::class,
+        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+        \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
+    ])
+    ->name('csp.report');
+
 // ---- Public live link (no login) ----
 // Anyone holding the link token can open this. No session, cookies or CSRF are involved at all
 // (a stateless viewer must not get a session row or Set-Cookie). Read-only; the API decides

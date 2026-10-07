@@ -882,12 +882,8 @@
     }
 </script>
 
-{{-- SignalR CDN (SRI-pinned via jsdelivr). The hash is sha384 of @microsoft/signalr@8.0.7
-     dist/browser/signalr.min.js, computed from the npm package. A WRONG hash makes the browser
-     refuse to run the script, which silently kills live tracking — tests/Unit/ViewIntegrityTest
-     now fails the build if any integrity= attribute is malformed. --}}
-<script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"
-    integrity="sha384-mU1xC5yC2LldSW74Rj1Ax8wPiLw/28V5eh51uKJMlBbRVsOtUYd4xyzNsgIAJARB" crossorigin="anonymous"></script>
+{{-- SignalR: self-hosted (npm run build → public/build/vendor), SRI computed by the build. --}}
+@vendorScript('signalr')
 
 {{-- Google Maps (defined before async load — initMap is the callback) --}}
 <script async defer

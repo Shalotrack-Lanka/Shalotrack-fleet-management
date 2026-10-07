@@ -9,6 +9,12 @@
     <title>@yield('title', 'ShaloTrack Fleet')</title>
     @vite(['resources/css/app.css'])
 
+    <script>
+        // 'Tap' on touch screens, 'Click' with a mouse — pages use CLICK_WORD in JS strings
+        // and .only-fine / .only-coarse spans in markup.
+        window.CLICK_WORD = (window.matchMedia && matchMedia('(pointer: coarse)').matches) ? 'Tap' : 'Click';
+    </script>
+
     <!-- CSS Stack for page specific styles -->
     @stack('styles')
     @stack('head')
@@ -363,6 +369,12 @@
         .chart-wrap {
             position: relative;
             height: 180px;
+        }
+
+        .only-coarse { display: none; }
+        @media (pointer: coarse) {
+            .only-coarse { display: inline; }
+            .only-fine { display: none; }
         }
 
         /* iOS Safari zooms the whole page when a field under 16px gets focus.
@@ -720,6 +732,99 @@
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') { closeProfileMenu(); closeSidebar(); }
         });
+    </script>
+
+    {{-- Dialog accessibility, applied to every modal in the portal without touching each page:
+         role="dialog" + aria-modal + a label, focus moves in on open and returns on close,
+         Tab stays inside, Esc closes (by pressing the dialog's own Close/Cancel button, so each
+         page's cleanup code still runs). Modals are found by markup convention (ids ending in
+         "-modal", .ec-overlay, .sh-overlay, .dd-overlay, .gf-modal-wrap, [role=dialog]). --}}
+    <script>
+    (function () {
+        const SEL = '[role="dialog"],[id$="-modal"],.ec-overlay,.sh-overlay,.dd-overlay,.gf-modal-wrap';
+        const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+        const visible = el => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden';
+        const focusables = dlg => [...dlg.querySelectorAll(FOCUSABLE)].filter(visible);
+        const stack = [];
+        let uid = 0;
+
+        function dialogOf(root) {
+            // The panel is the child that holds the controls; a sibling like .modal-backdrop is skipped.
+            return root.querySelector('[role="dialog"]')
+                || [...root.children].find(c => c.querySelector(FOCUSABLE))
+                || root;
+        }
+
+        function prepare(root) {
+            const dlg = root.getAttribute('role') === 'dialog' ? root : dialogOf(root);
+            if (dlg.getAttribute('role') !== 'dialog') dlg.setAttribute('role', 'dialog');
+            dlg.setAttribute('aria-modal', 'true');
+            if (!dlg.hasAttribute('aria-label') && !dlg.hasAttribute('aria-labelledby')) {
+                const h = dlg.querySelector('h1,h2,h3,[class*="title"]');
+                if (h) {
+                    if (!h.id) h.id = 'dlg-title-' + (++uid);
+                    dlg.setAttribute('aria-labelledby', h.id);
+                }
+            }
+            if (!dlg.hasAttribute('tabindex')) dlg.setAttribute('tabindex', '-1');
+            return dlg;
+        }
+
+        function opened(root) {
+            const dlg = prepare(root);
+            stack.push({ root, dlg, prev: document.activeElement });
+            if (!root.contains(document.activeElement)) {
+                const f = focusables(dlg);
+                const target = f.find(e => /^(INPUT|SELECT|TEXTAREA)$/.test(e.tagName)) || f[0] || dlg;
+                setTimeout(() => target.focus({ preventScroll: true }), 0);
+            }
+        }
+
+        function closed(root) {
+            const i = stack.findIndex(s => s.root === root);
+            if (i < 0) return;
+            const [s] = stack.splice(i, 1);
+            if (s.prev && document.contains(s.prev) && !root.contains(s.prev)) s.prev.focus({ preventScroll: true });
+        }
+
+        function closeControl(dlg) {
+            const btns = [...dlg.querySelectorAll('button,[role="button"],a')].filter(visible);
+            return btns.find(b => /close/i.test(b.getAttribute('aria-label') || '') || /close/i.test(b.className))
+                || btns.find(b => /^(cancel|close|keep my account|no|done|ok)/i.test((b.textContent || '').trim()));
+        }
+
+        document.addEventListener('keydown', function (e) {
+            const top = stack[stack.length - 1];
+            if (!top) return;
+            if (e.key === 'Escape' && !e.defaultPrevented) {
+                const c = closeControl(top.dlg);
+                if (c) { e.preventDefault(); e.stopPropagation(); c.click(); }
+                return;
+            }
+            if (e.key !== 'Tab') return;
+            const f = focusables(top.dlg);
+            if (!f.length) { e.preventDefault(); top.dlg.focus(); return; }
+            const first = f[0], last = f[f.length - 1];
+            if (!top.dlg.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+            else if (e.shiftKey && (document.activeElement === first || document.activeElement === top.dlg)) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }, true);
+
+        function init() {
+            const all = [...document.querySelectorAll(SEL)];
+            // Outermost only (a [role=dialog] inside .dd-overlay is part of that overlay).
+            const roots = all.filter(el => !el.parentElement || !el.parentElement.closest(SEL));
+            const state = new Map(roots.map(r => [r, false]));
+            const check = () => state.forEach((was, r) => {
+                const now = visible(r);
+                if (now && !was) { state.set(r, true); opened(r); }
+                else if (!now && was) { state.set(r, false); closed(r); }
+            });
+            new MutationObserver(check).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
+            check();
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+    })();
     </script>
 
     @stack('scripts')

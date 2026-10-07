@@ -2805,7 +2805,6 @@
     src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&callback=initMap">
 </script>
 
-{{-- ── SignalR CDN ── --}}
-<script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
+@vendorScript('signalr')
 
 @endsection

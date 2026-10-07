@@ -195,7 +195,7 @@
     <svg width="16" height="16" fill="none" stroke="#FA6908" stroke-width="2" viewBox="0 0 24 24">
         <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#FA6908" stroke="none" />
     </svg>
-    <span class="text-sm font-medium text-[#FA6908]">Click anywhere on the map to drop a pin</span>
+    <span class="text-sm font-medium text-[#FA6908]"><span class="only-fine">Click</span><span class="only-coarse">Tap</span> anywhere on the map to drop a pin</span>
     <button onclick="cancelPin()" class="ml-auto text-xs text-gray-400 hover:text-gray-600 underline">Cancel</button>
 </div>
 
@@ -221,7 +221,7 @@
                 <label class="block text-xs font-medium text-gray-500 mb-1">Place Name *</label>
                 <input type="text" id="pin-name" placeholder="e.g. Home, Office, Depot" class="input-field" />
             </div>
-            <p id="pin-coords" class="text-xs text-gray-400">No location selected — click on the map.</p>
+            <p id="pin-coords" class="text-xs text-gray-400">No location selected — <span class="only-fine">click</span><span class="only-coarse">tap</span> on the map.</p>
             <p id="pin-error" class="text-red-500 text-sm hidden"></p>
             <div style="display:flex;gap:12px;">
                 <button class="btn-secondary" style="flex:1;" onclick="cancelPin()">Cancel</button>
@@ -422,7 +422,7 @@
         pinMode = true;
         document.getElementById('pin-controls').style.display = 'block';
         document.getElementById('pin-banner').classList.add('visible');
-        document.getElementById('map-title').textContent = 'Click to place pin';
+        document.getElementById('map-title').textContent = CLICK_WORD + ' to place pin';
         map.setOptions({
             draggableCursor: 'crosshair'
         });
@@ -439,7 +439,7 @@
         document.getElementById('pin-controls').style.display = 'none';
         document.getElementById('pin-banner').classList.remove('visible');
         document.getElementById('pin-name').value = '';
-        document.getElementById('pin-coords').textContent = 'No location selected — click on the map.';
+        document.getElementById('pin-coords').textContent = 'No location selected — ' + CLICK_WORD.toLowerCase() + ' on the map.';
         document.getElementById('pin-error').classList.add('hidden');
         document.getElementById('map-title').textContent = 'Saved Places Map';
         map.setOptions({
@@ -459,7 +459,7 @@
             return;
         }
         if (!pinLatLng) {
-            errEl.textContent = 'Click on the map to select a location.';
+            errEl.textContent = CLICK_WORD + ' on the map to select a location.';
             errEl.classList.remove('hidden');
             return;
         }
