@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+@section('page-title', 'Vehicle Statistics')
 @section('title', 'Vehicle Statistics')
 
 @section('content')

@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+@section('page-title', 'Emergency Contacts')
 @section('content')
 @php
 $contacts = $contacts ?? [];
