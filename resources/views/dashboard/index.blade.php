@@ -439,7 +439,7 @@
 @include('partials.marker-glide')
 
 {{-- ─── JS (inline — no @push dependency) ────────────── --}}
-<script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
+@vendorScript('signalr')
 
 <script>
     'use strict';

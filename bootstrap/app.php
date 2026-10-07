@@ -34,6 +34,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // reach the container — enforced by the EC2 security group).
         $middleware->trustProxies(at: '*');
 
+        // CSP + Permissions-Policy on every web response (Report-Only until CSP_ENFORCE=true).
+        $middleware->web(append: [\App\Http\Middleware\SecurityHeaders::class]);
+
         $middleware->alias([
             'firebase.auth' => \App\Http\Middleware\FirebaseAuthenticated::class,
         ]);

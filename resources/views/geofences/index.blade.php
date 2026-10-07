@@ -730,7 +730,7 @@
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="flex-shrink:0;margin-top:1px">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span>Click on the map and drag outward to draw your geofence circle.</span>
+                    <span><span class="only-fine">Click</span><span class="only-coarse">Tap</span> on the map and drag outward to draw your geofence circle.</span>
                 </div>
 
                 <div class="gf-field">

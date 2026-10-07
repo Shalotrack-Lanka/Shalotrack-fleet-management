@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
@@ -25,6 +26,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Vite::prefetch(concurrency: 3);
+
+        // @vendorScript('signalr'|'chart') → self-hosted, SRI-pinned <script> (see App\Support\VendorAsset).
+        Blade::directive('vendorScript', fn (string $expr) => "<?php echo \\App\\Support\\VendorAsset::script({$expr}); ?>");
 
         // Rate limits are keyed by the signed-in Firebase user, NOT by IP: behind
         // Cloudflare + ALB the client IP can be forged through X-Forwarded-For, which
