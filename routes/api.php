@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LiveShareController;
 use App\Http\Controllers\VehicleAlertSettingsController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\VehicleReminderController;
@@ -66,6 +67,16 @@ Route::middleware([FirebaseAuthenticated::class, 'throttle:portal'])->group(func
     Route::put('/vehicles/{id}/alert-settings', [VehicleAlertSettingsController::class, 'save'])
         ->whereUuid('id')
         ->middleware('throttle:alert-settings');
+
+    // Temporary live links (owner only; the API enforces ownership and the 3-links cap).
+    Route::get('/vehicles/{id}/live-links', [LiveShareController::class, 'index'])
+        ->whereUuid('id');
+    Route::post('/vehicles/{id}/live-links', [LiveShareController::class, 'store'])
+        ->whereUuid('id')
+        ->middleware('throttle:live-share');
+    Route::delete('/live-links/{linkId}', [LiveShareController::class, 'destroy'])
+        ->whereUuid('linkId')
+        ->middleware('throttle:live-share');
 
     // Weekly summary push: the signed-in customer's own on/off switch (profile page). No id in
     // the URL on purpose: the API always acts on the caller's own record.

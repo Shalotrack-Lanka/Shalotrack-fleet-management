@@ -48,6 +48,17 @@ class AppServiceProvider extends ServiceProvider
         // Reminder saves/deletes: tiny, human-speed actions — a low cap stops scripted spam.
         RateLimiter::for('reminders', fn (Request $r) => Limit::perMinute(20)->by('reminders:' . $key($r)));
 
+        // Owner-side live-link create/stop: human-speed actions, capped per user.
+        RateLimiter::for('live-share', fn (Request $r) => Limit::perMinute(20)->by('live-share:' . $key($r)));
+
+        // Public live page + its data poll (no login). Keyed by the LINK, which cannot be forged
+        // (an IP key could be, via X-Forwarded-For): the page polls ~7 times a minute, so 40 is generous.
+        // The global ceiling stops a flood of random tokens from turning into a flood of API lookups.
+        RateLimiter::for('live-public', fn (Request $r) => [
+            Limit::perMinute(40)->by('live-tok:' . (string) $r->route('token')),
+            Limit::perMinute(1200)->by('live-global'),
+        ]);
+
         // Alert-settings saves: human-speed edits — a low cap stops scripted spam.
         RateLimiter::for('alert-settings', fn (Request $r) => Limit::perMinute(20)->by('alert-settings:' . $key($r)));
 
