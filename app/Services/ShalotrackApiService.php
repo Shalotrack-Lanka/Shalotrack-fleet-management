@@ -200,6 +200,12 @@ class ShalotrackApiService
         return $this->put('/api/WeeklySummary/settings', ['enabled' => $enabled]);
     }
 
+    /** Everything held about the signed-in customer (download my data). */
+    public function exportAccountData(): array
+    {
+        return $this->get('/api/Account/export');
+    }
+
     // -------------------------------------------------------------------------
     // Per-vehicle alert settings (speed limit, idle alert)
     // -------------------------------------------------------------------------
