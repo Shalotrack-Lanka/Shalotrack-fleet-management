@@ -200,6 +200,24 @@ class ShalotrackApiService
         return $this->put('/api/WeeklySummary/settings', ['enabled' => $enabled]);
     }
 
+    /** Is deletion scheduled for the signed-in customer, and for when. */
+    public function getDeletionStatus(): array
+    {
+        return $this->get('/api/Account/deletion');
+    }
+
+    /** Schedules permanent deletion in 30 days. Needs the confirm word and a recent sign-in. */
+    public function requestAccountDeletion(string $confirm): array
+    {
+        return $this->post('/api/Account/delete', ['confirm' => $confirm]);
+    }
+
+    /** Withdraws a pending deletion. */
+    public function cancelAccountDeletion(): array
+    {
+        return $this->post('/api/Account/deletion/cancel');
+    }
+
     /** Everything held about the signed-in customer (download my data). */
     public function exportAccountData(): array
     {
@@ -655,6 +673,18 @@ class ShalotrackApiService
         if ($status === 402 && str_contains((string) $response->body(), 'SUBSCRIPTION_RENEWAL_REQUIRED')) {
             Session::put('renewal_required', true);
             throw new \Exception('RENEWAL_REQUIRED', 402);
+        }
+
+        // 403 carries two codes callers need to tell apart: a stale sign-in on a destructive action,
+        // and an account that is waiting for deletion.
+        if ($status === 403) {
+            $raw = (string) $response->body();
+            if (str_contains($raw, 'REAUTH_REQUIRED')) {
+                throw new \Exception('REAUTH_REQUIRED', 403);
+            }
+            if (str_contains($raw, 'ACCOUNT_PENDING_DELETION')) {
+                throw new \Exception('ACCOUNT_PENDING_DELETION', 403);
+            }
         }
 
         match (true) {

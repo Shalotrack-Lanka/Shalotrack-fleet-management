@@ -62,6 +62,9 @@ class AppServiceProvider extends ServiceProvider
         // Data export is heavy on the API (about 15 queries) and rarely needed: 3 an hour per user.
         RateLimiter::for('account-export', fn (Request $r) => Limit::perHour(3)->by('account-export:' . $key($r)));
 
+        // Delete / cancel account: rare and serious, 5 an hour per user.
+        RateLimiter::for('account-delete', fn (Request $r) => Limit::perHour(5)->by('account-delete:' . $key($r)));
+
         // Alert-settings saves: human-speed edits — a low cap stops scripted spam.
         RateLimiter::for('alert-settings', fn (Request $r) => Limit::perMinute(20)->by('alert-settings:' . $key($r)));
 

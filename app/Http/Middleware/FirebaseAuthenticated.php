@@ -34,6 +34,20 @@ class FirebaseAuthenticated
             return $this->unauthenticated($request, true);
         }
 
+        // Deletion scheduled: nothing but the deletion page, its API and logout may be used.
+        // (The API enforces the same lock; this just gives a clear page instead of a wall of errors.)
+        if (Session::get('deletion_pending')
+            && !$request->is('account/deletion', 'api/account/*', 'logout')) {
+            if ($this->wantsJson($request)) {
+                return response()->json([
+                    'success' => false,
+                    'code'    => 'ACCOUNT_PENDING_DELETION',
+                    'message' => 'Your account is scheduled for deletion.',
+                ], 403);
+            }
+            return redirect('/account/deletion');
+        }
+
         // Email verification check
         // Skip for the verification page itself and the mark-verified endpoint
         $path = $request->path();

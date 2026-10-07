@@ -355,6 +355,60 @@ $completeness = (int) round(($filled / count($fields)) * 100);
         </div>
     </div>
 
+    {{-- ── Delete my account ──────────────────────────────────────────────── --}}
+    <div class="bg-white rounded-2xl border border-red-100 shadow-sm px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
+        <div class="min-w-0">
+            <p class="text-sm font-semibold text-red-700">Delete my account</p>
+            <p class="text-xs text-gray-400 mt-0.5">Permanently erase your account and your data. You have 30 days to change your mind.</p>
+        </div>
+        <button id="delete-open" type="button"
+            class="flex-shrink-0 px-4 py-2 rounded-lg border border-red-300 text-red-700 text-xs font-semibold hover:bg-red-50 transition">
+            Delete account
+        </button>
+    </div>
+
+</div>
+
+{{-- Confirmation dialog --}}
+<div id="delete-modal" class="hidden fixed inset-0 z-50 bg-black/50 items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+        <h2 id="delete-title" class="text-base font-bold text-[#021F4A]">Delete your account?</h2>
+        <p class="text-xs text-gray-600 mt-2">Your account is locked straight away and permanently erased in 30 days. Sign in during those 30 days to cancel.</p>
+
+        <p class="text-xs font-semibold text-gray-700 mt-4">Erased permanently</p>
+        <ul class="text-xs text-gray-600 list-disc pl-5 mt-1 space-y-0.5">
+            <li>Your profile, name, phone, NIC, email and sign-in</li>
+            <li>Location history, alerts and trips for your vehicles</li>
+            <li>Saved places, geofences, emergency contacts, reminders</li>
+            <li>Complaint messages, payment slips, references and notes</li>
+            <li>Vehicle plate, chassis and engine numbers</li>
+        </ul>
+
+        <p class="text-xs font-semibold text-gray-700 mt-3">Kept (without your identity)</p>
+        <ul class="text-xs text-gray-600 list-disc pl-5 mt-1 space-y-0.5">
+            <li>Renewal amounts, dates and decisions, for company accounts</li>
+            <li>Your tracker stays with ShaloTrack and is unlinked from your vehicle</li>
+        </ul>
+
+        <p class="text-xs text-gray-600 mt-3">Want a copy first? Use <b>Download my data</b> above before you continue.</p>
+
+        <label for="delete-confirm" class="block text-xs font-semibold text-gray-700 mt-4">Type <span class="font-mono">DELETE</span> to confirm</label>
+        <input id="delete-confirm" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="20"
+            class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-red-300">
+        <p id="delete-error" class="hidden text-xs text-red-600 mt-2" role="alert"></p>
+
+        <div id="delete-reauth" class="hidden mt-3">
+            <form method="POST" action="/logout">
+                @csrf
+                <button type="submit" class="px-4 py-2 rounded-lg bg-[#021F4A] text-white text-xs font-semibold">Sign out and sign in again</button>
+            </form>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-5">
+            <button id="delete-cancel" type="button" class="px-4 py-2 rounded-lg border border-gray-300 text-xs font-semibold text-gray-700">Keep my account</button>
+            <button id="delete-go" type="button" disabled class="px-4 py-2 rounded-lg bg-red-600 text-white text-xs font-semibold disabled:opacity-40">Delete my account</button>
+        </div>
+    </div>
 </div>
 
 @endif
@@ -563,6 +617,47 @@ $completeness = (int) round(($filled / count($fields)) * 100);
             showToast('Could not copy. Please copy manually.', 'error');
         }
     }
+
+    // ── Delete my account ─────────────────────────────────────────────────────
+    (function initDelete() {
+        const open = document.getElementById('delete-open');
+        if (!open) return;
+        const modal = document.getElementById('delete-modal');
+        const input = document.getElementById('delete-confirm');
+        const go = document.getElementById('delete-go');
+        const err = document.getElementById('delete-error');
+        const reauth = document.getElementById('delete-reauth');
+
+        function showError(msg) { err.textContent = msg || ''; err.classList.toggle('hidden', !msg); }
+        function show() { modal.classList.remove('hidden'); modal.classList.add('flex'); input.value = ''; go.disabled = true; showError(''); reauth.classList.add('hidden'); input.focus(); }
+        function hide() { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+
+        open.addEventListener('click', show);
+        document.getElementById('delete-cancel').addEventListener('click', hide);
+        modal.addEventListener('click', (e) => { if (e.target === modal) hide(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hide(); });
+        input.addEventListener('input', () => { go.disabled = input.value.trim() !== 'DELETE'; });
+
+        go.addEventListener('click', async () => {
+            go.disabled = true;
+            showError('');
+            try {
+                const res = await fetch('/api/account/delete', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+                    body: JSON.stringify({ confirm: input.value.trim() }),
+                });
+                if (res.status === 401) { window.location.href = '/login?expired=1'; return; }
+                let data = null;
+                try { data = await res.json(); } catch { /* non-JSON error page */ }
+                if (res.ok && data && data.success) { window.location.href = data.redirect || '/account/deletion'; return; }
+                if (data && data.code === 'REAUTH_REQUIRED') reauth.classList.remove('hidden');
+                showError((data && data.message) || 'Could not schedule the deletion. Please try again.');
+            } catch { showError('Network problem. Please try again.'); }
+            go.disabled = input.value.trim() !== 'DELETE';
+        });
+    })();
 
     // ── Download my data ──────────────────────────────────────────────────────
     (function initExport() {
