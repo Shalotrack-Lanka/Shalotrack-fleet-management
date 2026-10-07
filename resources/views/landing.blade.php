@@ -244,8 +244,8 @@
          NAVBAR
     ================================================================ --}}
     <nav class="fixed top-0 left-0 right-0 z-50 bg-[#021F4A]/90 backdrop-blur-md border-b border-white/5">
-        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-2">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2 shrink-0">
                 {{-- Logo mark --}}
                 <div class="w-7 h-7 bg-[#FA6908] rounded-lg flex items-center justify-center flex-shrink-0">
                     <svg width="14" height="14" fill="white" viewBox="0 0 24 24">
@@ -256,12 +256,12 @@
                     Shalo<span class="text-[#FA6908]">Track</span>
                 </span>
             </div>
-            <div class="flex items-center gap-5">
-                <a href="#features" class="text-blue-200 hover:text-white text-sm font-medium transition">Features</a>
-                <a href="#how-it-works" class="text-blue-200 hover:text-white text-sm font-medium transition">How it works</a>
-                <a href="/login" class="text-blue-200 hover:text-white text-sm font-medium transition">Sign in</a>
+            <div class="flex items-center gap-3 sm:gap-5">
+                <a href="#features" class="hidden md:inline text-blue-200 hover:text-white text-sm font-medium transition">Features</a>
+                <a href="#how-it-works" class="hidden md:inline text-blue-200 hover:text-white text-sm font-medium transition">How it works</a>
+                <a href="/login" class="text-blue-200 hover:text-white text-sm font-medium transition whitespace-nowrap">Sign in</a>
                 <a href="/login"
-                    class="px-4 py-2 bg-[#FA6908] hover:bg-orange-500 text-white text-sm font-semibold rounded-lg transition">
+                    class="px-3 sm:px-4 py-2 bg-[#FA6908] hover:bg-orange-500 text-white text-sm font-semibold rounded-lg transition whitespace-nowrap">
                     Get started
                 </a>
             </div>
@@ -280,27 +280,27 @@
         <div class="road-v" style="left:55%; top:0; bottom:0;"></div>
         <div class="road-v" style="right:15%; top:0; bottom:0;"></div>
 
-        <div class="max-w-6xl mx-auto px-6 py-24 w-full">
-            <div class="grid grid-cols-2 gap-20 items-center">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12 lg:py-24 w-full">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
                 {{-- Left: Copy --}}
-                <div class="hero-content">
+                <div class="hero-content min-w-0">
                     <div class="inline-flex items-center gap-2 bg-white/10 text-blue-200 text-xs font-medium px-3 py-1.5 rounded-full mb-8">
                         <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
                         Live tracking active across Sri Lanka
                     </div>
 
-                    <h1 class="text-6xl font-black text-white leading-[1.05] mb-6 tracking-tight">
+                    <h1 class="text-[2.5rem] sm:text-5xl lg:text-6xl font-black text-white leading-[1.05] mb-6 tracking-tight">
                         Your fleet.<br />
                         Everywhere.<br />
                         <span class="text-[#FA6908]">Right now.</span>
                     </h1>
 
-                    <p class="text-blue-200 text-lg leading-relaxed mb-10 max-w-md">
+                    <p class="text-blue-200 text-base sm:text-lg leading-relaxed mb-8 sm:mb-10 max-w-md">
                         Real-time GPS tracking, instant alerts, and complete fleet control — built for Sri Lankan businesses that can't afford to lose sight of their vehicles.
                     </p>
 
-                    <div class="flex items-center gap-4 mb-12">
+                    <div class="flex flex-wrap items-center gap-x-6 gap-y-4 mb-10 sm:mb-12">
                         <a href="/login"
                             class="px-6 py-3.5 bg-[#FA6908] hover:bg-orange-500 text-white font-bold rounded-xl transition text-sm shadow-lg shadow-orange-900/30">
                             Start tracking free
@@ -315,26 +315,26 @@
                     </div>
 
                     {{-- Stats --}}
-                    <div class="flex items-center gap-8 pt-8 border-t border-white/10">
+                    <div class="flex items-center gap-4 sm:gap-8 pt-8 border-t border-white/10">
                         <div>
-                            <p class="text-3xl font-black text-white">GT06</p>
+                            <p class="text-2xl sm:text-3xl font-black text-white">GT06</p>
                             <p class="text-blue-400 text-xs mt-0.5">Device protocol</p>
                         </div>
                         <div class="w-px h-8 bg-white/10"></div>
                         <div>
-                            <p class="text-3xl font-black text-white">20s</p>
+                            <p class="text-2xl sm:text-3xl font-black text-white">20s</p>
                             <p class="text-blue-400 text-xs mt-0.5">Update interval</p>
                         </div>
                         <div class="w-px h-8 bg-white/10"></div>
                         <div>
-                            <p class="text-3xl font-black text-white">24/7</p>
+                            <p class="text-2xl sm:text-3xl font-black text-white">24/7</p>
                             <p class="text-blue-400 text-xs mt-0.5">Always online</p>
                         </div>
                     </div>
                 </div>
 
                 {{-- Right: Animated dashboard card --}}
-                <div class="hero-visual relative">
+                <div class="hero-visual relative min-w-0">
 
                     {{-- Glow effect --}}
                     <div class="absolute -inset-8 bg-[#FA6908]/10 rounded-3xl blur-3xl"></div>
@@ -460,12 +460,12 @@
     {{-- ================================================================
          FEATURES
     ================================================================ --}}
-    <section id="features" class="py-28 bg-white">
-        <div class="max-w-6xl mx-auto px-6">
+    <section id="features" class="py-16 md:py-28 bg-white">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6">
 
-            <div class="max-w-xl mb-16 reveal">
+            <div class="max-w-xl mb-10 md:mb-16 reveal">
                 <p class="text-[#FA6908] text-sm font-semibold mb-3">Built for your business</p>
-                <h2 class="text-4xl font-black text-[#021F4A] leading-tight mb-4">
+                <h2 class="text-3xl md:text-4xl font-black text-[#021F4A] leading-tight mb-4">
                     Complete visibility.<br />Total control.
                 </h2>
                 <p class="text-gray-500 leading-relaxed">
@@ -473,7 +473,7 @@
                 </p>
             </div>
 
-            <div class="grid grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 @php
                 $features = [
                 ['bg'=>'#FFF3EB','fg'=>'#FA6908','title'=>'Live GPS Tracking','desc'=>'See your vehicles move in real time on an interactive map. Speed, heading, and ignition status — updated every 20 seconds.','icon'=>'M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7'],
@@ -503,11 +503,11 @@
     {{-- ================================================================
          HOW IT WORKS
     ================================================================ --}}
-    <section id="how-it-works" class="py-28" style="background:#F0F4FF;">
-        <div class="max-w-5xl mx-auto px-6">
-            <div class="text-center mb-16 reveal">
+    <section id="how-it-works" class="py-16 md:py-28" style="background:#F0F4FF;">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6">
+            <div class="text-center mb-10 md:mb-16 reveal">
                 <p class="text-[#FA6908] text-sm font-semibold mb-3">Simple setup</p>
-                <h2 class="text-4xl font-black text-[#021F4A] mb-4">Up and running in minutes</h2>
+                <h2 class="text-3xl md:text-4xl font-black text-[#021F4A] mb-4">Up and running in minutes</h2>
                 <p class="text-gray-500 max-w-md mx-auto">No technical expertise. No complicated installation. Just plug in the device and open the dashboard.</p>
             </div>
 
@@ -515,7 +515,7 @@
                 {{-- Connector line --}}
                 <div class="absolute top-8 left-1/6 right-1/6 h-px bg-[#021F4A]/10 hidden md:block" style="left:16.5%; right:16.5%;"></div>
 
-                <div class="grid grid-cols-3 gap-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
                     @foreach([
                     ['Register','Enter your phone number. Verify with OTP. Your account is ready — no password, no friction.'],
                     ['Add vehicles','Enter your vehicle details and link your ShaloTrack GPS device by IMEI number.'],
@@ -541,10 +541,10 @@
     {{-- ================================================================
          CTA
     ================================================================ --}}
-    <section class="map-grid py-28 relative overflow-hidden">
+    <section class="map-grid py-16 md:py-28 relative overflow-hidden">
         <div class="absolute inset-0 bg-gradient-to-br from-[#FA6908]/20 to-transparent"></div>
-        <div class="max-w-3xl mx-auto px-6 text-center relative reveal">
-            <h2 class="text-5xl font-black text-white mb-5 leading-tight">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 text-center relative reveal">
+            <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-5 leading-tight">
                 Your fleet is moving.<br />Are you watching?
             </h2>
             <p class="text-blue-200 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
@@ -562,7 +562,7 @@
          FOOTER
     ================================================================ --}}
     <footer class="bg-[#010F25] py-10">
-        <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 text-center flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-2">
                 <div class="w-6 h-6 bg-[#FA6908] rounded flex items-center justify-center">
                     <svg width="10" height="10" fill="white" viewBox="0 0 24 24">
@@ -572,7 +572,7 @@
                 <span class="text-white font-bold">Shalo<span class="text-[#FA6908]">Track</span></span>
                 <span class="text-blue-600 text-xs ml-1">Lanka (Pvt) Ltd</span>
             </div>
-            <div class="flex items-center gap-6 text-sm text-blue-500">
+            <div class="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 text-sm text-blue-500">
                 <a href="/login" class="hover:text-blue-300 transition">Sign in</a>
                 <a href="/login" class="hover:text-blue-300 transition">Register</a>
                 <a href="#features" class="hover:text-blue-300 transition">Features</a>

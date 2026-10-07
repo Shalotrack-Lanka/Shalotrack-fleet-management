@@ -371,7 +371,7 @@ $completeness = (int) round(($filled / count($fields)) * 100);
 
 {{-- Confirmation dialog --}}
 <div id="delete-modal" class="hidden fixed inset-0 z-50 bg-black/50 items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="delete-title">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 max-h-[90vh] max-h-[90dvh] overflow-y-auto">
         <h2 id="delete-title" class="text-base font-bold text-[#021F4A]">Delete your account?</h2>
         <p class="text-xs text-gray-600 mt-2">Your account is locked straight away and permanently erased in 30 days. Sign in during those 30 days to cancel.</p>
 

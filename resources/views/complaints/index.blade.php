@@ -77,7 +77,7 @@
 <div id="file-modal" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/40" onclick="closeFileModal()"></div>
     <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] max-h-[90dvh] overflow-y-auto">
             <div class="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-100">
                 <h3 class="font-semibold text-gray-800">File a Complaint</h3>
                 <button onclick="closeFileModal()" class="text-gray-400 hover:text-gray-600">

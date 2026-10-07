@@ -7,7 +7,7 @@
     /* ── Stat tiles ─────────────────────────────── */
     .stat-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 20px;
         margin-bottom: 28px;
     }
@@ -81,7 +81,7 @@
     /* ── Main grid ──────────────────────────────── */
     .dash-grid {
         display: grid;
-        grid-template-columns: 1fr 320px;
+        grid-template-columns: minmax(0, 1fr) 320px;
         gap: 24px;
     }
 
@@ -217,7 +217,7 @@
     /* ── Responsive ─────────────────────────────── */
     @media (max-width: 1100px) {
         .dash-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1fr);
         }
 
         .vlist {
@@ -970,7 +970,7 @@
 <div id="sos-modal" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/50" onclick="closeSosModal()"></div>
     <div class="absolute inset-0 flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-sm relative p-6 text-center max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-sm relative p-6 text-center max-h-[90vh] max-h-[90dvh] overflow-y-auto">
 
             {{-- Step 1: choose vehicle + hold to confirm --}}
             <div id="sos-step-confirm">

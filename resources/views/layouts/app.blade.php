@@ -365,6 +365,16 @@
             height: 180px;
         }
 
+        /* iOS Safari zooms the whole page when a field under 16px gets focus.
+           Many page-level styles set 13-14px, so force 16px on phones only. */
+        @media (max-width: 767px) {
+            input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+            select,
+            textarea {
+                font-size: 16px !important;
+            }
+        }
+
         /* ── Mobile nav sidebar overlay ──────────────────────────────────────────── */
         #nav-overlay {
             display: none;
@@ -389,8 +399,8 @@
 
         {{-- ---- Nav Sidebar ---- --}}
         <aside id="main-sidebar"
-            class="w-64 bg-[#021F4A] text-white flex flex-col fixed inset-y-0 left-0 z-50
-                   transition-transform duration-200 -translate-x-full md:translate-x-0">
+            class="w-64 max-w-[85vw] bg-[#021F4A] text-white flex flex-col fixed inset-y-0 left-0 z-50
+                   transition-transform duration-200 -translate-x-full lg:translate-x-0" aria-label="Main navigation">
 
             {{-- Logo --}}
             <div class="px-6 py-5 border-b border-blue-900">
@@ -531,15 +541,15 @@
         </aside>
 
         {{-- ---- Main content ---- --}}
-        <main class="flex-1 min-w-0 md:ml-64 min-h-screen">
+        <main class="flex-1 min-w-0 lg:ml-64 min-h-screen">
 
             {{-- Top bar --}}
             <header class="bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-40">
 
                 {{-- Hamburger (mobile only) --}}
                 <button onclick="openSidebar()"
-                    class="md:hidden mr-3 p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition flex-shrink-0"
-                    aria-label="Open menu">
+                    class="lg:hidden mr-2 p-2.5 -ml-2 rounded-lg text-gray-500 hover:bg-gray-100 transition flex-shrink-0"
+                    aria-label="Open menu" aria-controls="main-sidebar">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
@@ -550,7 +560,7 @@
                 </h2>
 
                 {{-- Alerts bell with unread badge --}}
-                <a href="/alerts" class="relative ml-2 p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition flex-shrink-0" aria-label="Alerts">
+                <a href="/alerts" class="relative ml-1 sm:ml-2 p-2.5 rounded-lg text-gray-500 hover:bg-gray-100 transition flex-shrink-0" aria-label="Alerts">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -559,8 +569,9 @@
                 </a>
 
                 {{-- Profile Dropdown Area --}}
-                <div class="relative group inline-block text-left ml-3">
-                    <div class="flex items-center gap-2 md:gap-3 cursor-pointer py-2">
+                <div class="relative group inline-block text-left ml-3" id="profile-menu">
+                    <button type="button" id="profile-menu-btn" aria-haspopup="true" aria-expanded="false" aria-controls="profile-menu-panel"
+                        class="flex items-center gap-2 md:gap-3 cursor-pointer py-1 bg-transparent border-0 text-left">
                         <div class="text-right hidden sm:block">
                             @if(Session::get('customer_name'))
                             <p id="header-name" class="text-sm font-semibold text-gray-800 truncate max-w-[140px]">{{ Session::get('customer_name') }}</p>
@@ -573,10 +584,10 @@
                             class="w-9 h-9 rounded-full bg-[#FA6908] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
                             {{ strtoupper(substr(Session::get('customer_name') ?? Session::get('firebase_phone', 'U'), 0, 1)) }}
                         </div>
-                    </div>
+                    </button>
 
                     <!-- Dropdown Menu -->
-                    <div class="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 border border-gray-100 overflow-hidden">
+                    <div id="profile-menu-panel" class="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible group-[.menu-open]:opacity-100 group-[.menu-open]:visible transition-all duration-200 z-50 border border-gray-100 overflow-hidden">
                         <a href="/profile"
                             class="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -626,6 +637,7 @@
 
     <script>
         function openSidebar() {
+            closeProfileMenu();
             document.getElementById('main-sidebar').classList.remove('-translate-x-full');
             document.getElementById('nav-overlay').classList.add('open');
             document.body.style.overflow = 'hidden';
@@ -684,7 +696,29 @@
 
         // Close on resize to desktop
         window.addEventListener('resize', function() {
-            if (window.innerWidth >= 768) closeSidebar();
+            if (window.innerWidth >= 1024) closeSidebar();
+        });
+
+        // ── Profile menu: tap/click (hover alone does not exist on touch) ──────
+        const profileMenu = document.getElementById('profile-menu');
+        const profileBtn  = document.getElementById('profile-menu-btn');
+        function closeProfileMenu() {
+            if (!profileMenu) return;
+            profileMenu.classList.remove('menu-open');
+            profileBtn.setAttribute('aria-expanded', 'false');
+        }
+        if (profileBtn) {
+            profileBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const open = profileMenu.classList.toggle('menu-open');
+                profileBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            });
+            document.addEventListener('click', function (e) {
+                if (!profileMenu.contains(e.target)) closeProfileMenu();
+            });
+        }
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') { closeProfileMenu(); closeSidebar(); }
         });
     </script>
 

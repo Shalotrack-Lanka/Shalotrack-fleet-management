@@ -125,7 +125,7 @@
 <div id="new-modal" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/40" onclick="closeNewModal()"></div>
     <div class="absolute inset-0 flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md relative max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md relative max-h-[90vh] max-h-[90dvh] overflow-y-auto">
             <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
                 <h3 class="font-semibold text-gray-800">Renew Subscription</h3>
                 <button onclick="closeNewModal()" class="text-gray-400 hover:text-gray-600">
