@@ -83,7 +83,12 @@
             @if($vehicle['vehicleType'] ?? null)
             <div class="flex items-center justify-between text-sm">
                 <span class="text-gray-300">Type</span>
-                <span class="text-gray-700">{{ $vehicle['vehicleType'] }}</span>
+                <span class="text-gray-700 flex items-center gap-2">
+                    @if($iconUrl = \App\Support\VehicleIcon::url($vehicle['vehicleType']))
+                    <img src="{{ $iconUrl }}" alt="" width="16" height="28" class="h-7 w-auto" loading="lazy" decoding="async">
+                    @endif
+                    {{ $vehicle['vehicleType'] }}
+                </span>
             </div>
             @endif
             @if($vehicle['fuelType'] ?? null)

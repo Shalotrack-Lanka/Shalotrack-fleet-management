@@ -219,6 +219,7 @@
 
 {{-- ── Inline JS ────────────────────────────────────────────────────────────── --}}
 @include('partials.marker-glide')
+@include('partials.vehicle-icons')
 
 <script>
     const vehicleId = '{{ $vehicle["vehicleId"]     ?? "" }}'.toLowerCase();
@@ -253,7 +254,16 @@
     }
 
     // ── Map marker ─────────────────────────────────────────────────────────────
-    function vehicleIcon(online) {
+    const vehicleType = @json($vehicle['vehicleType'] ?? null);
+    VehicleIcons.preload([vehicleType]);
+    VehicleIcons.onReady(() => { if (marker) marker.setIcon(vehicleIcon(true, marker._lastSpeed ?? 0, marker._deg)); });
+
+    function vehicleIcon(online, speed, heading) {
+        const custom = VehicleIcons.icon(vehicleType, VehicleIcons.state(online), heading);
+        return custom || genericVehicleIcon(online);
+    }
+
+    function genericVehicleIcon(online) {
         const color = online ? '#FA6908' : '#9CA3AF';
         const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
             <circle cx="20" cy="20" r="19" fill="${color}" stroke="white" stroke-width="2.5"/>
@@ -271,7 +281,7 @@
         return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
-    function applyLocation(lat, lng, speed, ignition, lastUpdate) {
+    function applyLocation(lat, lng, speed, ignition, lastUpdate, heading) {
         const pos = {
             lat,
             lng
@@ -287,11 +297,15 @@
 
         if (marker) {
             // Glide to the new fix instead of hopping (noise/jumps are ignored).
-            MarkerGlide.move('vehicle', marker, pos, null, lastUpdate ? Date.parse(lastUpdate) : NaN, {});
+            MarkerGlide.move('vehicle', marker, pos, heading, lastUpdate ? Date.parse(lastUpdate) : NaN, {
+                paint: deg => { marker._deg = deg; marker.setIcon(vehicleIcon(true, speed, deg)); },
+            });
             if (!marker._online) {
-                marker.setIcon(vehicleIcon(true));
                 marker._online = true;
             }
+            const st = VehicleIcons.state(true);
+            marker._lastSpeed = speed;
+            if (marker._st !== st) { marker.setIcon(vehicleIcon(true, speed, marker._deg ?? heading)); marker._st = st; }
             if (marker._infoWindow) marker._infoWindow.setContent(popup);
         } else {
             const iw = new google.maps.InfoWindow({
@@ -300,10 +314,13 @@
             marker = new google.maps.Marker({
                 position: pos,
                 map: gmap,
-                icon: vehicleIcon(true),
+                icon: vehicleIcon(true, speed, heading),
                 title: vehicleNum,
             });
             marker._online = true;
+            marker._st = VehicleIcons.state(true);
+            marker._deg = heading;
+            marker._lastSpeed = speed;
             marker._infoWindow = iw;
             marker.addListener('click', () => iw.open({
                 anchor: marker,
@@ -791,7 +808,7 @@
                 setStatus('offline', 'No location data yet');
                 return;
             }
-            applyLocation(parseFloat(loc.latitude), parseFloat(loc.longitude), loc.speed, loc.ignitionStatus ?? loc.ignition, loc.lastUpdate);
+            applyLocation(parseFloat(loc.latitude), parseFloat(loc.longitude), loc.speed, loc.ignitionStatus ?? loc.ignition, loc.lastUpdate, loc.heading ?? loc.bearing ?? loc.course ?? null);
             const updated = loc.lastUpdate ? new Date(loc.lastUpdate).toLocaleTimeString() : '—';
             setStatus('fallback', `Polled ${updated}`);
         } catch {
@@ -847,7 +864,7 @@
             const lat = parseFloat(data.latitude);
             const lng = parseFloat(data.longitude);
             if (isNaN(lat) || isNaN(lng)) return;
-            applyLocation(lat, lng, data.speed, data.ignition ?? data.ignitionStatus, data.lastUpdate);
+            applyLocation(lat, lng, data.speed, data.ignition ?? data.ignitionStatus, data.lastUpdate, data.heading ?? data.bearing ?? data.course ?? null);
             const t = data.lastUpdate ? 'Updated ' + new Date(data.lastUpdate).toLocaleTimeString() : 'Live';
             setStatus('live', t);
         });
