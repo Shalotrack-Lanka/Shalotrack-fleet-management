@@ -1,2 +1,22 @@
 User-agent: *
-Disallow:
+Allow: /
+Allow: /login
+Allow: /register
+Disallow: /dashboard
+Disallow: /vehicles
+Disallow: /trips
+Disallow: /reports
+Disallow: /alerts
+Disallow: /geofences
+Disallow: /sharing
+Disallow: /complaints
+Disallow: /profile
+Disallow: /emergency-contacts
+Disallow: /saved-places
+Disallow: /vehicle-stats
+Disallow: /email
+Disallow: /logout-and-login
+Disallow: /password
+Disallow: /confirm-password
+
+Sitemap: https://fleet.shalotrack.com/sitemap.xml
