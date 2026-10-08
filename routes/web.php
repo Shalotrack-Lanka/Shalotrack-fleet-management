@@ -8,7 +8,6 @@ use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\TripController;
-use App\Http\Controllers\AlertController;
 use App\Http\Controllers\GeofenceController;
 use App\Http\Controllers\SharingController;
 use App\Http\Controllers\ComplaintController;
@@ -105,11 +104,8 @@ Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(func
     // PDF / CSV — rendered server-side from API data; throttled because each call hits the API
     Route::get('/reports/export', [ReportExportController::class, 'report'])->middleware('throttle:12,1');
 
-    // Alerts
-    Route::get('/alerts/unread-count', [AlertController::class, 'unreadCount'])->middleware('throttle:30,1');
-    Route::get('/alerts',              [AlertController::class, 'index'])->name('alerts');
-    Route::post('/alerts/read-all',    [AlertController::class, 'markAllRead'])->middleware('throttle:3,1');
-    Route::post('/alerts/{id}/read',   [AlertController::class, 'markRead']);
+    // The web Alerts inbox was removed (alerts are delivered to the mobile app). Old bookmarks land on the dashboard.
+    Route::redirect('/alerts', '/dashboard');
 
     // Geofences
     Route::get('/geofences',          [GeofenceController::class, 'index'])->name('geofences');
