@@ -394,6 +394,9 @@
             @endphp
             <div class="vrow" id="vrow-{{ $vid }}" onclick="focusVehicle('{{ $vid }}')">
                 <div class="vrow-dot {{ $online ? 'online' : 'offline' }}" id="vdot-{{ $vid }}"></div>
+                @if($rowIcon = \App\Support\VehicleIcon::url($vehicle['vehicleType'] ?? $vehicle['type'] ?? null, $online ? 'green' : 'blue'))
+                <img src="{{ $rowIcon }}" alt="" width="18" height="32" style="height:32px;width:auto;flex-shrink:0;" loading="lazy" decoding="async">
+                @endif
                 <div class="vrow-body">
                     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
                         <p class="vrow-plate">
@@ -437,6 +440,7 @@
 @endif
 
 @include('partials.marker-glide')
+@include('partials.vehicle-icons')
 
 {{-- ─── JS (inline — no @push dependency) ────────────── --}}
 @vendorScript('signalr')
@@ -484,8 +488,10 @@
             latitude: v.latitude,
             longitude: v.longitude,
             heading: v.heading ?? v.bearing ?? null, // degrees 0–359, null = unknown
+            vehicleType: v.vehicleType ?? v.type ?? null, // picks the custom icon; unknown → generic marker
         };
     });
+    VehicleIcons.preload(vehiclesRaw.map(v => v.vehicleType ?? v.type));
 
     if (deletedIds.size) recalcStats();   // online/offline/moving tiles must exclude deleted vehicles
 
@@ -520,7 +526,15 @@
      *  Heading (0–359°, 0 = north, clockwise): rotates the whole <g>
      *  so the pointed nose tracks the real bearing when available.
      * ──────────────────────────────────────────────────────── */
-    function makeMarkerIcon(online, heading) {
+    /* Custom per-type icon when we have one (see partials/vehicle-icons); otherwise the generic
+       marker below. `vid` = lowercased vehicleId, `speed` overrides the stored speed. */
+    function makeMarkerIcon(online, heading, vid, speed) {
+        const v = vehicleMap[vid] || {};
+        const st = VehicleIcons.state(online);
+        return VehicleIcons.icon(v.vehicleType, st, heading) || legacyMarkerIcon(online, heading);
+    }
+
+    function legacyMarkerIcon(online, heading) {
         const bodyColor = online ? '#FA6908' : '#9CA3AF';
         const wheelColor = online ? '#7c2d08' : '#374151';
         const glassColor = 'rgba(210,240,255,0.55)';
@@ -680,13 +694,15 @@
                 },
                 map: gmap,
                 title: v.vehicleNumber,
-                icon: makeMarkerIcon(!!(v.online), heading),
+                icon: makeMarkerIcon(!!(v.online), heading, vid),
                 zIndex: 10,
             });
 
             infoWins[vid] = new google.maps.InfoWindow({
                 content: buildInfoHtml(vid)
             });
+            markers[vid]._deg = heading;
+            markers[vid]._st = VehicleIcons.state(!!v.online);
             markers[vid].addListener('click', () => openInfo(vid));
 
             polylines[vid] = new google.maps.Polyline({
@@ -719,6 +735,14 @@
         }
     }
 
+    /* Images may finish loading after the first markers were drawn → swap the generic marker for the custom icon */
+    VehicleIcons.onReady(() => {
+        Object.keys(markers).forEach(id => {
+            const v = vehicleMap[id];
+            if (v) markers[id].setIcon(makeMarkerIcon(!!v.online, markers[id]._deg ?? v.heading, id));
+        });
+    });
+
     /* ── Real-time marker update ──────────────────────────── */
     function updateMarker(vehicleId, data) {
         const lat = parseFloat(data.latitude);
@@ -731,7 +755,7 @@
         };
         /* Accept heading from any field name the C# hub may send */
         const heading = data.heading ?? data.bearing ?? data.course ?? null;
-        const icon = makeMarkerIcon(true, heading);
+        const icon = makeMarkerIcon(true, heading, vehicleId, data.speed);
         const devMs = data.lastUpdate ? Date.parse(data.lastUpdate) : NaN;
 
         if (!trails[vehicleId]) trails[vehicleId] = [];
@@ -743,14 +767,19 @@
             /* Glide to the new fix instead of hopping. GPS noise and impossible jumps
                are rejected and must not touch the trail or the stored position. */
             const result = MarkerGlide.move(vehicleId, markers[vehicleId], pos, heading, devMs, {
-                paint: deg => markers[vehicleId].setIcon(makeMarkerIcon(true, deg)),
+                paint: deg => { markers[vehicleId]._deg = deg; markers[vehicleId].setIcon(makeMarkerIcon(true, deg, vehicleId, data.speed)); },
                 frame: p => {
                     const path = polylines[vehicleId]?.getPath();
                     if (path && path.getLength()) path.setAt(path.getLength() - 1, new google.maps.LatLng(p.lat, p.lng));
                 },
             });
             rejected = result === 'noise' || result === 'jump';
-            if (wasOffline) markers[vehicleId].setIcon(icon); /* grey -> orange as soon as it reports */
+            /* Redraw when the state flips (offline→online, moving↔idle) even if the heading did not change */
+            const st = VehicleIcons.state(true);
+            if (wasOffline || markers[vehicleId]._st !== st) {
+                markers[vehicleId].setIcon(makeMarkerIcon(true, markers[vehicleId]._deg ?? heading, vehicleId, data.speed));
+            }
+            markers[vehicleId]._st = st;
             if (!rejected) {
                 trails[vehicleId].push(pos);
                 if (trails[vehicleId].length > TRAIL_MAX) trails[vehicleId].shift();
