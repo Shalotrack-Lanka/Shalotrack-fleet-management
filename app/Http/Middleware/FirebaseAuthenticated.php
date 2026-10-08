@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\RememberLogin;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -18,17 +19,32 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class FirebaseAuthenticated
 {
+    public function __construct(private RememberLogin $remember) {}
+
     public function handle(Request $request, Closure $next): Response
     {
         $token     = Session::get('firebase_token');
         $expiresAt = Session::get('firebase_token_expires_at');
 
-        // No token in session → not logged in
+        // No token (new session, e.g. after a deploy) or the 1-hour token is about to end:
+        // try to renew it from the "keep me signed in" cookie before giving up.
+        $now = now()->timestamp;
+        $nearEnd = $expiresAt && $now >= $expiresAt - RememberLogin::REFRESH_SKEW;
+
+        if (!$token || $nearEnd) {
+            $restored = $this->remember->restore($request);
+            if ($restored) {
+                $token = Session::get('firebase_token');
+                $expiresAt = Session::get('firebase_token_expires_at');
+            }
+        }
+
+        // Still no token → not logged in
         if (!$token) {
             return $this->unauthenticated($request);
         }
 
-        // Token expired
+        // Token expired and could not be renewed
         if ($expiresAt && now()->timestamp >= $expiresAt) {
             Session::flush();
             return $this->unauthenticated($request, true);
