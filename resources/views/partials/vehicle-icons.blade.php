@@ -19,7 +19,7 @@
 <script>
     const VehicleIcons = (() => {
         const BASE = @json(asset('vehicle-icons'));
-        const MAP = @json(\App\Support\VehicleIcon::MAP);
+        const RULES = @json(\App\Support\VehicleIcon::RULES);
         const HEIGHT = { car: 44, suv: 46, van: 50, truck: 54, motorcycle: 40, 'three-wheeler': 42 }; // px on the map
         const BUCKET = 10;
         const DPR = Math.min(2, window.devicePixelRatio || 1);
@@ -29,7 +29,10 @@
 
         function key(type) {
             if (typeof type !== 'string') return null;
-            return MAP[type.trim().toLowerCase().replace(/[\s_]+/g, '-')] || null;
+            const n = type.toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (!n) return null;
+            for (const [needle, k] of RULES) { if (n.includes(needle)) return k; }
+            return null;
         }
         const colourOf = state => (state === 'online' ? 'green' : 'blue'); // green = online, grey-blue = offline
 

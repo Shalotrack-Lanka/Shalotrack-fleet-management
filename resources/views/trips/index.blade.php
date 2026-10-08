@@ -1658,6 +1658,7 @@
 
             // Sort ascending by eventTime — API may return newest-first
             tripPoints = [...pts].sort((a, b) => new Date(a.eventTime) - new Date(b.eventTime));
+            fillHeadings(tripPoints);
             renderHistoryOnMap(tripPoints, currentTrip);
             initPlaybackBar(tripPoints.length);
 
@@ -1665,6 +1666,37 @@
             console.error('selectTrip:', e);
             showSbError('Could not load GPS data for this trip.');
         }
+    }
+
+    /* The trip-history API returns no heading, so the playback vehicle would always face north.
+       Work it out from the route itself: for every point, the bearing to the next point that is
+       at least 8 m away (this ignores GPS jitter while parked). Where the vehicle has not moved
+       yet, it keeps the previous bearing. If the API ever does send real headings we keep them. */
+    function fillHeadings(pts) {
+        if (pts.some(p => Number(p.heading) > 0)) return; // real headings present
+        const R = Math.PI / 180;
+        const dist = (a, b) => {
+            const dLat = (b.lat - a.lat) * R, dLng = (b.lng - a.lng) * R;
+            const x = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * R) * Math.cos(b.lat * R) * Math.sin(dLng / 2) ** 2;
+            return 2 * 6371000 * Math.asin(Math.min(1, Math.sqrt(x)));
+        };
+        const bearing = (a, b) => {
+            const y = Math.sin((b.lng - a.lng) * R) * Math.cos(b.lat * R);
+            const x = Math.cos(a.lat * R) * Math.sin(b.lat * R) - Math.sin(a.lat * R) * Math.cos(b.lat * R) * Math.cos((b.lng - a.lng) * R);
+            return (Math.atan2(y, x) / R + 360) % 360;
+        };
+        const ll = pts.map(p => ({ lat: +p.latitude, lng: +p.longitude }));
+        let last = null;
+        const out = new Array(pts.length).fill(null);
+        for (let i = 0; i < pts.length; i++) {
+            for (let j = i + 1; j < pts.length; j++) {
+                if (dist(ll[i], ll[j]) >= 8) { out[i] = bearing(ll[i], ll[j]); break; }
+            }
+        }
+        // forward fill, then back fill the leading gap (vehicle parked at the start)
+        out.forEach((v, i) => { if (v !== null) last = v; else if (last !== null) out[i] = last; });
+        const first = out.find(v => v !== null);
+        pts.forEach((p, i) => { p.heading = out[i] ?? first ?? 0; });
     }
 
     /* ══════════════════════════════════════════════════════════════
