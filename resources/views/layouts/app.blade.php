@@ -466,17 +466,6 @@
                     Reports
                 </a>
 
-                <a href="/alerts" onclick="closeSidebar()"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
-                          {{ request()->is('alerts') ? 'bg-[#FA6908] text-white' : 'text-blue-200 hover:bg-blue-900 hover:text-white' }}">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
-                    <span class="flex-1">Alerts</span>
-                    <span id="alert-badge-nav" class="hidden min-w-[20px] h-5 px-1.5 rounded-full bg-[#FA6908] text-white text-[11px] font-bold leading-5 text-center"></span>
-                </a>
-
                 <a href="/geofences" onclick="closeSidebar()"
                     class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
                           {{ request()->is('geofences*') ? 'bg-[#FA6908] text-white' : 'text-blue-200 hover:bg-blue-900 hover:text-white' }}">
@@ -571,15 +560,6 @@
                     @yield('page-title', 'Dashboard')
                 </h2>
 
-                {{-- Alerts bell with unread badge --}}
-                <a href="/alerts" class="relative ml-1 sm:ml-2 p-2.5 rounded-lg text-gray-500 hover:bg-gray-100 transition flex-shrink-0" aria-label="Alerts">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
-                    <span id="alert-badge-top" class="hidden absolute top-0.5 right-0 min-w-[18px] h-[18px] px-1 rounded-full bg-[#FA6908] text-white text-[10px] font-bold leading-[18px] text-center"></span>
-                </a>
-
                 {{-- Profile Dropdown Area --}}
                 <div class="relative group inline-block text-left ml-3" id="profile-menu">
                     <button type="button" id="profile-menu-btn" aria-haspopup="true" aria-expanded="false" aria-controls="profile-menu-panel"
@@ -660,51 +640,6 @@
             document.getElementById('nav-overlay').classList.remove('open');
             document.body.style.overflow = '';
         }
-
-        // ── Unread-alerts badge ───────────────────────────────────────────────
-        // Polls once a minute while the tab is visible (server caches 30 s).
-        // Exposed as window.refreshAlertBadge() so the Alerts page can refresh it
-        // right after marking an alert read.
-        (function() {
-            const els = ['alert-badge-nav', 'alert-badge-top'].map(id => document.getElementById(id));
-            let timer = null;
-
-            function paint(count, capped) {
-                els.forEach(el => {
-                    if (!el) return;
-                    if (!count) { el.classList.add('hidden'); return; }
-                    el.textContent = capped ? '50+' : (count > 99 ? '99+' : String(count));
-                    el.classList.remove('hidden');
-                });
-            }
-
-            async function refresh() {
-                try {
-                    const res = await fetch('/alerts/unread-count', {
-                        credentials: 'include',
-                        headers: { 'Accept': 'application/json' }
-                    });
-                    if (res.status === 401) { window.location.href = '/login?expired=1'; return; }
-                    if (!res.ok) return;
-                    const data = await res.json();
-                    if (data.count === null || data.count === undefined) return;
-                    paint(data.count, !!data.capped);
-                } catch (_) { /* decoration only */ }
-            }
-
-            function start() {
-                stop();
-                refresh();
-                timer = setInterval(refresh, 60000);
-            }
-            function stop() { if (timer) { clearInterval(timer); timer = null; } }
-
-            document.addEventListener('visibilitychange', () => {
-                document.visibilityState === 'visible' ? start() : stop();
-            });
-            window.refreshAlertBadge = refresh;
-            if (document.visibilityState === 'visible') start();
-        })();
 
         // Close on resize to desktop
         window.addEventListener('resize', function() {
