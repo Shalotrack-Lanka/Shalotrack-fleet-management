@@ -233,7 +233,8 @@
                         'Accept': 'application/json',
                         'X-CSRF-TOKEN': csrfToken,
                     },
-                    body: JSON.stringify({ token: idToken }),
+                    // refreshToken lets the server keep this login for up to 90 days (stored encrypted, HttpOnly)
+                    body: JSON.stringify({ token: idToken, refresh_token: result.user.refreshToken }),
                 });
 
                 if (response.ok || response.redirected) {
