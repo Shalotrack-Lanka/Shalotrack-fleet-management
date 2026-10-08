@@ -127,6 +127,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="robots" content="noindex">
         <title>{{ $code }} {{ $displayTitle }} — ShaloTrack Fleet</title>
         <style>
             * {
@@ -439,14 +440,18 @@
 
                 {{-- Action buttons --}}
                 <div class="actions">
-                    <a href="{{ url('/dashboard') }}" class="btn btn-primary">Back to dashboard</a>
+                    @if (session()->has('firebase_token'))
+                        <a href="{{ url('/dashboard') }}" class="btn btn-primary">Back to dashboard</a>
+                    @else
+                        <a href="{{ url('/') }}" class="btn btn-primary">Back to home</a>
+                    @endif
                     <a href="javascript:history.back()" class="btn btn-secondary">Go back</a>
                 </div>
             </div>
 
             {{-- Support footer --}}
             <div class="support">
-                Still stuck? Call us with the details above — <a href="tel:+94000000000">+94 00 000 0000</a>
+                Still stuck? Call us with the details above — <a href="tel:+94716553852">+94 71 655 3852</a>
             </div>
 
         </div>
