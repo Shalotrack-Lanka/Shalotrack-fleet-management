@@ -1055,6 +1055,7 @@
                     data-plate="{{ $plate }}"
                     data-name="{{ $make }}"
                     data-demo="{{ $isDemo ? '1' : '0' }}"
+                    data-type="{{ $v['vehicleType'] ?? '' }}"
                     data-shared="{{ !empty($v['isShared']) ? '1' : '0' }}"
                     data-owner="{{ $v['ownerName'] ?? '' }}"
                     @if(!$hasGps) disabled @endif>{{ $label }}</option>
@@ -1262,6 +1263,7 @@
 {{-- ══════════════════════════════════════════════════════════
      JAVASCRIPT  — all inside @section so layout renders it
      ══════════════════════════════════════════════════════════ --}}
+@include('partials.vehicle-icons')
 <script>
     /* ── Constants ─────────────────────────────────────────────── */
     const CSRF_TOKEN = '{{ csrf_token() }}';
@@ -1286,6 +1288,7 @@
     let currentVehicleDemo = false;
     let currentVehicleShared = false;
     let currentVehicleOwner = '';
+    let currentVehicleType = '';
 
     let allTrips = []; // loaded from summary endpoint
     let tripPoints = []; // GPS points for selected trip
@@ -1361,6 +1364,8 @@
         currentVehicleDemo = opt.dataset.demo === '1';
         currentVehicleShared = opt.dataset.shared === '1';
         currentVehicleOwner = opt.dataset.owner || '';
+        currentVehicleType = opt.dataset.type || '';
+        VehicleIcons.preload([currentVehicleType]);
 
         // Update vehicle strip
         document.getElementById('vs-plate').textContent = currentVehiclePlate;
@@ -1733,7 +1738,7 @@
             map,
             title: 'Vehicle',
             zIndex: 20,
-            icon: makeArrowIcon(points[0].heading || 0),
+            icon: vehicleMarkerIcon(points[0].heading || 0, 5, true),
         });
 
         /* ── Stop markers ── */
@@ -2063,7 +2068,7 @@
             lat: +pt.latitude,
             lng: +pt.longitude
         });
-        playMarker.setIcon(makeArrowIcon(pt.heading || 0));
+        playMarker.setIcon(vehicleMarkerIcon(pt.heading || 0, 5, true));
 
         document.getElementById('pb-scrubber').value = idx;
         updatePbTime();
@@ -2309,7 +2314,7 @@
         if (!liveMarker) return;
         if (liveShownDeg !== null && Math.abs(headingDelta(liveShownDeg, deg)) < 1.5) return;
         liveShownDeg = deg;
-        liveMarker.setIcon(makeArrowIcon(deg, 6));
+        liveMarker.setIcon(vehicleMarkerIcon(deg, 6, true));
     }
 
     function trailTip(pos) {
@@ -2372,7 +2377,7 @@
                 map,
                 title: currentVehiclePlate,
                 zIndex: 50,
-                icon: makeArrowIcon(heading, 6),
+                icon: vehicleMarkerIcon(heading, 6, true),
             });
             liveShownDeg = heading;
             liveHeading = heading;
@@ -2550,6 +2555,21 @@
     /* ══════════════════════════════════════════════════════════════
        HELPERS
        ══════════════════════════════════════════════════════════════ */
+    /* The vehicle's own icon (green = online) when its type has one; otherwise the orange arrow.
+       Playback and Live are always "active" vehicles, so they use the green set. */
+    function vehicleMarkerIcon(heading, arrowScale, online) {
+        return VehicleIcons.icon(currentVehicleType, VehicleIcons.state(online), heading) || makeArrowIcon(heading, arrowScale);
+    }
+
+    /* If the image finishes loading after the marker was drawn, swap the arrow for the icon */
+    VehicleIcons.onReady(() => {
+        if (typeof playMarker !== 'undefined' && playMarker) {
+            const pt = tripPoints[playIdx];
+            playMarker.setIcon(vehicleMarkerIcon(pt ? (pt.heading || 0) : 0, 5, true));
+        }
+        if (typeof liveMarker !== 'undefined' && liveMarker) liveMarker.setIcon(vehicleMarkerIcon(liveShownDeg ?? 0, 6, true));
+    });
+
     function makeArrowIcon(heading, scale) {
         return {
             path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,

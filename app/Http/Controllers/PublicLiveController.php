@@ -58,6 +58,7 @@ class PublicLiveController extends Controller
 
         $out = [
             'plateNumber' => (string) ($d['plateNumber'] ?? ''),
+            'vehicleType' => is_string($d['vehicleType'] ?? null) ? mb_substr($d['vehicleType'], 0, 30) : null,   // picks the icon; not sensitive
             'expiresAt'   => self::utc($d['expiresAt'] ?? null),
             'serverTime'  => self::utc($d['serverTime'] ?? null),
             'position'    => [

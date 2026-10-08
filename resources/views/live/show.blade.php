@@ -57,6 +57,7 @@
         </div>
     </div>
 
+@include('partials.vehicle-icons')
 <script>
     const TOKEN = document.body.dataset.token;
     const POLL_MS = 10000;          // position
@@ -109,20 +110,29 @@
         if (pending) { draw(pending); pending = null; }
     }
 
+    let vehicleType = null, lastDraw = null;
+    const arrowIcon = (deg) => ({ path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 6, fillColor: '#021F4A', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2, rotation: deg });
+    VehicleIcons.onReady(() => { if (lastDraw && marker) draw(lastDraw); });
+
     function draw(d) {
+        lastDraw = d;
         if (!mapReady) { pending = d; return; }
         const p = d.position;
         const pos = { lat: p.latitude, lng: p.longitude };
+        if (d.vehicleType) { vehicleType = d.vehicleType; VehicleIcons.preload([vehicleType]); }
+        // No signal for 10 min → grey (offline) icon, same rule as the status pill.
+        const online = (Date.now() + skew - Date.parse(p.lastUpdate || 0)) / 1000 <= 600;
+        const custom = () => VehicleIcons.icon(vehicleType, VehicleIcons.state(online), p.heading || 0);
 
         if (!marker) {
             marker = new google.maps.Marker({
                 map, position: pos, title: d.plateNumber,
-                icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 6, fillColor: '#021F4A', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2, rotation: p.heading || 0 },
+                icon: custom() || arrowIcon(p.heading || 0),
             });
             map.setCenter(pos); map.setZoom(15);
         } else {
             marker.setPosition(pos);
-            const ic = marker.getIcon(); ic.rotation = p.heading || 0; marker.setIcon(ic);
+            marker.setIcon(custom() || arrowIcon(p.heading || 0));
             if (!map.getBounds() || !map.getBounds().contains(pos)) map.panTo(pos);
         }
         line.setPath(trail);
