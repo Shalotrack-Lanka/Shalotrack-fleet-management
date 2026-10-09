@@ -159,6 +159,7 @@ Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(func
     // GET  /stats                      — renders the full stats page (vehicle list + blank panel)
     // GET  /stats/{vehicleId}/data     — AJAX: returns JSON stats for the selected vehicle + period
     Route::get('/stats',                   [StatsController::class, 'index'])->name('stats');
+    Route::get('/stats/compare',           [StatsController::class, 'compare'])->name('stats.compare');
     Route::get('/stats/{vehicleId}/data',  [StatsController::class, 'data']);
     // GET ?period=&format=pdf|csv — rendered server-side (no browser-supplied numbers/images)
     Route::match(['get', 'post'], '/stats/{vehicleId}/export', [ReportExportController::class, 'stats'])
