@@ -387,184 +387,26 @@
             }
         }
 
-        /* ── Mobile nav sidebar overlay ──────────────────────────────────────────── */
-        #nav-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.45);
-            z-index: 40;
-        }
-
-        #nav-overlay.open {
-            display: block;
-        }
     </style>
 </head>
 
-<body class="bg-gray-100 min-h-screen">
+<body class="@hasSection('immersive') bg-[#010F25] @else bg-gray-100 @endif min-h-screen">
 
-    {{-- Mobile sidebar overlay (tap to close) --}}
-    <div id="nav-overlay" onclick="closeSidebar()"></div>
+    <div class="min-h-screen">
 
-    <div class="flex min-h-screen">
-
-        {{-- ---- Nav Sidebar ---- --}}
-        <aside id="main-sidebar"
-            class="w-64 max-w-[85vw] bg-[#021F4A] text-white flex flex-col fixed inset-y-0 left-0 z-50
-                   transition-transform duration-200 -translate-x-full lg:translate-x-0" aria-label="Main navigation">
-
-            {{-- Logo --}}
-            <div class="px-6 py-5 border-b border-blue-900">
-                <h1 class="text-xl font-bold tracking-tight">
-                    Shalo<span class="text-[#FA6908]">Track</span>
-                </h1>
-                <p class="text-blue-300 text-xs mt-0.5">Fleet Management</p>
-            </div>
-
-            {{-- Nav links --}}
-            <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-                <a href="/dashboard" onclick="closeSidebar()"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
-                          {{ request()->is('dashboard') ? 'bg-[#FA6908] text-white' : 'text-blue-200 hover:bg-blue-900 hover:text-white' }}">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
-                    Dashboard
-                </a>
-
-                <a href="/vehicles" onclick="closeSidebar()"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
-                          {{ request()->is('vehicles*') ? 'bg-[#FA6908] text-white' : 'text-blue-200 hover:bg-blue-900 hover:text-white' }}">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2 2h8l2-2h2a1 1 0 000-2h-1" />
-                    </svg>
-                    Vehicles
-                </a>
-
-                <a href="/trips" onclick="closeSidebar()"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
-                          {{ request()->is('trips*') ? 'bg-[#FA6908] text-white' : 'text-blue-200 hover:bg-blue-900 hover:text-white' }}">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                    </svg>
-                    Trip History
-                </a>
-
-                <a href="/reports" onclick="closeSidebar()"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
-                          {{ request()->is('reports*') ? 'bg-[#FA6908] text-white' : 'text-blue-200 hover:bg-blue-900 hover:text-white' }}">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                    Reports
-                </a>
-
-                <a href="/geofences" onclick="closeSidebar()"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
-                          {{ request()->is('geofences*') ? 'bg-[#FA6908] text-white' : 'text-blue-200 hover:bg-blue-900 hover:text-white' }}">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4" />
-                    </svg>
-                    Geofences
-                </a>
-
-                <a href="/sharing" onclick="closeSidebar()"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
-                          {{ request()->is('sharing*') ? 'bg-[#FA6908] text-white' : 'text-blue-200 hover:bg-blue-900 hover:text-white' }}">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                    </svg>
-                    Sharing
-                </a>
-
-                <a href="/renewals" onclick="closeSidebar()"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
-                          {{ request()->is('renewals*') ? 'bg-[#FA6908] text-white' : 'text-blue-200 hover:bg-blue-900 hover:text-white' }}">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    Renewals
-                </a>
-
-                <a href="/complaints" onclick="closeSidebar()"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
-                          {{ request()->is('complaints*') ? 'bg-[#FA6908] text-white' : 'text-blue-200 hover:bg-blue-900 hover:text-white' }}">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-6l-4 4v-4z" />
-                    </svg>
-                    Complaints
-                </a>
-
-                <a href="/emergency-contacts" onclick="closeSidebar()"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
-                          {{ request()->is('emergency-contacts') ? 'bg-[#FA6908] text-white' : 'text-blue-200 hover:bg-blue-900 hover:text-white' }}">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                    Emergency Contacts
-                </a>
-
-                <a href="/saved-places" onclick="closeSidebar()"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
-                          {{ request()->is('saved-places') ? 'bg-[#FA6908] text-white' : 'text-blue-200 hover:bg-blue-900 hover:text-white' }}">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    Saved Places
-                </a>
-
-                <a href="/places" onclick="closeSidebar()"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
-                          {{ request()->is('places*') ? 'bg-[#FA6908] text-white' : 'text-blue-200 hover:bg-blue-900 hover:text-white' }}">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M11.48 3.5a.56.56 0 011.04 0l2.13 5.11a.56.56 0 00.47.35l5.52.44c.5.04.7.66.32.99l-4.2 3.6a.56.56 0 00-.18.56l1.28 5.39a.56.56 0 01-.84.61l-4.73-2.89a.56.56 0 00-.58 0l-4.73 2.89a.56.56 0 01-.84-.61l1.28-5.39a.56.56 0 00-.18-.56l-4.2-3.6a.56.56 0 01.32-.99l5.52-.44a.56.56 0 00.47-.35l2.13-5.11z" />
-                    </svg>
-                    Frequent Places
-                </a>
-
-                <a href="/stats" onclick="closeSidebar()"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition
-                          {{ request()->is('stats*') ? 'bg-[#FA6908] text-white' : 'text-blue-200 hover:bg-blue-900 hover:text-white' }}">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                    Vehicle Stats
-                </a>
-            </nav>
-
-            {{-- Bottom spacer --}}
-            <div class="px-4 py-4 border-blue-900 space-y-1"></div>
-        </aside>
+        {{-- No sidebar: navigation is the floating glass orb/dock (partials/glass-nav). --}}
 
         {{-- ---- Main content ---- --}}
-        <main class="flex-1 min-w-0 lg:ml-64 min-h-screen">
+        <main class="min-w-0 min-h-screen">
 
-            {{-- Top bar --}}
+            {{-- Top bar (the immersive dashboard has floating chips instead) --}}
+            @hasSection('immersive')
+            @else
             <header class="bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-40">
 
-                {{-- Hamburger (mobile only) --}}
-                <button onclick="openSidebar()"
-                    class="lg:hidden mr-2 p-2.5 -ml-2 rounded-lg text-gray-500 hover:bg-gray-100 transition flex-shrink-0"
-                    aria-label="Open menu" aria-controls="main-sidebar">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                </button>
+                <a href="/dashboard" class="mr-3 md:mr-4 flex-shrink-0 text-lg font-bold tracking-tight text-[#021F4A]" aria-label="ShaloTrack dashboard">
+                    Shalo<span class="text-[#FA6908]">Track</span>
+                </a>
 
                 <h2 class="text-base md:text-lg font-semibold text-gray-800 flex-1 min-w-0 truncate">
                     @yield('page-title', 'Dashboard')
@@ -611,12 +453,13 @@
                     </div>
                 </div>
             </header>
+            @endif
 
             {{-- Renewal-required banner: set when the API answers 402
                  SUBSCRIPTION_RENEWAL_REQUIRED; cleared on visiting /renewals.
                  Same signal the Android app turns into its app-wide prompt. --}}
             @if(Session::get('renewal_required') && !request()->is('renewals*'))
-            <div id="renewal-banner" class="bg-amber-50 border-b border-amber-200 px-4 md:px-8 py-3 flex items-center gap-3 text-sm text-amber-800">
+            <div id="renewal-banner" class="@hasSection('immersive') fixed top-[78px] left-1/2 -translate-x-1/2 z-30 w-[calc(100%-32px)] max-w-2xl rounded-2xl shadow-lg @else border-b @endif bg-amber-50 border-amber-200 px-4 md:px-8 py-3 flex items-center gap-3 text-sm text-amber-800">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
                 </svg>
@@ -631,31 +474,15 @@
             @endif
 
             {{-- Page content --}}
-            <div class="p-4 md:p-8">
+            <div class="@hasSection('immersive') @else p-4 md:p-8 pb-28 md:pb-28 @endif">
                 @yield('content')
             </div>
         </main>
     </div>
 
+    @include('partials.glass-nav')
+
     <script>
-        function openSidebar() {
-            closeProfileMenu();
-            document.getElementById('main-sidebar').classList.remove('-translate-x-full');
-            document.getElementById('nav-overlay').classList.add('open');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeSidebar() {
-            document.getElementById('main-sidebar').classList.add('-translate-x-full');
-            document.getElementById('nav-overlay').classList.remove('open');
-            document.body.style.overflow = '';
-        }
-
-        // Close on resize to desktop
-        window.addEventListener('resize', function() {
-            if (window.innerWidth >= 1024) closeSidebar();
-        });
-
         // ── Profile menu: tap/click (hover alone does not exist on touch) ──────
         const profileMenu = document.getElementById('profile-menu');
         const profileBtn  = document.getElementById('profile-menu-btn');
@@ -675,7 +502,7 @@
             });
         }
         document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') { closeProfileMenu(); closeSidebar(); }
+            if (e.key === 'Escape') { closeProfileMenu(); }
         });
     </script>
 
