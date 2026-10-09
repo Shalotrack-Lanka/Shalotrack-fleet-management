@@ -42,6 +42,51 @@ class StatsController extends Controller
     }
 
     /**
+     * GET /stats/compare
+     * Side-by-side comparison of 2-3 vehicles. The page reuses the per-vehicle
+     * /stats/{id}/data endpoint (same ownership checks in the API), so there is no
+     * new data path here: this only lists the vehicles the customer may pick from.
+     */
+    public function compare(): \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+    {
+        try {
+            $profile    = $this->api->getMyProfile();
+            $customerId = $profile['data']['customerId'] ?? null;
+            $all        = $customerId ? $this->api->getTrackableVehicles($customerId) : [];
+
+            // Only vehicles that can have stats, reduced to the fields the page needs.
+            $vehicles = [];
+            foreach ($all as $v) {
+                if (empty($v['hasGpsDevice'])) {
+                    continue;
+                }
+                $id = (string) ($v['vehicleId'] ?? $v['id'] ?? '');
+                if ($id === '') {
+                    continue;
+                }
+                $vehicles[] = [
+                    'id'     => $id,
+                    'plate'  => (string) ($v['vehicleNumber'] ?? 'N/A'),
+                    'name'   => trim(($v['make'] ?? '') . ' ' . ($v['model'] ?? '')),
+                    'demo'   => (bool) ($v['isDemoVehicle'] ?? false),
+                    'shared' => (bool) ($v['isShared'] ?? false),
+                ];
+            }
+
+            return view('stats.compare', ['vehicles' => $vehicles, 'error' => null]);
+        } catch (\Exception $e) {
+            Log::error('StatsController::compare — failed to load vehicles', ['error' => $e->getMessage()]);
+
+            if ($e->getCode() === 401) {
+                Session::flush();
+                return redirect('/login?expired=1');
+            }
+
+            return view('stats.compare', ['vehicles' => [], 'error' => 'Could not load vehicles. Please refresh the page.']);
+        }
+    }
+
+    /**
      * GET /stats/{vehicleId}/data?period=today|week|month|all
      * AJAX — returns JSON
      */

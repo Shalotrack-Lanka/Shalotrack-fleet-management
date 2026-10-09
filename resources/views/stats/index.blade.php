@@ -29,6 +29,19 @@
         overflow: hidden;
     }
 
+    .compare-link {
+        display: inline-block;
+        margin: 2px 0 10px;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #FA6908;
+        text-decoration: none;
+    }
+
+    .compare-link:hover {
+        text-decoration: underline;
+    }
+
     .sidebar-header {
         padding: 20px 16px 12px;
         border-bottom: 1px solid #f1f5f9;
@@ -665,6 +678,7 @@
     <div class="sidebar">
         <div class="sidebar-header">
             <h2>Fleet Statistics</h2>
+            <a href="/stats/compare" class="compare-link">Compare vehicles →</a>
             <input
                 type="text"
                 id="vehicle-search"
