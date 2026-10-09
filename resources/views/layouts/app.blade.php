@@ -23,20 +23,20 @@
         /* ── Layout ─────────────────────────────────────────────────────────────── */
         .stats-wrap {
             border-radius: 24px;
-            border: 1px solid rgba(255,255,255,.2);
+            border: 1px solid rgba(255, 255, 255, .2);
             box-shadow: var(--gl-shadow, none);
             display: flex;
             height: calc(100vh - 64px);
             overflow: hidden;
-            background: var(--g-s3,#f1f5f9);
+            background: var(--g-s3, #f1f5f9);
         }
 
         /* ── Sidebar ─────────────────────────────────────────────────────────────── */
         .sidebar {
             width: 280px;
             min-width: 280px;
-            background: var(--g-s1,#fff);
-            border-right: 1px solid var(--g-b,#e2e8f0);
+            background: var(--g-s1, #fff);
+            border-right: 1px solid var(--g-b, #e2e8f0);
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -44,25 +44,25 @@
 
         .sidebar-header {
             padding: 18px 16px 12px;
-            border-bottom: 1px solid var(--g-b,#e2e8f0);
+            border-bottom: 1px solid var(--g-b, #e2e8f0);
         }
 
         .sidebar-header h2 {
             font-size: 15px;
             font-weight: 700;
-            color: var(--g-t1,#021F4A);
+            color: var(--g-t1, #021F4A);
             margin: 0 0 10px;
         }
 
         .sidebar-search {
             width: 100%;
             padding: 8px 10px;
-            border: 1px solid var(--g-b,#d1d5db);
+            border: 1px solid var(--g-b, #d1d5db);
             border-radius: 8px;
             font-size: 13px;
             outline: none;
-            color: var(--g-t1,#334155);
-            background: var(--g-s2,#f8fafc);
+            color: var(--g-t1, #334155);
+            background: var(--g-s2, #f8fafc);
             transition: border-color .15s;
         }
 
@@ -96,11 +96,11 @@
         }
 
         .vehicle-card:hover {
-            background: var(--g-s2,#f8fafc);
+            background: var(--g-s2, #f8fafc);
         }
 
         .vehicle-card.active {
-            background: var(--g-orbg,#fff7f0);
+            background: var(--g-orbg, #fff7f0);
             border-left-color: #FA6908;
         }
 
@@ -108,7 +108,7 @@
             width: 38px;
             height: 38px;
             border-radius: 50%;
-            background: var(--g-navy,#021F4A);
+            background: var(--g-navy, #021F4A);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -133,7 +133,7 @@
         .vehicle-plate {
             font-size: 13px;
             font-weight: 700;
-            color: var(--g-t1,#021F4A);
+            color: var(--g-t1, #021F4A);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -141,7 +141,7 @@
 
         .vehicle-name {
             font-size: 11px;
-            color: var(--g-t2,#64748b);
+            color: var(--g-t2, #64748b);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -159,8 +159,8 @@
 
         /* Period bar */
         .period-bar {
-            background: var(--g-s1,#fff);
-            border-bottom: 1px solid var(--g-b,#e2e8f0);
+            background: var(--g-s1, #fff);
+            border-bottom: 1px solid var(--g-b, #e2e8f0);
             padding: 0 24px;
             display: flex;
             align-items: center;
@@ -177,13 +177,13 @@
             border: none;
             cursor: pointer;
             background: transparent;
-            color: var(--g-t2,#64748b);
+            color: var(--g-t2, #64748b);
             transition: background .15s, color .15s;
         }
 
         .period-btn:hover {
-            background: var(--g-s3,#f1f5f9);
-            color: var(--g-t1,#021F4A);
+            background: var(--g-s3, #f1f5f9);
+            color: var(--g-t1, #021F4A);
         }
 
         .period-btn.active {
@@ -215,7 +215,7 @@
             justify-content: center;
             height: 100%;
             gap: 12px;
-            color: var(--g-t3,#94a3b8);
+            color: var(--g-t3, #94a3b8);
         }
 
         .stats-empty svg {
@@ -235,12 +235,19 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50%       { opacity: .5; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: .5;
+            }
         }
 
         .skeleton-box {
-            background: var(--g-s3,#e2e8f0);
+            background: var(--g-s3, #e2e8f0);
             border-radius: 10px;
         }
 
@@ -256,7 +263,7 @@
             width: 48px;
             height: 48px;
             border-radius: 50%;
-            background: var(--g-navy,#021F4A);
+            background: var(--g-navy, #021F4A);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -271,13 +278,13 @@
         .stats-vehicle-header .plate {
             font-size: 20px;
             font-weight: 800;
-            color: var(--g-t1,#021F4A);
+            color: var(--g-t1, #021F4A);
             line-height: 1;
         }
 
         .stats-vehicle-header .meta {
             font-size: 13px;
-            color: var(--g-t2,#64748b);
+            color: var(--g-t2, #64748b);
             margin-top: 3px;
         }
 
@@ -290,7 +297,7 @@
         }
 
         .tile {
-            background: var(--g-s1,#fff);
+            background: var(--g-s1, #fff);
             border-radius: 12px;
             padding: 16px 18px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
@@ -299,7 +306,7 @@
         .tile-label {
             font-size: 11px;
             font-weight: 600;
-            color: var(--g-t3,#94a3b8);
+            color: var(--g-t3, #94a3b8);
             text-transform: uppercase;
             letter-spacing: .04em;
             margin-bottom: 6px;
@@ -308,14 +315,14 @@
         .tile-value {
             font-size: 24px;
             font-weight: 800;
-            color: var(--g-t1,#021F4A);
+            color: var(--g-t1, #021F4A);
             line-height: 1;
         }
 
         .tile-unit {
             font-size: 12px;
             font-weight: 500;
-            color: var(--g-t2,#64748b);
+            color: var(--g-t2, #64748b);
             margin-left: 3px;
         }
 
@@ -334,12 +341,29 @@
             height: 18px;
         }
 
-        .tile-icon.orange { background: var(--g-orbg,#fff7f0); }
-        .tile-icon.orange svg { fill: #FA6908; }
-        .tile-icon.navy   { background: var(--g-blbg,#eef2ff); }
-        .tile-icon.navy svg   { fill: #021F4A; }
-        .tile-icon.red    { background: var(--g-redbg,#fef2f2); }
-        .tile-icon.red svg    { fill: #ef4444; }
+        .tile-icon.orange {
+            background: var(--g-orbg, #fff7f0);
+        }
+
+        .tile-icon.orange svg {
+            fill: #FA6908;
+        }
+
+        .tile-icon.navy {
+            background: var(--g-blbg, #eef2ff);
+        }
+
+        .tile-icon.navy svg {
+            fill: var(--g-blt, #93c5fd);
+        }
+
+        .tile-icon.red {
+            background: var(--g-redbg, #fef2f2);
+        }
+
+        .tile-icon.red svg {
+            fill: #ef4444;
+        }
 
         /* ── Chart cards ─────────────────────────────────────────────────────────── */
         .chart-grid {
@@ -349,12 +373,17 @@
         }
 
         @media (min-width: 900px) {
-            .chart-grid { grid-template-columns: 1fr 1fr; }
-            .chart-grid .chart-card.full { grid-column: 1 / -1; }
+            .chart-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .chart-grid .chart-card.full {
+                grid-column: 1 / -1;
+            }
         }
 
         .chart-card {
-            background: var(--g-s1,#fff);
+            background: var(--g-s1, #fff);
             border-radius: 12px;
             padding: 20px 22px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
@@ -363,7 +392,7 @@
         .chart-card h3 {
             font-size: 13px;
             font-weight: 700;
-            color: var(--g-t1,#021F4A);
+            color: var(--g-t1, #021F4A);
             margin: 0 0 16px;
             text-transform: uppercase;
             letter-spacing: .04em;
@@ -374,15 +403,24 @@
             height: 180px;
         }
 
-        .only-coarse { display: none; }
+        .only-coarse {
+            display: none;
+        }
+
         @media (pointer: coarse) {
-            .only-coarse { display: inline; }
-            .only-fine { display: none; }
+            .only-coarse {
+                display: inline;
+            }
+
+            .only-fine {
+                display: none;
+            }
         }
 
         /* iOS Safari zooms the whole page when a field under 16px gets focus.
            Many page-level styles set 13-14px, so force 16px on phones only. */
         @media (max-width: 767px) {
+
             input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
             select,
             textarea {
@@ -397,33 +435,167 @@
            (No transform/filter/overflow on the sheet: those would trap fixed modals.) */
         .st-bg {
             background:
-                radial-gradient(900px 520px at 88% -8%, rgba(250,105,8,.24), transparent 62%),
-                radial-gradient(800px 600px at -5% 105%, rgba(56,140,255,.20), transparent 60%),
+                radial-gradient(900px 520px at 88% -8%, rgba(250, 105, 8, .24), transparent 62%),
+                radial-gradient(800px 600px at -5% 105%, rgba(56, 140, 255, .20), transparent 60%),
                 linear-gradient(160deg, #021F4A 0%, #0a3570 52%, #010F25 100%);
             background-attachment: fixed;
         }
-        .gl.gl-strong { background: linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.04)), rgba(2,31,74,.78); }
-        .st-top { position: sticky; top: 0; z-index: 40; padding: 12px 12px 0; pointer-events: none; }
-        @media (min-width: 768px) { .st-top { padding: 14px 24px 0; } }
-        .st-top > * { pointer-events: auto; }
-        .st-chip { height: 48px; border-radius: 24px; display: flex; align-items: center; color: #fff; box-shadow: 0 4px 14px rgba(0,8,30,.28), inset 0 1px 0 rgba(255,255,255,.38); }
-        .st-brand { padding: 0 18px; gap: 9px; text-decoration: none; font-weight: 700; font-size: 17px; letter-spacing: .2px; flex-shrink: 0; }
-        .st-brand .dot { width: 9px; height: 9px; border-radius: 50%; background: #FA6908; box-shadow: 0 0 10px #FA6908; }
-        .st-brand span.o { color: #FA6908; }
-        #map-theme-btn svg { width: 20px; height: 20px; stroke: #fff; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-        .st-title { padding: 0 20px; font-size: 15px; font-weight: 600; min-width: 0; }
-        .st-title h2 { margin: 0; font: inherit; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .st-user { padding: 0 6px 0 16px; gap: 10px; cursor: pointer; font: inherit; }
-        .st-user .nm { font-size: 13px; font-weight: 600; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .st-user .ph { display: block; font-size: 11px; font-weight: 400; color: rgba(255,255,255,.7); }
-        .st-user .av { width: 36px; height: 36px; border-radius: 50%; background: #FA6908; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
-        .st-page { padding: 14px 12px 0; }
-        @media (min-width: 768px) { .st-page { padding: 18px 24px 0; } }
+
+        .gl.gl-strong {
+            background: linear-gradient(135deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .04)), rgba(2, 31, 74, .78);
+        }
+
+        .st-top {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            padding: 12px 12px 0;
+            pointer-events: none;
+        }
+
+        @media (min-width: 768px) {
+            .st-top {
+                padding: 14px 24px 0;
+            }
+        }
+
+        .st-top>* {
+            pointer-events: auto;
+        }
+
+        .st-chip {
+            height: 48px;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(0, 8, 30, .28), inset 0 1px 0 rgba(255, 255, 255, .38);
+        }
+
+        .st-brand {
+            padding: 0 18px;
+            gap: 9px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 17px;
+            letter-spacing: .2px;
+            flex-shrink: 0;
+        }
+
+        .st-brand .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #FA6908;
+            box-shadow: 0 0 10px #FA6908;
+        }
+
+        .st-brand span.o {
+            color: #FA6908;
+        }
+
+        #map-theme-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: #fff;
+            fill: none;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .st-title {
+            padding: 0 20px;
+            font-size: 15px;
+            font-weight: 600;
+            min-width: 0;
+        }
+
+        .st-title h2 {
+            margin: 0;
+            font: inherit;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .st-user {
+            padding: 0 6px 0 16px;
+            gap: 10px;
+            cursor: pointer;
+            font: inherit;
+        }
+
+        .st-user .nm {
+            font-size: 13px;
+            font-weight: 600;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .st-user .ph {
+            display: block;
+            font-size: 11px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, .7);
+        }
+
+        .st-user .av {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #FA6908;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .st-page {
+            padding: 14px 12px 0;
+        }
+
+        @media (min-width: 768px) {
+            .st-page {
+                padding: 18px 24px 0;
+            }
+        }
+
         /* Full-bleed map pages (Trips, Geofences, Frequent Places): the map is the page,
            panels float over it. Phones keep the normal scrolling layout. */
-        @media (min-width: 821px) { body.st-full { overflow: hidden; } }
-        @media (max-width: 767px) { .st-brand .t { display: none; } .st-brand { padding: 0 14px; } .st-user .nm-wrap { display: none; } .st-user { padding: 0 6px; } }
-        @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .st-chip.gl.gl-strong { background: rgba(2,31,74,.96); } }
+        @media (min-width: 821px) {
+            body.st-full {
+                overflow: hidden;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .st-brand .t {
+                display: none;
+            }
+
+            .st-brand {
+                padding: 0 14px;
+            }
+
+            .st-user .nm-wrap {
+                display: none;
+            }
+
+            .st-user {
+                padding: 0 6px;
+            }
+        }
+
+        @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+            .st-chip.gl.gl-strong {
+                background: rgba(2, 31, 74, .96);
+            }
+        }
     </style>
     @include('partials.glass-skin')
 </head>
@@ -528,24 +700,27 @@
     <script>
         // ── Profile menu: tap/click (hover alone does not exist on touch) ──────
         const profileMenu = document.getElementById('profile-menu');
-        const profileBtn  = document.getElementById('profile-menu-btn');
+        const profileBtn = document.getElementById('profile-menu-btn');
+
         function closeProfileMenu() {
             if (!profileMenu) return;
             profileMenu.classList.remove('menu-open');
             profileBtn.setAttribute('aria-expanded', 'false');
         }
         if (profileBtn) {
-            profileBtn.addEventListener('click', function (e) {
+            profileBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 const open = profileMenu.classList.toggle('menu-open');
                 profileBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
             });
-            document.addEventListener('click', function (e) {
+            document.addEventListener('click', function(e) {
                 if (!profileMenu.contains(e.target)) closeProfileMenu();
             });
         }
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') { closeProfileMenu(); }
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeProfileMenu();
+            }
         });
     </script>
 
@@ -555,91 +730,125 @@
          page's cleanup code still runs). Modals are found by markup convention (ids ending in
          "-modal", .ec-overlay, .sh-overlay, .dd-overlay, .gf-modal-wrap, [role=dialog]). --}}
     <script>
-    (function () {
-        const SEL = '[role="dialog"],[id$="-modal"],.ec-overlay,.sh-overlay,.dd-overlay,.gf-modal-wrap';
-        const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
-        const visible = el => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden';
-        const focusables = dlg => [...dlg.querySelectorAll(FOCUSABLE)].filter(visible);
-        const stack = [];
-        let uid = 0;
+        (function() {
+            const SEL = '[role="dialog"],[id$="-modal"],.ec-overlay,.sh-overlay,.dd-overlay,.gf-modal-wrap';
+            const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+            const visible = el => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden';
+            const focusables = dlg => [...dlg.querySelectorAll(FOCUSABLE)].filter(visible);
+            const stack = [];
+            let uid = 0;
 
-        function dialogOf(root) {
-            // The panel is the child that holds the controls; a sibling like .modal-backdrop is skipped.
-            return root.querySelector('[role="dialog"]')
-                || [...root.children].find(c => c.querySelector(FOCUSABLE))
-                || root;
-        }
+            function dialogOf(root) {
+                // The panel is the child that holds the controls; a sibling like .modal-backdrop is skipped.
+                return root.querySelector('[role="dialog"]') ||
+                    [...root.children].find(c => c.querySelector(FOCUSABLE)) ||
+                    root;
+            }
 
-        function prepare(root) {
-            const dlg = root.getAttribute('role') === 'dialog' ? root : dialogOf(root);
-            if (dlg.getAttribute('role') !== 'dialog') dlg.setAttribute('role', 'dialog');
-            dlg.setAttribute('aria-modal', 'true');
-            if (!dlg.hasAttribute('aria-label') && !dlg.hasAttribute('aria-labelledby')) {
-                const h = dlg.querySelector('h1,h2,h3,[class*="title"]');
-                if (h) {
-                    if (!h.id) h.id = 'dlg-title-' + (++uid);
-                    dlg.setAttribute('aria-labelledby', h.id);
+            function prepare(root) {
+                const dlg = root.getAttribute('role') === 'dialog' ? root : dialogOf(root);
+                if (dlg.getAttribute('role') !== 'dialog') dlg.setAttribute('role', 'dialog');
+                dlg.setAttribute('aria-modal', 'true');
+                if (!dlg.hasAttribute('aria-label') && !dlg.hasAttribute('aria-labelledby')) {
+                    const h = dlg.querySelector('h1,h2,h3,[class*="title"]');
+                    if (h) {
+                        if (!h.id) h.id = 'dlg-title-' + (++uid);
+                        dlg.setAttribute('aria-labelledby', h.id);
+                    }
+                }
+                if (!dlg.hasAttribute('tabindex')) dlg.setAttribute('tabindex', '-1');
+                return dlg;
+            }
+
+            function opened(root) {
+                const dlg = prepare(root);
+                stack.push({
+                    root,
+                    dlg,
+                    prev: document.activeElement
+                });
+                if (!root.contains(document.activeElement)) {
+                    const f = focusables(dlg);
+                    const target = f.find(e => /^(INPUT|SELECT|TEXTAREA)$/.test(e.tagName)) || f[0] || dlg;
+                    setTimeout(() => target.focus({
+                        preventScroll: true
+                    }), 0);
                 }
             }
-            if (!dlg.hasAttribute('tabindex')) dlg.setAttribute('tabindex', '-1');
-            return dlg;
-        }
 
-        function opened(root) {
-            const dlg = prepare(root);
-            stack.push({ root, dlg, prev: document.activeElement });
-            if (!root.contains(document.activeElement)) {
-                const f = focusables(dlg);
-                const target = f.find(e => /^(INPUT|SELECT|TEXTAREA)$/.test(e.tagName)) || f[0] || dlg;
-                setTimeout(() => target.focus({ preventScroll: true }), 0);
+            function closed(root) {
+                const i = stack.findIndex(s => s.root === root);
+                if (i < 0) return;
+                const [s] = stack.splice(i, 1);
+                if (s.prev && document.contains(s.prev) && !root.contains(s.prev)) s.prev.focus({
+                    preventScroll: true
+                });
             }
-        }
 
-        function closed(root) {
-            const i = stack.findIndex(s => s.root === root);
-            if (i < 0) return;
-            const [s] = stack.splice(i, 1);
-            if (s.prev && document.contains(s.prev) && !root.contains(s.prev)) s.prev.focus({ preventScroll: true });
-        }
-
-        function closeControl(dlg) {
-            const btns = [...dlg.querySelectorAll('button,[role="button"],a')].filter(visible);
-            return btns.find(b => /close/i.test(b.getAttribute('aria-label') || '') || /close/i.test(b.className))
-                || btns.find(b => /^(cancel|close|keep my account|no|done|ok)/i.test((b.textContent || '').trim()));
-        }
-
-        document.addEventListener('keydown', function (e) {
-            const top = stack[stack.length - 1];
-            if (!top) return;
-            if (e.key === 'Escape' && !e.defaultPrevented) {
-                const c = closeControl(top.dlg);
-                if (c) { e.preventDefault(); e.stopPropagation(); c.click(); }
-                return;
+            function closeControl(dlg) {
+                const btns = [...dlg.querySelectorAll('button,[role="button"],a')].filter(visible);
+                return btns.find(b => /close/i.test(b.getAttribute('aria-label') || '') || /close/i.test(b.className)) ||
+                    btns.find(b => /^(cancel|close|keep my account|no|done|ok)/i.test((b.textContent || '').trim()));
             }
-            if (e.key !== 'Tab') return;
-            const f = focusables(top.dlg);
-            if (!f.length) { e.preventDefault(); top.dlg.focus(); return; }
-            const first = f[0], last = f[f.length - 1];
-            if (!top.dlg.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
-            else if (e.shiftKey && (document.activeElement === first || document.activeElement === top.dlg)) { e.preventDefault(); last.focus(); }
-            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-        }, true);
 
-        function init() {
-            const all = [...document.querySelectorAll(SEL)];
-            // Outermost only (a [role=dialog] inside .dd-overlay is part of that overlay).
-            const roots = all.filter(el => !el.parentElement || !el.parentElement.closest(SEL));
-            const state = new Map(roots.map(r => [r, false]));
-            const check = () => state.forEach((was, r) => {
-                const now = visible(r);
-                if (now && !was) { state.set(r, true); opened(r); }
-                else if (!now && was) { state.set(r, false); closed(r); }
-            });
-            new MutationObserver(check).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
-            check();
-        }
-        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
-    })();
+            document.addEventListener('keydown', function(e) {
+                const top = stack[stack.length - 1];
+                if (!top) return;
+                if (e.key === 'Escape' && !e.defaultPrevented) {
+                    const c = closeControl(top.dlg);
+                    if (c) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        c.click();
+                    }
+                    return;
+                }
+                if (e.key !== 'Tab') return;
+                const f = focusables(top.dlg);
+                if (!f.length) {
+                    e.preventDefault();
+                    top.dlg.focus();
+                    return;
+                }
+                const first = f[0],
+                    last = f[f.length - 1];
+                if (!top.dlg.contains(document.activeElement)) {
+                    e.preventDefault();
+                    first.focus();
+                } else if (e.shiftKey && (document.activeElement === first || document.activeElement === top.dlg)) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            }, true);
+
+            function init() {
+                const all = [...document.querySelectorAll(SEL)];
+                // Outermost only (a [role=dialog] inside .dd-overlay is part of that overlay).
+                const roots = all.filter(el => !el.parentElement || !el.parentElement.closest(SEL));
+                const state = new Map(roots.map(r => [r, false]));
+                const check = () => state.forEach((was, r) => {
+                    const now = visible(r);
+                    if (now && !was) {
+                        state.set(r, true);
+                        opened(r);
+                    } else if (!now && was) {
+                        state.set(r, false);
+                        closed(r);
+                    }
+                });
+                new MutationObserver(check).observe(document.body, {
+                    subtree: true,
+                    attributes: true,
+                    attributeFilter: ['class', 'style', 'hidden']
+                });
+                check();
+            }
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+            else init();
+        })();
     </script>
 
     @stack('scripts')
