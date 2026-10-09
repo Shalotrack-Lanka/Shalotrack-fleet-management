@@ -13,17 +13,17 @@
     .stats-wrap {
         display: grid;
         grid-template-columns: 280px 1fr;
-        height: calc(100vh - 160px);
-        height: calc(100dvh - 160px);
+        height: calc(100vh - 214px);
+        height: calc(100dvh - 214px);
         min-height: 560px;
         overflow: hidden;
-        background: #f8fafc;
+        background: var(--g-s2,#f8fafc);
     }
 
     /* ── Sidebar ───────────────────────────────────────────────────────────────── */
     .sidebar {
-        background: #fff;
-        border-right: 1px solid #e2e8f0;
+        background: var(--g-s1,#fff);
+        border-right: 1px solid var(--g-b,#e2e8f0);
         display: flex;
         flex-direction: column;
         overflow: hidden;
@@ -44,14 +44,14 @@
 
     .sidebar-header {
         padding: 20px 16px 12px;
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid var(--g-b,#f1f5f9);
         flex-shrink: 0;
     }
 
     .sidebar-header h2 {
         font-size: 15px;
         font-weight: 700;
-        color: #021F4A;
+        color: var(--g-t1,#021F4A);
         margin: 0 0 12px;
         letter-spacing: 0.2px;
     }
@@ -59,11 +59,11 @@
     .sidebar-search {
         width: 100%;
         box-sizing: border-box;
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--g-b,#e2e8f0);
         border-radius: 8px;
         padding: 8px 12px;
         font-size: 13px;
-        color: #334155;
+        color: var(--g-t1,#334155);
         outline: none;
         transition: border-color 0.15s, box-shadow 0.15s;
     }
@@ -84,7 +84,7 @@
     }
 
     .vehicle-list::-webkit-scrollbar-thumb {
-        background: #e2e8f0;
+        background: var(--g-s3,#e2e8f0);
         border-radius: 4px;
     }
 
@@ -101,11 +101,11 @@
     }
 
     .vehicle-card:hover {
-        background: #f8fafc;
+        background: var(--g-s2,#f8fafc);
     }
 
     .vehicle-card.active {
-        background: #fff7f0;
+        background: var(--g-orbg,#fff7f0);
         border-color: #FA6908;
     }
 
@@ -117,7 +117,7 @@
         width: 38px;
         height: 38px;
         border-radius: 9px;
-        background: #021F4A;
+        background: var(--g-navy,#021F4A);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -129,7 +129,7 @@
     }
 
     .vehicle-icon.has-photo {
-        background: #eef2f7;
+        background: var(--g-s2,#eef2f7);
     }
 
     .vehicle-icon img {
@@ -152,7 +152,7 @@
     .vehicle-plate {
         font-size: 13px;
         font-weight: 700;
-        color: #021F4A;
+        color: var(--g-t1,#021F4A);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -160,7 +160,7 @@
 
     .vehicle-name {
         font-size: 11px;
-        color: #64748b;
+        color: var(--g-t2,#64748b);
         margin-top: 2px;
         white-space: nowrap;
         overflow: hidden;
@@ -177,8 +177,8 @@
     /* Period bar */
     .stats-period-bar {
         padding: 10px 24px;
-        background: #fff;
-        border-bottom: 1px solid #e2e8f0;
+        background: var(--g-s1,#fff);
+        border-bottom: 1px solid var(--g-b,#e2e8f0);
         display: flex;
         align-items: center;
         gap: 8px;
@@ -194,9 +194,9 @@
     .period-btn {
         padding: 6px 18px;
         border-radius: 20px;
-        border: 1px solid #e2e8f0;
-        background: #fff;
-        color: #475569;
+        border: 1px solid var(--g-b,#e2e8f0);
+        background: var(--g-s1,#fff);
+        color: var(--g-t2,#475569);
         font-size: 13px;
         font-weight: 500;
         cursor: pointer;
@@ -228,9 +228,9 @@
         gap: 6px;
         padding: 6px 14px;
         border-radius: 20px;
-        border: 1px solid #e2e8f0;
-        background: #fff;
-        color: #475569;
+        border: 1px solid var(--g-b,#e2e8f0);
+        background: var(--g-s1,#fff);
+        color: var(--g-t2,#475569);
         font-size: 13px;
         font-weight: 500;
         cursor: pointer;
@@ -242,8 +242,8 @@
     .btn-export:hover,
     .btn-export.open {
         border-color: #021F4A;
-        color: #021F4A;
-        background: #f8fafc;
+        color: var(--g-t1,#021F4A);
+        background: var(--g-s2,#f8fafc);
     }
 
     .btn-export svg {
@@ -265,8 +265,8 @@
         position: absolute;
         right: 0;
         top: calc(100% + 6px);
-        background: #fff;
-        border: 1px solid #e2e8f0;
+        background: var(--g-s1,#fff);
+        border: 1px solid var(--g-b,#e2e8f0);
         border-radius: 10px;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10);
         min-width: 160px;
@@ -284,13 +284,13 @@
         gap: 10px;
         padding: 10px 16px;
         font-size: 13px;
-        color: #334155;
+        color: var(--g-t1,#334155);
         cursor: pointer;
         transition: background 0.12s;
     }
 
     .export-item:hover {
-        background: #f8fafc;
+        background: var(--g-s2,#f8fafc);
     }
 
     .export-item svg {
@@ -307,7 +307,7 @@
     .export-item small {
         display: block;
         font-size: 11px;
-        color: #94a3b8;
+        color: var(--g-t3,#94a3b8);
         font-weight: 400;
     }
 
@@ -335,7 +335,7 @@
         align-items: center;
         justify-content: center;
         min-height: 420px;
-        color: #94a3b8;
+        color: var(--g-t3,#94a3b8);
         text-align: center;
     }
 
@@ -349,12 +349,12 @@
     .stats-empty p {
         font-size: 15px;
         margin: 0;
-        color: #94a3b8;
+        color: var(--g-t3,#94a3b8);
     }
 
     .stats-empty small {
         font-size: 12px;
-        color: #b0bec5;
+        color: var(--g-t3,#b0bec5);
         margin-top: 6px;
     }
 
@@ -383,14 +383,14 @@
         gap: 16px;
         margin-bottom: 24px;
         padding-bottom: 20px;
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid var(--g-b,#f1f5f9);
     }
 
     .icon-big {
         width: 56px;
         height: 56px;
         border-radius: 14px;
-        background: #021F4A;
+        background: var(--g-navy,#021F4A);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -406,13 +406,13 @@
     .plate {
         font-size: 22px;
         font-weight: 800;
-        color: #021F4A;
+        color: var(--g-t1,#021F4A);
         letter-spacing: 0.5px;
     }
 
     .meta {
         font-size: 13px;
-        color: #64748b;
+        color: var(--g-t2,#64748b);
         margin-top: 3px;
     }
 
@@ -425,7 +425,7 @@
     }
 
     .tile {
-        background: #fff;
+        background: var(--g-s1,#fff);
         border-radius: 14px;
         padding: 18px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -479,7 +479,7 @@
 
     .tile-label {
         font-size: 11.5px;
-        color: #64748b;
+        color: var(--g-t2,#64748b);
         font-weight: 500;
         letter-spacing: 0.2px;
     }
@@ -487,13 +487,13 @@
     .tile-value {
         font-size: 26px;
         font-weight: 800;
-        color: #021F4A;
+        color: var(--g-t1,#021F4A);
         line-height: 1;
     }
 
     .tile-unit {
         font-size: 12px;
-        color: #94a3b8;
+        color: var(--g-t3,#94a3b8);
         font-weight: 500;
         margin-left: 2px;
     }
@@ -502,18 +502,18 @@
     .tile-value .dur-h {
         font-size: 14px;
         font-weight: 600;
-        color: #475569;
+        color: var(--g-t2,#475569);
     }
 
     .tile-value .dur-m {
         font-size: 14px;
         font-weight: 600;
-        color: #475569;
+        color: var(--g-t2,#475569);
     }
 
     /* Alert tile: highlight if non-zero */
     .tile.alert-active .tile-value {
-        color: #ef4444;
+        color: var(--g-redt,#ef4444);
     }
 
     .tile.alert-active {
@@ -528,7 +528,7 @@
     }
 
     .chart-card {
-        background: #fff;
+        background: var(--g-s1,#fff);
         border-radius: 14px;
         padding: 20px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
@@ -541,7 +541,7 @@
     .chart-card h3 {
         font-size: 11px;
         font-weight: 700;
-        color: #94a3b8;
+        color: var(--g-t3,#94a3b8);
         margin: 0 0 14px;
         text-transform: uppercase;
         letter-spacing: 0.8px;
@@ -557,7 +557,7 @@
         align-items: center;
         justify-content: center;
         height: 200px;
-        color: #b0bec5;
+        color: var(--g-t3,#b0bec5);
         font-size: 13px;
     }
 
@@ -576,7 +576,7 @@
 
         .sidebar {
             border-right: none;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid var(--g-b,#e2e8f0);
             height: auto;
             overflow: visible;
         }
@@ -718,12 +718,12 @@
                     <div class="vehicle-name">Demo Vehicle</div>
                     @endif
                     @if(!empty($v['isShared']))
-                    <div class="vehicle-name" style="color:#0369a1">Shared{{ !empty($v['ownerName']) ? ' by ' . $v['ownerName'] : '' }}</div>
+                    <div class="vehicle-name" style="color:var(--g-blt,#0369a1)">Shared{{ !empty($v['ownerName']) ? ' by ' . $v['ownerName'] : '' }}</div>
                     @endif
                 </div>
             </div>
             @empty
-            <div style="padding:32px 16px; text-align:center; color:#94a3b8; font-size:13px; line-height:1.6;">
+            <div style="padding:32px 16px; text-align:center; color:var(--g-t3,#94a3b8); font-size:13px; line-height:1.6;">
                 No GPS-enabled vehicles found.<br>Assign a GPS device to a vehicle first.
             </div>
             @endforelse
@@ -1142,9 +1142,9 @@
             }, {
                 label: 'Stops',
                 data: stopData,
-                color: '#021F4A'
+                color: '#60a5fa'
             });
-            chartIgnition = buildBar('chart-ignition', chartIgnition, labels, ignData, 'Ignition On (min)', '#021F4A');
+            chartIgnition = buildBar('chart-ignition', chartIgnition, labels, ignData, 'Ignition On (min)', '#60a5fa');
         }
 
         showState('stats');
@@ -1183,7 +1183,7 @@
             },
             y: {
                 grid: {
-                    color: '#f1f5f9',
+                    color: 'rgba(255,255,255,.09)',
                     drawBorder: false
                 },
                 ticks: {
@@ -1258,7 +1258,7 @@
                             font: {
                                 size: 12
                             },
-                            color: '#475569',
+                            color: '#cbd5e1',
                             boxWidth: 12
                         },
                     },

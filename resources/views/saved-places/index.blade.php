@@ -42,7 +42,7 @@
     /* Sidebar list */
     .place-row {
         padding: 16px 20px;
-        border-bottom: 1px solid #f3f4f6;
+        border-bottom: 1px solid var(--g-b,#f3f4f6);
         cursor: pointer;
         transition: background 0.15s;
     }
@@ -52,11 +52,11 @@
     }
 
     .place-row:hover {
-        background: #fafafa;
+        background: var(--g-s2,#fafafa);
     }
 
     .place-row.active {
-        background: #fff7ed;
+        background: var(--g-orbg,#fff7ed);
         border-left: 3px solid #FA6908;
     }
 
@@ -84,18 +84,18 @@
         align-items: center;
         justify-content: center;
         padding: 8px 16px;
-        border: 1px solid #e5e7eb;
-        color: #374151;
+        border: 1px solid var(--g-b,#e5e7eb);
+        color: var(--g-t1,#374151);
         font-size: 13px;
         font-weight: 500;
         border-radius: 8px;
-        background: white;
+        background: var(--g-s1,white);
         cursor: pointer;
         transition: background 0.15s;
     }
 
     .btn-secondary:hover {
-        background: #f9fafb;
+        background: var(--g-s2,#f9fafb);
     }
 
     .btn-danger {
@@ -120,7 +120,7 @@
     .input-field {
         width: 100%;
         padding: 8px 12px;
-        border: 1px solid #e5e7eb;
+        border: 1px solid var(--g-b,#e5e7eb);
         border-radius: 8px;
         font-size: 13px;
         outline: none;
@@ -161,7 +161,7 @@
     }
 
     .modal-card {
-        background: white;
+        background: var(--g-s1,white);
         border-radius: 16px;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
         width: 100%;
@@ -176,7 +176,7 @@
         align-items: center;
         gap: 8px;
         padding: 8px 12px;
-        background: #fff7ed;
+        background: var(--g-orbg,#fff7ed);
         border-radius: 8px;
         margin-bottom: 12px;
     }
@@ -239,7 +239,7 @@
 
         @if(empty($places))
         <div class="p-6 text-center">
-            <div style="width:40px;height:40px;background:#fff7ed;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+            <div style="width:40px;height:40px;background:var(--g-orbg,#fff7ed);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="#FA6908">
                     <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
                 </svg>
@@ -259,7 +259,7 @@
                         <p class="font-semibold text-gray-800" style="font-size:13px;">{{ $place['name'] }}</p>
                     </div>
                     <button onclick="event.stopPropagation(); confirmDeletePlace('{{ $place['placeId'] }}', '{{ addslashes($place['name']) }}')"
-                        style="padding:4px;color:#d1d5db;background:none;border:none;cursor:pointer;border-radius:4px;transition:color 0.15s;"
+                        style="padding:4px;color:var(--g-t3,#d1d5db);background:none;border:none;cursor:pointer;border-radius:4px;transition:color 0.15s;"
                         onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#d1d5db'"
                         title="Delete place">
                         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -267,11 +267,11 @@
                         </svg>
                     </button>
                 </div>
-                <p style="font-size:11px;color:#9ca3af;padding-left:16px;">
+                <p style="font-size:11px;color:var(--g-t3,#9ca3af);padding-left:16px;">
                     {{ number_format($place['latitude'], 5) }}, {{ number_format($place['longitude'], 5) }}
                 </p>
                 @if(($place['visitCount'] ?? 0) > 0)
-                <p style="font-size:11px;color:#d1d5db;padding-left:16px;margin-top:2px;">
+                <p style="font-size:11px;color:var(--g-t3,#d1d5db);padding-left:16px;margin-top:2px;">
                     {{ $place['visitCount'] }} visit{{ $place['visitCount'] === 1 ? '' : 's' }}
                 </p>
                 @endif
@@ -287,7 +287,7 @@
     <div class="modal-backdrop" onclick="closeDeleteModal()"></div>
     <div class="modal-box">
         <div class="modal-card">
-            <div style="width:48px;height:48px;background:#fef2f2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+            <div style="width:48px;height:48px;background:var(--g-redbg,#fef2f2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
                 <svg width="22" height="22" fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
@@ -351,6 +351,7 @@
                 }]
             }, ],
         });
+        STMap.register(map);
 
         infoWindow = new google.maps.InfoWindow();
 
@@ -375,8 +376,8 @@
             marker.addListener('click', () => {
                 infoWindow.setContent(
                     `<div style="font-family:-apple-system,sans-serif;padding:2px 4px;">
-                    <strong style="font-size:13px;color:#1f2937;">${p.name}</strong>
-                    <p style="font-size:11px;color:#9ca3af;margin:4px 0 0;">${lat.toFixed(5)}, ${lng.toFixed(5)}</p>
+                    <strong style="font-size:13px;color:var(--g-t1,#1f2937);">${p.name}</strong>
+                    <p style="font-size:11px;color:var(--g-t3,#9ca3af);margin:4px 0 0;">${lat.toFixed(5)}, ${lng.toFixed(5)}</p>
                 </div>`
                 );
                 infoWindow.open(map, marker);

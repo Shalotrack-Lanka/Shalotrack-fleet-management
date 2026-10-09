@@ -2,6 +2,7 @@
 
 @section('title', 'Trip History')
 @section('page-title', 'Trip History')
+@section('fullbleed', '1')
 
 @section('content')
 {{-- ============================================================
@@ -27,11 +28,11 @@
         grid-template-columns: var(--sidebar-w) 1fr;
         /* 160px = top bar (~88) + the page's own vertical padding (64) + breathing room;
            the old 64px ignored both and made the whole page scroll */
-        height: calc(100vh - 160px);
-        height: calc(100dvh - 160px);
+        height: calc(100vh - 214px);
+        height: calc(100dvh - 214px);
         min-height: 560px;
         overflow: hidden;
-        background: #f4f6f9;
+        background: var(--g-s2,#f4f6f9);
     }
 
     /* ═══════════════════════════════════════════════════════════
@@ -40,15 +41,15 @@
     .t-sidebar {
         display: flex;
         flex-direction: column;
-        background: #fff;
-        border-right: 1px solid #e2e8f0;
+        background: var(--g-s1,#fff);
+        border-right: 1px solid var(--g-b,#e2e8f0);
         overflow: hidden;
     }
 
     /* Vehicle selector */
     .sb-vehicle-row {
         padding: 12px 14px 10px;
-        border-bottom: 1px solid #e2e8f0;
+        border-bottom: 1px solid var(--g-b,#e2e8f0);
     }
 
     .sb-vehicle-row label {
@@ -57,18 +58,18 @@
         font-weight: 700;
         letter-spacing: .08em;
         text-transform: uppercase;
-        color: #94a3b8;
+        color: var(--g-t3,#94a3b8);
         margin-bottom: 5px;
     }
 
     .vehicle-select {
         width: 100%;
         padding: 8px 28px 8px 10px;
-        border: 1px solid #cbd5e1;
+        border: 1px solid var(--g-b,#cbd5e1);
         border-radius: 8px;
         font-size: 13px;
         color: var(--navy);
-        background: #f8fafc;
+        background: var(--g-s2,#f8fafc);
         outline: none;
         -webkit-appearance: none;
         appearance: none;
@@ -86,15 +87,15 @@
     }
 
     .vehicle-select option:disabled {
-        color: #94a3b8;
+        color: var(--g-t3,#94a3b8);
     }
 
     /* Mode tabs */
     .sb-mode-tabs {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        border-bottom: 1px solid #e2e8f0;
-        background: #f8fafc;
+        border-bottom: 1px solid var(--g-b,#e2e8f0);
+        background: var(--g-s2,#f8fafc);
         flex-shrink: 0;
     }
 
@@ -107,7 +108,7 @@
         cursor: pointer;
         border: none;
         background: transparent;
-        color: #64748b;
+        color: var(--g-t2,#64748b);
         border-bottom: 3px solid transparent;
         transition: color .15s, border-color .15s, background .15s;
     }
@@ -115,7 +116,7 @@
     .sb-tab.active {
         color: var(--orange);
         border-bottom-color: var(--orange);
-        background: #fff;
+        background: var(--g-s1,#fff);
     }
 
     /* Mode panels */
@@ -141,11 +142,11 @@
     .date-range-row input[type="date"] {
         width: 100%;
         padding: 7px 8px;
-        border: 1px solid #cbd5e1;
+        border: 1px solid var(--g-b,#cbd5e1);
         border-radius: 6px;
         font-size: 12px;
         color: var(--navy);
-        background: #f8fafc;
+        background: var(--g-s2,#f8fafc);
         outline: none;
         transition: border-color .15s;
     }
@@ -156,13 +157,13 @@
 
     .load-row {
         padding: 8px 12px 10px;
-        border-bottom: 1px solid #e2e8f0;
+        border-bottom: 1px solid var(--g-b,#e2e8f0);
     }
 
     .btn-load {
         width: 100%;
         padding: 9px 0;
-        background: var(--navy);
+        background: var(--g-navy,var(--navy));
         color: #fff;
         border: none;
         border-radius: 8px;
@@ -202,7 +203,7 @@
         font-weight: 700;
         letter-spacing: .09em;
         text-transform: uppercase;
-        color: #64748b;
+        color: var(--g-t2,#64748b);
         cursor: pointer;
         user-select: none;
         transition: color .12s;
@@ -213,8 +214,8 @@
     }
 
     .date-group-count {
-        background: #e2e8f0;
-        color: #475569;
+        background: var(--g-s3,#e2e8f0);
+        color: var(--g-t2,#475569);
         border-radius: 10px;
         padding: 1px 7px;
         font-size: 10px;
@@ -232,22 +233,22 @@
         flex-direction: column;
         gap: 4px;
         padding: 10px 11px;
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--g-b,#e2e8f0);
         border-radius: 8px;
         margin-bottom: 4px;
         cursor: pointer;
-        background: #f8fafc;
+        background: var(--g-s2,#f8fafc);
         transition: all .14s;
     }
 
     .trip-card:hover {
-        background: #fff;
-        border-color: #cbd5e1;
+        background: var(--g-s1,#fff);
+        border-color: var(--g-b,#cbd5e1);
         box-shadow: 0 1px 4px rgba(0, 0, 0, .08);
     }
 
     .trip-card.selected {
-        background: #fff7f0;
+        background: var(--g-orbg,#fff7f0);
         border-color: var(--orange);
     }
 
@@ -269,7 +270,7 @@
 
     .tc-time {
         font-size: 11px;
-        color: #64748b;
+        color: var(--g-t2,#64748b);
         font-variant-numeric: tabular-nums;
     }
 
@@ -277,7 +278,7 @@
         display: flex;
         gap: 10px;
         font-size: 11px;
-        color: #475569;
+        color: var(--g-t2,#475569);
         flex-wrap: wrap;
     }
 
@@ -305,9 +306,9 @@
         font-size: 9px;
         font-weight: 700;
         letter-spacing: .06em;
-        color: #22c55e;
-        background: #f0fdf4;
-        border: 1px solid #bbf7d0;
+        color: var(--g-grt,#22c55e);
+        background: var(--g-grbg,#f0fdf4);
+        border: 1px solid var(--g-grb,#bbf7d0);
         border-radius: 10px;
         padding: 1px 6px;
     }
@@ -318,7 +319,7 @@
         flex-direction: column;
         align-items: center;
         padding: 36px 16px;
-        color: #94a3b8;
+        color: var(--g-t3,#94a3b8);
         font-size: 12px;
         text-align: center;
         gap: 10px;
@@ -333,18 +334,18 @@
     .sb-loading {
         text-align: center;
         padding: 24px;
-        color: #64748b;
+        color: var(--g-t2,#64748b);
         font-size: 12px;
     }
 
     .sb-error {
         margin: 8px 10px;
         padding: 11px 13px;
-        background: #fef2f2;
-        border: 1px solid #fecaca;
+        background: var(--g-redbg,#fef2f2);
+        border: 1px solid var(--g-redb,#fecaca);
         border-radius: 8px;
         font-size: 12px;
-        color: #dc2626;
+        color: var(--g-redt,#dc2626);
     }
 
     /* ── Live panel ── */
@@ -362,7 +363,7 @@
         gap: 9px;
         font-size: 13px;
         font-weight: 600;
-        color: #64748b;
+        color: var(--g-t2,#64748b);
     }
 
     .live-dot {
@@ -428,7 +429,7 @@
 
     .live-hint {
         font-size: 11px;
-        color: #94a3b8;
+        color: var(--g-t3,#94a3b8);
         text-align: center;
         line-height: 1.6;
     }
@@ -450,7 +451,7 @@
         gap: 10px;
         height: var(--strip-h);
         padding: 0 18px;
-        background: var(--navy);
+        background: var(--g-navy,var(--navy));
         flex-shrink: 0;
     }
 
@@ -463,7 +464,7 @@
 
     .vs-name {
         font-size: 13px;
-        color: #cbd5e1;
+        color: var(--g-t3,#cbd5e1);
         flex: 1;
     }
 
@@ -486,8 +487,8 @@
         display: grid;
         grid-template-columns: repeat(5, 1fr);
         height: var(--tiles-h);
-        border-bottom: 1px solid #e2e8f0;
-        background: #fff;
+        border-bottom: 1px solid var(--g-b,#e2e8f0);
+        background: var(--g-s1,#fff);
         flex-shrink: 0;
         overflow: hidden;
         transition: height .2s ease;
@@ -505,7 +506,7 @@
         justify-content: center;
         gap: 2px;
         padding: 6px 4px;
-        border-right: 1px solid #e2e8f0;
+        border-right: 1px solid var(--g-b,#e2e8f0);
         text-align: center;
     }
 
@@ -546,7 +547,7 @@
 
     .tile-label {
         font-size: 9px;
-        color: #94a3b8;
+        color: var(--g-t3,#94a3b8);
         font-weight: 700;
         letter-spacing: .07em;
         text-transform: uppercase;
@@ -565,7 +566,7 @@
         height: var(--livebar-h);
         padding: 0 18px;
         gap: 28px;
-        background: var(--navy);
+        background: var(--g-navy,var(--navy));
         border-top: 1px solid var(--navy-mid);
         flex-shrink: 0;
         overflow: hidden;
@@ -583,7 +584,7 @@
 
     .ls-label {
         font-size: 9px;
-        color: #94a3b8;
+        color: var(--g-t3,#94a3b8);
         text-transform: uppercase;
         letter-spacing: .08em;
         font-weight: 600;
@@ -610,7 +611,7 @@
         border-radius: 14px;
         border: 1px solid #3b5a8a;
         background: transparent;
-        color: #cbd5e1;
+        color: var(--g-t3,#cbd5e1);
         font-size: 11px;
         font-weight: 700;
         letter-spacing: .04em;
@@ -630,7 +631,7 @@
         height: var(--playbar-h);
         padding: 0 14px;
         gap: 10px;
-        background: var(--navy);
+        background: var(--g-navy,var(--navy));
         border-top: 1px solid var(--navy-mid);
         flex-shrink: 0;
         overflow: hidden;
@@ -663,7 +664,7 @@
 
     .pb-time {
         font-size: 11px;
-        color: #cbd5e1;
+        color: var(--g-t3,#cbd5e1);
         white-space: nowrap;
         flex-shrink: 0;
         min-width: 130px;
@@ -708,7 +709,7 @@
     .pb-speed-btn {
         padding: 4px 8px;
         background: rgba(255, 255, 255, .12);
-        color: #cbd5e1;
+        color: var(--g-t3,#cbd5e1);
         border: none;
         border-radius: 4px;
         font-size: 11px;
@@ -744,7 +745,7 @@
         .t-sidebar {
             height: auto;
             border-right: none;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid var(--g-b,#e2e8f0);
         }
 
         .sb-panel {
@@ -816,8 +817,8 @@
 
     /* ── Trip detail card (start / end addresses + stops) ── */
     .trip-detail {
-        background: #fff;
-        border-bottom: 1px solid #e2e8f0;
+        background: var(--g-s1,#fff);
+        border-bottom: 1px solid var(--g-b,#e2e8f0);
         flex-shrink: 0;
         max-height: 36%;
         overflow-y: auto;
@@ -858,7 +859,7 @@
         font-weight: 700;
         letter-spacing: .06em;
         text-transform: uppercase;
-        color: #94a3b8;
+        color: var(--g-t3,#94a3b8);
     }
 
     .td-addr {
@@ -870,7 +871,7 @@
     }
 
     .td-addr.pending {
-        color: #94a3b8;
+        color: var(--g-t3,#94a3b8);
         font-weight: 500;
     }
 
@@ -881,8 +882,8 @@
         font-weight: 700;
         letter-spacing: .06em;
         text-transform: uppercase;
-        color: #475569;
-        border-top: 1px solid #f1f5f9;
+        color: var(--g-t2,#475569);
+        border-top: 1px solid var(--g-b,#f1f5f9);
         list-style: none;
         user-select: none;
     }
@@ -897,7 +898,7 @@
         width: 100%;
         padding: 7px 16px;
         border: 0;
-        border-top: 1px solid #f8fafc;
+        border-top: 1px solid var(--g-b,#f8fafc);
         background: transparent;
         text-align: left;
         cursor: pointer;
@@ -906,7 +907,7 @@
 
     .td-stop:hover,
     .td-stop:focus-visible {
-        background: #f8fafc;
+        background: var(--g-s2,#f8fafc);
         outline: none;
     }
 
@@ -915,7 +916,7 @@
         width: 20px;
         height: 20px;
         border-radius: 50%;
-        background: var(--navy);
+        background: var(--g-navy,var(--navy));
         color: #fff;
         font-size: 10px;
         font-weight: 700;
@@ -926,16 +927,16 @@
     }
 
     .td-stop-body { min-width: 0; flex: 1; }
-    .td-stop-time { font-size: 11.5px; color: #475569; font-weight: 600; }
+    .td-stop-time { font-size: 11.5px; color: var(--g-t2,#475569); font-weight: 600; }
 
     /* ── Jump-to-date button + drill-down sheet ── */
     .btn-jump {
         width: 100%;
         margin-top: 6px;
         padding: 8px 0;
-        background: #fff;
+        background: var(--g-s1,#fff);
         color: var(--navy);
-        border: 1px solid #cbd5e1;
+        border: 1px solid var(--g-b,#cbd5e1);
         border-radius: 8px;
         font-size: 12px;
         font-weight: 600;
@@ -965,7 +966,7 @@
         max-height: min(80dvh, 560px);
         display: flex;
         flex-direction: column;
-        background: #fff;
+        background: var(--g-s1,#fff);
         border-radius: 14px;
         box-shadow: 0 20px 50px rgba(2, 31, 74, .3);
         overflow: hidden;
@@ -976,7 +977,7 @@
         align-items: center;
         gap: 6px;
         padding: 10px 8px 10px 14px;
-        border-bottom: 1px solid #e2e8f0;
+        border-bottom: 1px solid var(--g-b,#e2e8f0);
     }
 
     .dd-title {
@@ -992,12 +993,12 @@
         border: 0;
         border-radius: 8px;
         background: transparent;
-        color: #475569;
+        color: var(--g-t2,#475569);
         font-size: 18px;
         cursor: pointer;
     }
 
-    .dd-ic:hover { background: #f1f5f9; }
+    .dd-ic:hover { background: var(--g-s3,#f1f5f9); }
     .dd-ic[hidden] { display: none; }
 
     .dd-rows { overflow-y: auto; }
@@ -1009,8 +1010,8 @@
         width: 100%;
         padding: 13px 18px;
         border: 0;
-        border-bottom: 1px solid #f1f5f9;
-        background: #fff;
+        border-bottom: 1px solid var(--g-b,#f1f5f9);
+        background: var(--g-s1,#fff);
         font: inherit;
         font-size: 14px;
         color: var(--navy);
@@ -1019,13 +1020,30 @@
     }
 
     .dd-row:hover:not(:disabled),
-    .dd-row:focus-visible { background: #fff7f0; outline: none; }
-    .dd-row:disabled { color: #cbd5e1; cursor: not-allowed; }
+    .dd-row:focus-visible { background: var(--g-orbg,#fff7f0); outline: none; }
+    .dd-row:disabled { color: var(--g-t3,#cbd5e1); cursor: not-allowed; }
     .dd-row .dd-tag { font-size: 10px; font-weight: 700; color: var(--orange); letter-spacing: .06em; text-transform: uppercase; }
 
     @media (max-width: 820px) {
         .td-journey { grid-template-columns: 1fr; }
         .trip-detail { max-height: none; overflow: visible; }
+    }
+
+    /* ── Full-bleed (desktop): map fills the screen, panels float over it ── */
+    .t-float { display: contents; }
+    @media (min-width: 821px) {
+        body.st-full .trip-wrap { position: fixed; inset: 0; display: block; height: auto; min-height: 0; background: none; overflow: hidden; z-index: 0; }
+        body.st-full .t-main { position: absolute; inset: 0; display: block; }
+        body.st-full #map { position: absolute; inset: 0; min-height: 0; height: 100%; }
+        body.st-full .t-sidebar { position: absolute; top: 84px; left: 20px; bottom: 112px; width: 320px; z-index: 3; border-radius: 24px;
+            border: 1px solid rgba(255,255,255,.22); box-shadow: var(--gl-shadow); background: var(--g-s1); }
+        body.st-full .t-float { display: flex; flex-direction: column; gap: 12px; position: absolute; top: 84px; left: 360px; right: 20px; max-width: 640px; z-index: 3; pointer-events: none; }
+        body.st-full .t-float > * { pointer-events: auto; border-radius: 22px; background: var(--g-s1); border: 1px solid rgba(255,255,255,.22); box-shadow: var(--gl-shadow); overflow: hidden; }
+        body.st-full .t-float > .trip-tiles.hidden, body.st-full .t-float > .trip-detail.hidden { display: none; }
+        body.st-full .trip-detail { overflow-y: auto; max-height: 38vh; }
+        body.st-full .live-bar, body.st-full .playback-bar { position: absolute; left: 360px; right: 20px; max-width: 720px; bottom: 112px; z-index: 3; border-radius: 22px;
+            background: var(--g-s1); border: 1px solid rgba(255,255,255,.22); box-shadow: var(--gl-shadow); }
+        body.st-full .live-bar.hidden, body.st-full .playback-bar.hidden { display: none; }
     }
 </style>
 
@@ -1108,6 +1126,7 @@
     {{-- ─── MAIN PANEL ──────────────────────────────────────── --}}
     <main class="t-main">
 
+        <div class="t-float">
         {{-- Vehicle strip --}}
         <div class="vehicle-strip">
             <span id="vs-plate" class="vs-plate">–</span>
@@ -1197,6 +1216,8 @@
                 <div id="td-stops-list"></div>
             </details>
         </div>
+
+        </div>{{-- /t-float --}}
 
         {{-- Google Map --}}
         <div id="map"></div>
@@ -1320,8 +1341,9 @@
             gestureHandling: 'greedy',
             streetViewControl: false,
             mapTypeControl: false,
-            fullscreenControl: true,
+            fullscreenControl: false,
             zoomControl: true,
+            zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_CENTER },
             styles: [{
                     featureType: 'poi',
                     elementType: 'labels',
@@ -1338,6 +1360,7 @@
                 },
             ],
         });
+        STMap.register(map);
 
         // Apply initial vehicle from the <select>
         // Dragging the map means "let me look around" — stop auto-following.
@@ -1872,7 +1895,7 @@
         iw.setContent(`<div style="font-size:12px;padding:4px 8px;max-width:220px">
             <strong>Stop ${i + 1}</strong> · ${escHtml(fmtDuration(stop.durationMin))}<br>
             ${escHtml(fmtTime(stop.start))} – ${escHtml(fmtTime(stop.end))}<br>
-            <span id="${id}" style="color:#475569">Finding address…</span><br>
+            <span id="${id}" style="color:var(--g-t2,#475569)">Finding address…</span><br>
             <a href="https://www.google.com/maps?q=${stop.lat},${stop.lng}" target="_blank" rel="noopener">Open in Google Maps</a>
         </div>`);
         iw.open(map, m);

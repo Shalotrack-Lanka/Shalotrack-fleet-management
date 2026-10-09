@@ -22,18 +22,21 @@
     <style>
         /* ── Layout ─────────────────────────────────────────────────────────────── */
         .stats-wrap {
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,.2);
+            box-shadow: var(--gl-shadow, none);
             display: flex;
             height: calc(100vh - 64px);
             overflow: hidden;
-            background: #f1f5f9;
+            background: var(--g-s3,#f1f5f9);
         }
 
         /* ── Sidebar ─────────────────────────────────────────────────────────────── */
         .sidebar {
             width: 280px;
             min-width: 280px;
-            background: #fff;
-            border-right: 1px solid #e2e8f0;
+            background: var(--g-s1,#fff);
+            border-right: 1px solid var(--g-b,#e2e8f0);
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -41,25 +44,25 @@
 
         .sidebar-header {
             padding: 18px 16px 12px;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid var(--g-b,#e2e8f0);
         }
 
         .sidebar-header h2 {
             font-size: 15px;
             font-weight: 700;
-            color: #021F4A;
+            color: var(--g-t1,#021F4A);
             margin: 0 0 10px;
         }
 
         .sidebar-search {
             width: 100%;
             padding: 8px 10px;
-            border: 1px solid #d1d5db;
+            border: 1px solid var(--g-b,#d1d5db);
             border-radius: 8px;
             font-size: 13px;
             outline: none;
-            color: #334155;
-            background: #f8fafc;
+            color: var(--g-t1,#334155);
+            background: var(--g-s2,#f8fafc);
             transition: border-color .15s;
         }
 
@@ -93,11 +96,11 @@
         }
 
         .vehicle-card:hover {
-            background: #f8fafc;
+            background: var(--g-s2,#f8fafc);
         }
 
         .vehicle-card.active {
-            background: #fff7f0;
+            background: var(--g-orbg,#fff7f0);
             border-left-color: #FA6908;
         }
 
@@ -105,7 +108,7 @@
             width: 38px;
             height: 38px;
             border-radius: 50%;
-            background: #021F4A;
+            background: var(--g-navy,#021F4A);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -130,7 +133,7 @@
         .vehicle-plate {
             font-size: 13px;
             font-weight: 700;
-            color: #021F4A;
+            color: var(--g-t1,#021F4A);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -138,7 +141,7 @@
 
         .vehicle-name {
             font-size: 11px;
-            color: #64748b;
+            color: var(--g-t2,#64748b);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -156,8 +159,8 @@
 
         /* Period bar */
         .period-bar {
-            background: #fff;
-            border-bottom: 1px solid #e2e8f0;
+            background: var(--g-s1,#fff);
+            border-bottom: 1px solid var(--g-b,#e2e8f0);
             padding: 0 24px;
             display: flex;
             align-items: center;
@@ -174,13 +177,13 @@
             border: none;
             cursor: pointer;
             background: transparent;
-            color: #64748b;
+            color: var(--g-t2,#64748b);
             transition: background .15s, color .15s;
         }
 
         .period-btn:hover {
-            background: #f1f5f9;
-            color: #021F4A;
+            background: var(--g-s3,#f1f5f9);
+            color: var(--g-t1,#021F4A);
         }
 
         .period-btn.active {
@@ -212,7 +215,7 @@
             justify-content: center;
             height: 100%;
             gap: 12px;
-            color: #94a3b8;
+            color: var(--g-t3,#94a3b8);
         }
 
         .stats-empty svg {
@@ -237,7 +240,7 @@
         }
 
         .skeleton-box {
-            background: #e2e8f0;
+            background: var(--g-s3,#e2e8f0);
             border-radius: 10px;
         }
 
@@ -253,7 +256,7 @@
             width: 48px;
             height: 48px;
             border-radius: 50%;
-            background: #021F4A;
+            background: var(--g-navy,#021F4A);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -268,13 +271,13 @@
         .stats-vehicle-header .plate {
             font-size: 20px;
             font-weight: 800;
-            color: #021F4A;
+            color: var(--g-t1,#021F4A);
             line-height: 1;
         }
 
         .stats-vehicle-header .meta {
             font-size: 13px;
-            color: #64748b;
+            color: var(--g-t2,#64748b);
             margin-top: 3px;
         }
 
@@ -287,7 +290,7 @@
         }
 
         .tile {
-            background: #fff;
+            background: var(--g-s1,#fff);
             border-radius: 12px;
             padding: 16px 18px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
@@ -296,7 +299,7 @@
         .tile-label {
             font-size: 11px;
             font-weight: 600;
-            color: #94a3b8;
+            color: var(--g-t3,#94a3b8);
             text-transform: uppercase;
             letter-spacing: .04em;
             margin-bottom: 6px;
@@ -305,14 +308,14 @@
         .tile-value {
             font-size: 24px;
             font-weight: 800;
-            color: #021F4A;
+            color: var(--g-t1,#021F4A);
             line-height: 1;
         }
 
         .tile-unit {
             font-size: 12px;
             font-weight: 500;
-            color: #64748b;
+            color: var(--g-t2,#64748b);
             margin-left: 3px;
         }
 
@@ -331,11 +334,11 @@
             height: 18px;
         }
 
-        .tile-icon.orange { background: #fff7f0; }
+        .tile-icon.orange { background: var(--g-orbg,#fff7f0); }
         .tile-icon.orange svg { fill: #FA6908; }
-        .tile-icon.navy   { background: #eef2ff; }
+        .tile-icon.navy   { background: var(--g-blbg,#eef2ff); }
         .tile-icon.navy svg   { fill: #021F4A; }
-        .tile-icon.red    { background: #fef2f2; }
+        .tile-icon.red    { background: var(--g-redbg,#fef2f2); }
         .tile-icon.red svg    { fill: #ef4444; }
 
         /* ── Chart cards ─────────────────────────────────────────────────────────── */
@@ -351,7 +354,7 @@
         }
 
         .chart-card {
-            background: #fff;
+            background: var(--g-s1,#fff);
             border-radius: 12px;
             padding: 20px 22px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
@@ -360,7 +363,7 @@
         .chart-card h3 {
             font-size: 13px;
             font-weight: 700;
-            color: #021F4A;
+            color: var(--g-t1,#021F4A);
             margin: 0 0 16px;
             text-transform: uppercase;
             letter-spacing: .04em;
@@ -407,26 +410,27 @@
         .st-brand { padding: 0 18px; gap: 9px; text-decoration: none; font-weight: 700; font-size: 17px; letter-spacing: .2px; flex-shrink: 0; }
         .st-brand .dot { width: 9px; height: 9px; border-radius: 50%; background: #FA6908; box-shadow: 0 0 10px #FA6908; }
         .st-brand span.o { color: #FA6908; }
+        #map-theme-btn svg { width: 20px; height: 20px; stroke: #fff; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
         .st-title { padding: 0 20px; font-size: 15px; font-weight: 600; min-width: 0; }
         .st-title h2 { margin: 0; font: inherit; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .st-user { padding: 0 6px 0 16px; gap: 10px; cursor: pointer; font: inherit; }
         .st-user .nm { font-size: 13px; font-weight: 600; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .st-user .ph { display: block; font-size: 11px; font-weight: 400; color: rgba(255,255,255,.7); }
         .st-user .av { width: 36px; height: 36px; border-radius: 50%; background: #FA6908; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
-        .st-frame {
-            margin: 14px 12px 0;
-            border-radius: 26px;
-            background: rgba(243,244,246,.93);
-            border: 1px solid rgba(255,255,255,.55);
-            box-shadow: 0 18px 50px rgba(0,8,30,.45), inset 0 1px 0 rgba(255,255,255,.7);
-        }
-        @media (min-width: 768px) { .st-frame { margin: 16px 24px 0; border-radius: 30px; } }
+        .st-page { padding: 14px 12px 0; }
+        @media (min-width: 768px) { .st-page { padding: 18px 24px 0; } }
+        /* Full-bleed map pages (Trips, Geofences, Frequent Places): the map is the page,
+           panels float over it. Phones keep the normal scrolling layout. */
+        @media (min-width: 821px) { body.st-full { overflow: hidden; } }
         @media (max-width: 767px) { .st-brand .t { display: none; } .st-brand { padding: 0 14px; } .st-user .nm-wrap { display: none; } .st-user { padding: 0 6px; } }
         @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .st-chip.gl.gl-strong { background: rgba(2,31,74,.96); } }
     </style>
+    @include('partials.glass-skin')
 </head>
 
-<body class="@hasSection('immersive') bg-[#010F25] @else st-bg @endif min-h-screen">
+<body class="@hasSection('immersive') bg-[#010F25] @else st-bg @endif @hasSection('fullbleed') st-full @endif min-h-screen">
+
+    @include('partials.map-style')
 
     <div class="min-h-screen">
 
@@ -449,6 +453,10 @@
                 </div>
 
                 <div class="flex-1 hidden md:block"></div>
+
+                @hasSection('fullbleed')
+                <button type="button" id="map-theme-btn" class="st-chip gl gl-strong justify-center" style="width:48px;padding:0;cursor:pointer;border:0" aria-label="Switch map to light" title="Map theme"></button>
+                @endif
 
                 {{-- Profile Dropdown Area --}}
                 <div class="relative group inline-block text-left" id="profile-menu">
@@ -509,7 +517,7 @@
             @endif
 
             {{-- Page content --}}
-            <div class="@hasSection('immersive') @else st-frame p-4 md:p-6 pb-24 md:pb-24 mb-4 @endif">
+            <div class="@hasSection('immersive') @else st-page pb-28 @endif">
                 @yield('content')
             </div>
         </main>
