@@ -32,7 +32,7 @@
         height: calc(100dvh - 214px);
         min-height: 560px;
         overflow: hidden;
-        background: var(--g-s2,#f4f6f9);
+        background: var(--g-s2, #f4f6f9);
     }
 
     /* ═══════════════════════════════════════════════════════════
@@ -41,15 +41,15 @@
     .t-sidebar {
         display: flex;
         flex-direction: column;
-        background: var(--g-s1,#fff);
-        border-right: 1px solid var(--g-b,#e2e8f0);
+        background: var(--g-s1, #fff);
+        border-right: 1px solid var(--g-b, #e2e8f0);
         overflow: hidden;
     }
 
     /* Vehicle selector */
     .sb-vehicle-row {
         padding: 12px 14px 10px;
-        border-bottom: 1px solid var(--g-b,#e2e8f0);
+        border-bottom: 1px solid var(--g-b, #e2e8f0);
     }
 
     .sb-vehicle-row label {
@@ -58,18 +58,18 @@
         font-weight: 700;
         letter-spacing: .08em;
         text-transform: uppercase;
-        color: var(--g-t3,#94a3b8);
+        color: var(--g-t3, #94a3b8);
         margin-bottom: 5px;
     }
 
     .vehicle-select {
         width: 100%;
         padding: 8px 28px 8px 10px;
-        border: 1px solid var(--g-b,#cbd5e1);
+        border: 1px solid var(--g-b, #cbd5e1);
         border-radius: 8px;
         font-size: 13px;
         color: var(--navy);
-        background: var(--g-s2,#f8fafc);
+        background: var(--g-s2, #f8fafc);
         outline: none;
         -webkit-appearance: none;
         appearance: none;
@@ -87,15 +87,15 @@
     }
 
     .vehicle-select option:disabled {
-        color: var(--g-t3,#94a3b8);
+        color: var(--g-t3, #94a3b8);
     }
 
     /* Mode tabs */
     .sb-mode-tabs {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        border-bottom: 1px solid var(--g-b,#e2e8f0);
-        background: var(--g-s2,#f8fafc);
+        border-bottom: 1px solid var(--g-b, #e2e8f0);
+        background: var(--g-s2, #f8fafc);
         flex-shrink: 0;
     }
 
@@ -108,7 +108,7 @@
         cursor: pointer;
         border: none;
         background: transparent;
-        color: var(--g-t2,#64748b);
+        color: var(--g-t2, #64748b);
         border-bottom: 3px solid transparent;
         transition: color .15s, border-color .15s, background .15s;
     }
@@ -116,7 +116,7 @@
     .sb-tab.active {
         color: var(--orange);
         border-bottom-color: var(--orange);
-        background: var(--g-s1,#fff);
+        background: var(--g-s1, #fff);
     }
 
     /* Mode panels */
@@ -142,11 +142,11 @@
     .date-range-row input[type="date"] {
         width: 100%;
         padding: 7px 8px;
-        border: 1px solid var(--g-b,#cbd5e1);
+        border: 1px solid var(--g-b, #cbd5e1);
         border-radius: 6px;
         font-size: 12px;
         color: var(--navy);
-        background: var(--g-s2,#f8fafc);
+        background: var(--g-s2, #f8fafc);
         outline: none;
         transition: border-color .15s;
     }
@@ -157,13 +157,13 @@
 
     .load-row {
         padding: 8px 12px 10px;
-        border-bottom: 1px solid var(--g-b,#e2e8f0);
+        border-bottom: 1px solid var(--g-b, #e2e8f0);
     }
 
     .btn-load {
         width: 100%;
         padding: 9px 0;
-        background: var(--g-navy,var(--navy));
+        background: var(--g-navy, var(--navy));
         color: #fff;
         border: none;
         border-radius: 8px;
@@ -203,7 +203,7 @@
         font-weight: 700;
         letter-spacing: .09em;
         text-transform: uppercase;
-        color: var(--g-t2,#64748b);
+        color: var(--g-t2, #64748b);
         cursor: pointer;
         user-select: none;
         transition: color .12s;
@@ -214,8 +214,8 @@
     }
 
     .date-group-count {
-        background: var(--g-s3,#e2e8f0);
-        color: var(--g-t2,#475569);
+        background: var(--g-s3, #e2e8f0);
+        color: var(--g-t2, #475569);
         border-radius: 10px;
         padding: 1px 7px;
         font-size: 10px;
@@ -233,22 +233,22 @@
         flex-direction: column;
         gap: 4px;
         padding: 10px 11px;
-        border: 1px solid var(--g-b,#e2e8f0);
+        border: 1px solid var(--g-b, #e2e8f0);
         border-radius: 8px;
         margin-bottom: 4px;
         cursor: pointer;
-        background: var(--g-s2,#f8fafc);
+        background: var(--g-s2, #f8fafc);
         transition: all .14s;
     }
 
     .trip-card:hover {
-        background: var(--g-s1,#fff);
-        border-color: var(--g-b,#cbd5e1);
+        background: var(--g-s1, #fff);
+        border-color: var(--g-b, #cbd5e1);
         box-shadow: 0 1px 4px rgba(0, 0, 0, .08);
     }
 
     .trip-card.selected {
-        background: var(--g-orbg,#fff7f0);
+        background: var(--g-orbg, #fff7f0);
         border-color: var(--orange);
     }
 
@@ -270,7 +270,7 @@
 
     .tc-time {
         font-size: 11px;
-        color: var(--g-t2,#64748b);
+        color: var(--g-t2, #64748b);
         font-variant-numeric: tabular-nums;
     }
 
@@ -278,7 +278,7 @@
         display: flex;
         gap: 10px;
         font-size: 11px;
-        color: var(--g-t2,#475569);
+        color: var(--g-t2, #475569);
         flex-wrap: wrap;
     }
 
@@ -306,9 +306,9 @@
         font-size: 9px;
         font-weight: 700;
         letter-spacing: .06em;
-        color: var(--g-grt,#22c55e);
-        background: var(--g-grbg,#f0fdf4);
-        border: 1px solid var(--g-grb,#bbf7d0);
+        color: var(--g-grt, #22c55e);
+        background: var(--g-grbg, #f0fdf4);
+        border: 1px solid var(--g-grb, #bbf7d0);
         border-radius: 10px;
         padding: 1px 6px;
     }
@@ -319,7 +319,7 @@
         flex-direction: column;
         align-items: center;
         padding: 36px 16px;
-        color: var(--g-t3,#94a3b8);
+        color: var(--g-t3, #94a3b8);
         font-size: 12px;
         text-align: center;
         gap: 10px;
@@ -334,18 +334,18 @@
     .sb-loading {
         text-align: center;
         padding: 24px;
-        color: var(--g-t2,#64748b);
+        color: var(--g-t2, #64748b);
         font-size: 12px;
     }
 
     .sb-error {
         margin: 8px 10px;
         padding: 11px 13px;
-        background: var(--g-redbg,#fef2f2);
-        border: 1px solid var(--g-redb,#fecaca);
+        background: var(--g-redbg, #fef2f2);
+        border: 1px solid var(--g-redb, #fecaca);
         border-radius: 8px;
         font-size: 12px;
-        color: var(--g-redt,#dc2626);
+        color: var(--g-redt, #dc2626);
     }
 
     /* ── Live panel ── */
@@ -363,7 +363,7 @@
         gap: 9px;
         font-size: 13px;
         font-weight: 600;
-        color: var(--g-t2,#64748b);
+        color: var(--g-t2, #64748b);
     }
 
     .live-dot {
@@ -429,7 +429,7 @@
 
     .live-hint {
         font-size: 11px;
-        color: var(--g-t3,#94a3b8);
+        color: var(--g-t3, #94a3b8);
         text-align: center;
         line-height: 1.6;
     }
@@ -451,7 +451,7 @@
         gap: 10px;
         height: var(--strip-h);
         padding: 0 18px;
-        background: var(--g-navy,var(--navy));
+        background: var(--g-navy, var(--navy));
         flex-shrink: 0;
     }
 
@@ -464,7 +464,7 @@
 
     .vs-name {
         font-size: 13px;
-        color: var(--g-t3,#cbd5e1);
+        color: var(--g-t3, #cbd5e1);
         flex: 1;
     }
 
@@ -487,8 +487,8 @@
         display: grid;
         grid-template-columns: repeat(5, 1fr);
         height: var(--tiles-h);
-        border-bottom: 1px solid var(--g-b,#e2e8f0);
-        background: var(--g-s1,#fff);
+        border-bottom: 1px solid var(--g-b, #e2e8f0);
+        background: var(--g-s1, #fff);
         flex-shrink: 0;
         overflow: hidden;
         transition: height .2s ease;
@@ -506,7 +506,7 @@
         justify-content: center;
         gap: 2px;
         padding: 6px 4px;
-        border-right: 1px solid var(--g-b,#e2e8f0);
+        border-right: 1px solid var(--g-b, #e2e8f0);
         text-align: center;
     }
 
@@ -547,7 +547,7 @@
 
     .tile-label {
         font-size: 9px;
-        color: var(--g-t3,#94a3b8);
+        color: var(--g-t3, #94a3b8);
         font-weight: 700;
         letter-spacing: .07em;
         text-transform: uppercase;
@@ -566,7 +566,7 @@
         height: var(--livebar-h);
         padding: 0 18px;
         gap: 28px;
-        background: var(--g-navy,var(--navy));
+        background: var(--g-navy, var(--navy));
         border-top: 1px solid var(--navy-mid);
         flex-shrink: 0;
         overflow: hidden;
@@ -584,7 +584,7 @@
 
     .ls-label {
         font-size: 9px;
-        color: var(--g-t3,#94a3b8);
+        color: var(--g-t3, #94a3b8);
         text-transform: uppercase;
         letter-spacing: .08em;
         font-weight: 600;
@@ -611,7 +611,7 @@
         border-radius: 14px;
         border: 1px solid #3b5a8a;
         background: transparent;
-        color: var(--g-t3,#cbd5e1);
+        color: var(--g-t3, #cbd5e1);
         font-size: 11px;
         font-weight: 700;
         letter-spacing: .04em;
@@ -631,7 +631,7 @@
         height: var(--playbar-h);
         padding: 0 14px;
         gap: 10px;
-        background: var(--g-navy,var(--navy));
+        background: var(--g-navy, var(--navy));
         border-top: 1px solid var(--navy-mid);
         flex-shrink: 0;
         overflow: hidden;
@@ -664,7 +664,7 @@
 
     .pb-time {
         font-size: 11px;
-        color: var(--g-t3,#cbd5e1);
+        color: var(--g-t3, #cbd5e1);
         white-space: nowrap;
         flex-shrink: 0;
         min-width: 130px;
@@ -709,7 +709,7 @@
     .pb-speed-btn {
         padding: 4px 8px;
         background: rgba(255, 255, 255, .12);
-        color: var(--g-t3,#cbd5e1);
+        color: var(--g-t3, #cbd5e1);
         border: none;
         border-radius: 4px;
         font-size: 11px;
@@ -730,6 +730,7 @@
 
     /* ── Responsive ── */
     @media (max-width: 820px) {
+
         /* Phones: stop pinning everything to 100vh (mobile browser chrome makes
            that unreliable and squeezed the map to nothing). The page now flows
            and scrolls normally: vehicle/trip list on top, then the map. */
@@ -745,7 +746,7 @@
         .t-sidebar {
             height: auto;
             border-right: none;
-            border-bottom: 1px solid var(--g-b,#e2e8f0);
+            border-bottom: 1px solid var(--g-b, #e2e8f0);
         }
 
         .sb-panel {
@@ -817,8 +818,8 @@
 
     /* ── Trip detail card (start / end addresses + stops) ── */
     .trip-detail {
-        background: var(--g-s1,#fff);
-        border-bottom: 1px solid var(--g-b,#e2e8f0);
+        background: var(--g-s1, #fff);
+        border-bottom: 1px solid var(--g-b, #e2e8f0);
         flex-shrink: 0;
         max-height: 36%;
         overflow-y: auto;
@@ -851,15 +852,20 @@
         box-shadow: 0 0 0 1px #cbd5e1;
     }
 
-    .td-dot.start { background: #22c55e; }
-    .td-dot.end { background: #ef4444; }
+    .td-dot.start {
+        background: #22c55e;
+    }
+
+    .td-dot.end {
+        background: #ef4444;
+    }
 
     .td-lbl {
         font-size: 10px;
         font-weight: 700;
         letter-spacing: .06em;
         text-transform: uppercase;
-        color: var(--g-t3,#94a3b8);
+        color: var(--g-t3, #94a3b8);
     }
 
     .td-addr {
@@ -871,7 +877,7 @@
     }
 
     .td-addr.pending {
-        color: var(--g-t3,#94a3b8);
+        color: var(--g-t3, #94a3b8);
         font-weight: 500;
     }
 
@@ -882,15 +888,26 @@
         font-weight: 700;
         letter-spacing: .06em;
         text-transform: uppercase;
-        color: var(--g-t2,#475569);
-        border-top: 1px solid var(--g-b,#f1f5f9);
+        color: var(--g-t2, #475569);
+        border-top: 1px solid var(--g-b, #f1f5f9);
         list-style: none;
         user-select: none;
     }
 
-    .td-stops summary::-webkit-details-marker { display: none; }
-    .td-stops summary::before { content: '\25B8'; display: inline-block; margin-right: 6px; transition: transform .15s; }
-    .td-stops[open] summary::before { transform: rotate(90deg); }
+    .td-stops summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .td-stops summary::before {
+        content: '\25B8';
+        display: inline-block;
+        margin-right: 6px;
+        transition: transform .15s;
+    }
+
+    .td-stops[open] summary::before {
+        transform: rotate(90deg);
+    }
 
     .td-stop {
         display: flex;
@@ -898,7 +915,7 @@
         width: 100%;
         padding: 7px 16px;
         border: 0;
-        border-top: 1px solid var(--g-b,#f8fafc);
+        border-top: 1px solid var(--g-b, #f8fafc);
         background: transparent;
         text-align: left;
         cursor: pointer;
@@ -907,7 +924,7 @@
 
     .td-stop:hover,
     .td-stop:focus-visible {
-        background: var(--g-s2,#f8fafc);
+        background: var(--g-s2, #f8fafc);
         outline: none;
     }
 
@@ -916,7 +933,7 @@
         width: 20px;
         height: 20px;
         border-radius: 50%;
-        background: var(--g-navy,var(--navy));
+        background: var(--g-navy, var(--navy));
         color: #fff;
         font-size: 10px;
         font-weight: 700;
@@ -926,17 +943,25 @@
         margin-top: 1px;
     }
 
-    .td-stop-body { min-width: 0; flex: 1; }
-    .td-stop-time { font-size: 11.5px; color: var(--g-t2,#475569); font-weight: 600; }
+    .td-stop-body {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .td-stop-time {
+        font-size: 11.5px;
+        color: var(--g-t2, #475569);
+        font-weight: 600;
+    }
 
     /* ── Jump-to-date button + drill-down sheet ── */
     .btn-jump {
         width: 100%;
         margin-top: 6px;
         padding: 8px 0;
-        background: var(--g-s1,#fff);
+        background: var(--g-s1, #fff);
         color: var(--navy);
-        border: 1px solid var(--g-b,#cbd5e1);
+        border: 1px solid var(--g-b, #cbd5e1);
         border-radius: 8px;
         font-size: 12px;
         font-weight: 600;
@@ -944,7 +969,10 @@
         transition: border-color .15s, color .15s;
     }
 
-    .btn-jump:hover { border-color: var(--orange); color: var(--orange); }
+    .btn-jump:hover {
+        border-color: var(--orange);
+        color: var(--orange);
+    }
 
     .dd-overlay {
         position: fixed;
@@ -957,7 +985,9 @@
         padding: 16px;
     }
 
-    .dd-overlay.hidden { display: none; }
+    .dd-overlay.hidden {
+        display: none;
+    }
 
     .dd-sheet {
         width: 100%;
@@ -966,7 +996,7 @@
         max-height: min(80dvh, 560px);
         display: flex;
         flex-direction: column;
-        background: var(--g-s1,#fff);
+        background: var(--g-s1, #fff);
         border-radius: 14px;
         box-shadow: 0 20px 50px rgba(2, 31, 74, .3);
         overflow: hidden;
@@ -977,7 +1007,7 @@
         align-items: center;
         gap: 6px;
         padding: 10px 8px 10px 14px;
-        border-bottom: 1px solid var(--g-b,#e2e8f0);
+        border-bottom: 1px solid var(--g-b, #e2e8f0);
     }
 
     .dd-title {
@@ -993,15 +1023,22 @@
         border: 0;
         border-radius: 8px;
         background: transparent;
-        color: var(--g-t2,#475569);
+        color: var(--g-t2, #475569);
         font-size: 18px;
         cursor: pointer;
     }
 
-    .dd-ic:hover { background: var(--g-s3,#f1f5f9); }
-    .dd-ic[hidden] { display: none; }
+    .dd-ic:hover {
+        background: var(--g-s3, #f1f5f9);
+    }
 
-    .dd-rows { overflow-y: auto; }
+    .dd-ic[hidden] {
+        display: none;
+    }
+
+    .dd-rows {
+        overflow-y: auto;
+    }
 
     .dd-row {
         display: flex;
@@ -1010,8 +1047,8 @@
         width: 100%;
         padding: 13px 18px;
         border: 0;
-        border-bottom: 1px solid var(--g-b,#f1f5f9);
-        background: var(--g-s1,#fff);
+        border-bottom: 1px solid var(--g-b, #f1f5f9);
+        background: var(--g-s1, #fff);
         font: inherit;
         font-size: 14px;
         color: var(--navy);
@@ -1020,30 +1057,148 @@
     }
 
     .dd-row:hover:not(:disabled),
-    .dd-row:focus-visible { background: var(--g-orbg,#fff7f0); outline: none; }
-    .dd-row:disabled { color: var(--g-t3,#cbd5e1); cursor: not-allowed; }
-    .dd-row .dd-tag { font-size: 10px; font-weight: 700; color: var(--orange); letter-spacing: .06em; text-transform: uppercase; }
+    .dd-row:focus-visible {
+        background: var(--g-orbg, #fff7f0);
+        outline: none;
+    }
+
+    .dd-row:disabled {
+        color: var(--g-t3, #cbd5e1);
+        cursor: not-allowed;
+    }
+
+    .dd-row .dd-tag {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--orange);
+        letter-spacing: .06em;
+        text-transform: uppercase;
+    }
 
     @media (max-width: 820px) {
-        .td-journey { grid-template-columns: 1fr; }
-        .trip-detail { max-height: none; overflow: visible; }
+        .td-journey {
+            grid-template-columns: 1fr;
+        }
+
+        .trip-detail {
+            max-height: none;
+            overflow: visible;
+        }
     }
 
     /* ── Full-bleed (desktop): map fills the screen, panels float over it ── */
-    .t-float { display: contents; }
+    .t-float {
+        display: contents;
+    }
+
     @media (min-width: 821px) {
-        body.st-full .trip-wrap { position: fixed; inset: 0; display: block; height: auto; min-height: 0; background: none; overflow: hidden; z-index: 0; }
-        body.st-full .t-main { position: absolute; inset: 0; display: block; }
-        body.st-full #map { position: absolute; inset: 0; min-height: 0; height: 100%; }
-        body.st-full .t-sidebar { position: absolute; top: 84px; left: 20px; bottom: 112px; width: 320px; z-index: 3; border-radius: 24px;
-            border: 1px solid rgba(255,255,255,.22); box-shadow: var(--gl-shadow); background: var(--g-s1); }
-        body.st-full .t-float { display: flex; flex-direction: column; gap: 12px; position: absolute; top: 84px; left: 360px; right: 20px; max-width: 640px; z-index: 3; pointer-events: none; }
-        body.st-full .t-float > * { pointer-events: auto; border-radius: 22px; background: var(--g-s1); border: 1px solid rgba(255,255,255,.22); box-shadow: var(--gl-shadow); overflow: hidden; }
-        body.st-full .t-float > .trip-tiles.hidden, body.st-full .t-float > .trip-detail.hidden { display: none; }
-        body.st-full .trip-detail { overflow-y: auto; max-height: 38vh; }
-        body.st-full .live-bar, body.st-full .playback-bar { position: absolute; left: 360px; right: 20px; max-width: 720px; bottom: 112px; z-index: 3; border-radius: 22px;
-            background: var(--g-s1); border: 1px solid rgba(255,255,255,.22); box-shadow: var(--gl-shadow); }
-        body.st-full .live-bar.hidden, body.st-full .playback-bar.hidden { display: none; }
+        body.st-full .trip-wrap {
+            position: fixed;
+            inset: 0;
+            display: block;
+            height: auto;
+            min-height: 0;
+            background: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        body.st-full .t-main {
+            position: absolute;
+            inset: 0;
+            display: block;
+        }
+
+        body.st-full #map {
+            position: absolute;
+            inset: 0;
+            min-height: 0;
+            height: 100%;
+        }
+
+        body.st-full .t-sidebar {
+            position: absolute;
+            top: 84px;
+            left: 20px;
+            bottom: 112px;
+            width: 320px;
+            z-index: 3;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, .22);
+            box-shadow: var(--gl-shadow);
+            background: var(--g-s1);
+        }
+
+        body.st-full .t-float {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: absolute;
+            top: 84px;
+            left: 360px;
+            right: 20px;
+            max-width: 640px;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        body.st-full .t-float>* {
+            pointer-events: auto;
+            border-radius: 22px;
+            background: var(--g-s1);
+            border: 1px solid rgba(255, 255, 255, .22);
+            box-shadow: var(--gl-shadow);
+            overflow: hidden;
+        }
+
+        /* vehicle name is already in the sidebar selector - drop the duplicate strip (element stays for JS) */
+        body.st-full .t-float>.vehicle-strip {
+            display: none;
+        }
+
+        body.st-full .t-float>.trip-tiles.hidden,
+        body.st-full .t-float>.trip-detail.hidden {
+            display: none;
+        }
+
+        body.st-full .trip-detail {
+            overflow-y: auto;
+            max-height: 38vh;
+        }
+
+        body.st-full .live-bar,
+        body.st-full .playback-bar {
+            position: absolute;
+            left: 360px;
+            right: 20px;
+            max-width: 720px;
+            bottom: 108px;
+            z-index: 3;
+            border-radius: 22px;
+            background: var(--g-s1);
+            border: 1px solid rgba(255, 255, 255, .22);
+            box-shadow: var(--gl-shadow);
+        }
+
+        body.st-full .live-bar.hidden,
+        body.st-full .playback-bar.hidden {
+            display: none;
+        }
+    }
+
+    /* Wide screens: playback/live bar sits on the dock row, to the RIGHT of the orb, so it never crowds or hides behind it */
+    @media (min-width: 1280px) {
+        body.st-full .t-sidebar {
+            bottom: 24px;
+        }
+
+        body.st-full .live-bar,
+        body.st-full .playback-bar {
+            left: calc(50% + 64px);
+            right: 84px;
+            max-width: none;
+            bottom: 24px;
+        }
     }
 </style>
 
@@ -1127,95 +1282,95 @@
     <main class="t-main">
 
         <div class="t-float">
-        {{-- Vehicle strip --}}
-        <div class="vehicle-strip">
-            <span id="vs-plate" class="vs-plate">–</span>
-            <span id="vs-name" class="vs-name">Select a vehicle</span>
-            <span id="vs-badge" class="vs-badge"></span>
-        </div>
+            {{-- Vehicle strip --}}
+            <div class="vehicle-strip">
+                <span id="vs-plate" class="vs-plate">–</span>
+                <span id="vs-name" class="vs-name">Select a vehicle</span>
+                <span id="vs-badge" class="vs-badge"></span>
+            </div>
 
-        {{-- Trip summary tiles (hidden until a trip is selected) --}}
-        <div id="trip-tiles" class="trip-tiles hidden">
-            {{-- Distance --}}
-            <div class="tile">
-                <div class="tile-icon-box">
-                    <svg viewBox="0 0 20 20">
-                        <path d="M4 10h12M11.5 6.5L15 10l-3.5 3.5M8.5 6.5L5 10l3.5 3.5" />
-                    </svg>
+            {{-- Trip summary tiles (hidden until a trip is selected) --}}
+            <div id="trip-tiles" class="trip-tiles hidden">
+                {{-- Distance --}}
+                <div class="tile">
+                    <div class="tile-icon-box">
+                        <svg viewBox="0 0 20 20">
+                            <path d="M4 10h12M11.5 6.5L15 10l-3.5 3.5M8.5 6.5L5 10l3.5 3.5" />
+                        </svg>
+                    </div>
+                    <div class="tile-value" id="tile-distance">–</div>
+                    <div class="tile-label">Distance</div>
                 </div>
-                <div class="tile-value" id="tile-distance">–</div>
-                <div class="tile-label">Distance</div>
-            </div>
-            {{-- Duration --}}
-            <div class="tile">
-                <div class="tile-icon-box">
-                    <svg viewBox="0 0 20 20">
-                        <circle cx="10" cy="10" r="7" />
-                        <path d="M10 6.5V10l2.5 2" />
-                    </svg>
+                {{-- Duration --}}
+                <div class="tile">
+                    <div class="tile-icon-box">
+                        <svg viewBox="0 0 20 20">
+                            <circle cx="10" cy="10" r="7" />
+                            <path d="M10 6.5V10l2.5 2" />
+                        </svg>
+                    </div>
+                    <div class="tile-value" id="tile-duration">–</div>
+                    <div class="tile-label">Duration</div>
                 </div>
-                <div class="tile-value" id="tile-duration">–</div>
-                <div class="tile-label">Duration</div>
-            </div>
-            {{-- Max Speed --}}
-            <div class="tile">
-                <div class="tile-icon-box">
-                    <svg viewBox="0 0 20 20">
-                        <path d="M4.5 15.5A7.5 7.5 0 0 1 15.5 15.5" />
-                        <circle cx="10" cy="10" r="1.25" fill="currentColor" stroke="none" />
-                        <path d="M10 10 8 6.5" />
-                    </svg>
+                {{-- Max Speed --}}
+                <div class="tile">
+                    <div class="tile-icon-box">
+                        <svg viewBox="0 0 20 20">
+                            <path d="M4.5 15.5A7.5 7.5 0 0 1 15.5 15.5" />
+                            <circle cx="10" cy="10" r="1.25" fill="currentColor" stroke="none" />
+                            <path d="M10 10 8 6.5" />
+                        </svg>
+                    </div>
+                    <div class="tile-value" id="tile-max-speed">–</div>
+                    <div class="tile-label">Max Speed</div>
                 </div>
-                <div class="tile-value" id="tile-max-speed">–</div>
-                <div class="tile-label">Max Speed</div>
-            </div>
-            {{-- Avg Speed --}}
-            <div class="tile">
-                <div class="tile-icon-box">
-                    <svg viewBox="0 0 20 20">
-                        <path d="M3 14.5l4.5-5 3.5 3 5-6.5" />
-                        <path d="M13.5 6H16v2.5" />
-                    </svg>
+                {{-- Avg Speed --}}
+                <div class="tile">
+                    <div class="tile-icon-box">
+                        <svg viewBox="0 0 20 20">
+                            <path d="M3 14.5l4.5-5 3.5 3 5-6.5" />
+                            <path d="M13.5 6H16v2.5" />
+                        </svg>
+                    </div>
+                    <div class="tile-value" id="tile-avg-speed">–</div>
+                    <div class="tile-label">Avg Speed</div>
                 </div>
-                <div class="tile-value" id="tile-avg-speed">–</div>
-                <div class="tile-label">Avg Speed</div>
-            </div>
-            {{-- Stops --}}
-            <div class="tile">
-                <div class="tile-icon-box">
-                    <svg viewBox="0 0 20 20">
-                        <rect x="3.5" y="3.5" width="13" height="13" rx="2.5" />
-                        <path d="M8 13.5V6.5h3a2.5 2.5 0 0 1 0 5H8" />
-                    </svg>
+                {{-- Stops --}}
+                <div class="tile">
+                    <div class="tile-icon-box">
+                        <svg viewBox="0 0 20 20">
+                            <rect x="3.5" y="3.5" width="13" height="13" rx="2.5" />
+                            <path d="M8 13.5V6.5h3a2.5 2.5 0 0 1 0 5H8" />
+                        </svg>
+                    </div>
+                    <div class="tile-value" id="tile-stops">–</div>
+                    <div class="tile-label">Stops</div>
                 </div>
-                <div class="tile-value" id="tile-stops">–</div>
-                <div class="tile-label">Stops</div>
             </div>
-        </div>
 
-        {{-- Trip detail: where it started / ended, and every stop with its address --}}
-        <div id="trip-detail" class="trip-detail hidden">
-            <div class="td-journey">
-                <div class="td-pt">
-                    <span class="td-dot start"></span>
-                    <div style="min-width:0">
-                        <div class="td-lbl">Start · <span id="td-start-time">–</span></div>
-                        <div class="td-addr pending" id="td-start-addr">Finding address…</div>
+            {{-- Trip detail: where it started / ended, and every stop with its address --}}
+            <div id="trip-detail" class="trip-detail hidden">
+                <div class="td-journey">
+                    <div class="td-pt">
+                        <span class="td-dot start"></span>
+                        <div style="min-width:0">
+                            <div class="td-lbl">Start · <span id="td-start-time">–</span></div>
+                            <div class="td-addr pending" id="td-start-addr">Finding address…</div>
+                        </div>
+                    </div>
+                    <div class="td-pt">
+                        <span class="td-dot end"></span>
+                        <div style="min-width:0">
+                            <div class="td-lbl"><span id="td-end-lbl">End</span> · <span id="td-end-time">–</span></div>
+                            <div class="td-addr pending" id="td-end-addr">Finding address…</div>
+                        </div>
                     </div>
                 </div>
-                <div class="td-pt">
-                    <span class="td-dot end"></span>
-                    <div style="min-width:0">
-                        <div class="td-lbl"><span id="td-end-lbl">End</span> · <span id="td-end-time">–</span></div>
-                        <div class="td-addr pending" id="td-end-addr">Finding address…</div>
-                    </div>
-                </div>
+                <details class="td-stops" id="td-stops" hidden>
+                    <summary id="td-stops-title">Stops</summary>
+                    <div id="td-stops-list"></div>
+                </details>
             </div>
-            <details class="td-stops" id="td-stops" hidden>
-                <summary id="td-stops-title">Stops</summary>
-                <div id="td-stops-list"></div>
-            </details>
-        </div>
 
         </div>{{-- /t-float --}}
 
@@ -1343,7 +1498,9 @@
             mapTypeControl: false,
             fullscreenControl: false,
             zoomControl: true,
-            zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_CENTER },
+            zoomControlOptions: {
+                position: google.maps.ControlPosition.RIGHT_CENTER
+            },
             styles: [{
                     featureType: 'poi',
                     elementType: 'labels',
@@ -1457,7 +1614,7 @@
             return;
         }
 
-        const fromDt = lkStartIso(fromDate);   // Sri Lanka midnight → UTC
+        const fromDt = lkStartIso(fromDate); // Sri Lanka midnight → UTC
         const toDt = lkEndIso(toDate);
 
         const btn = document.getElementById('btn-load');
@@ -1641,7 +1798,10 @@
 
         // On phones the list sits above the map — bring the route into view
         if (window.innerWidth <= 820) {
-            document.querySelector('.t-main')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.querySelector('.t-main')?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
         }
 
         // Clear old map overlays and stop any playback
@@ -1699,7 +1859,8 @@
         if (pts.some(p => Number(p.heading) > 0)) return; // real headings present
         const R = Math.PI / 180;
         const dist = (a, b) => {
-            const dLat = (b.lat - a.lat) * R, dLng = (b.lng - a.lng) * R;
+            const dLat = (b.lat - a.lat) * R,
+                dLng = (b.lng - a.lng) * R;
             const x = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * R) * Math.cos(b.lat * R) * Math.sin(dLng / 2) ** 2;
             return 2 * 6371000 * Math.asin(Math.min(1, Math.sqrt(x)));
         };
@@ -1708,18 +1869,29 @@
             const x = Math.cos(a.lat * R) * Math.sin(b.lat * R) - Math.sin(a.lat * R) * Math.cos(b.lat * R) * Math.cos((b.lng - a.lng) * R);
             return (Math.atan2(y, x) / R + 360) % 360;
         };
-        const ll = pts.map(p => ({ lat: +p.latitude, lng: +p.longitude }));
+        const ll = pts.map(p => ({
+            lat: +p.latitude,
+            lng: +p.longitude
+        }));
         let last = null;
         const out = new Array(pts.length).fill(null);
         for (let i = 0; i < pts.length; i++) {
             for (let j = i + 1; j < pts.length; j++) {
-                if (dist(ll[i], ll[j]) >= 8) { out[i] = bearing(ll[i], ll[j]); break; }
+                if (dist(ll[i], ll[j]) >= 8) {
+                    out[i] = bearing(ll[i], ll[j]);
+                    break;
+                }
             }
         }
         // forward fill, then back fill the leading gap (vehicle parked at the start)
-        out.forEach((v, i) => { if (v !== null) last = v; else if (last !== null) out[i] = last; });
+        out.forEach((v, i) => {
+            if (v !== null) last = v;
+            else if (last !== null) out[i] = last;
+        });
         const first = out.find(v => v !== null);
-        pts.forEach((p, i) => { p.heading = out[i] ?? first ?? 0; });
+        pts.forEach((p, i) => {
+            p.heading = out[i] ?? first ?? 0;
+        });
     }
 
     /* ══════════════════════════════════════════════════════════════
@@ -2222,13 +2394,15 @@
         } catch (e) {
             console.error('SignalR start:', e);
             const m = String(e.message || '');
-            const friendly = m.includes('SUBSCRIPTION_RENEWAL_REQUIRED')
-                ? 'Subscription expired — renew to use live tracking.'
-                : m.includes('Vehicle not found')
-                    ? 'You do not have access to this vehicle.'
-                    : 'Could not start live tracking. Please try again.';
+            const friendly = m.includes('SUBSCRIPTION_RENEWAL_REQUIRED') ?
+                'Subscription expired — renew to use live tracking.' :
+                m.includes('Vehicle not found') ?
+                'You do not have access to this vehicle.' :
+                'Could not start live tracking. Please try again.';
             setLiveStatus('disconnected', friendly);
-            try { await signalrConn?.stop(); } catch (_) {}
+            try {
+                await signalrConn?.stop();
+            } catch (_) {}
             signalrConn = null;
         } finally {
             btn.disabled = false;
@@ -2644,12 +2818,18 @@
     const LK_TZ = 'Asia/Colombo';
 
     function lkDayKey(d) { // 'YYYY-MM-DD' of an instant, in Sri Lanka
-        return new Date(d).toLocaleDateString('en-CA', { timeZone: LK_TZ });
+        return new Date(d).toLocaleDateString('en-CA', {
+            timeZone: LK_TZ
+        });
     }
 
-    function lkStartIso(day) { return new Date(day + 'T00:00:00+05:30').toISOString(); }
+    function lkStartIso(day) {
+        return new Date(day + 'T00:00:00+05:30').toISOString();
+    }
 
-    function lkEndIso(day) { return new Date(day + 'T23:59:59+05:30').toISOString(); }
+    function lkEndIso(day) {
+        return new Date(day + 'T23:59:59+05:30').toISOString();
+    }
 
     function fmtTime(dtStr) {
         if (!dtStr) return '–';
