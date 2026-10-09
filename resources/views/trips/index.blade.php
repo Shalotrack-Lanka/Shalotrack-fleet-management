@@ -773,7 +773,7 @@
         }
 
         #map {
-            flex: none;
+            flex: 1 0 auto;
             height: 60vh;
             height: 60dvh;
             min-height: 320px;
@@ -792,6 +792,31 @@
             height: auto;
             flex-wrap: wrap;
             padding: 8px 14px;
+        }
+
+        /* Phones: the bars float above the orb (always reachable, never lost below the map)
+           and the map scroll target clears the sticky header chips. */
+        .t-main {
+            scroll-margin-top: 76px;
+            min-height: calc(100vh - 76px);
+            min-height: calc(100dvh - 76px);
+        }
+
+        .live-bar:not(.hidden),
+        .playback-bar:not(.hidden) {
+            position: fixed;
+            left: 12px;
+            right: 12px;
+            bottom: 104px;
+            z-index: 43;
+            border-radius: 20px;
+            background: var(--g-s1);
+            border: 1px solid rgba(255, 255, 255, .22);
+            box-shadow: var(--gl-shadow);
+        }
+
+        .pb-time {
+            min-width: 0;
         }
 
         .pb-scrubber {

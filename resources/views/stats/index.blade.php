@@ -17,13 +17,13 @@
         height: calc(100dvh - 214px);
         min-height: 560px;
         overflow: hidden;
-        background: var(--g-s2,#f8fafc);
+        background: var(--g-s2, #f8fafc);
     }
 
     /* ── Sidebar ───────────────────────────────────────────────────────────────── */
     .sidebar {
-        background: var(--g-s1,#fff);
-        border-right: 1px solid var(--g-b,#e2e8f0);
+        background: var(--g-s1, #fff);
+        border-right: 1px solid var(--g-b, #e2e8f0);
         display: flex;
         flex-direction: column;
         overflow: hidden;
@@ -44,14 +44,14 @@
 
     .sidebar-header {
         padding: 20px 16px 12px;
-        border-bottom: 1px solid var(--g-b,#f1f5f9);
+        border-bottom: 1px solid var(--g-b, #f1f5f9);
         flex-shrink: 0;
     }
 
     .sidebar-header h2 {
         font-size: 15px;
         font-weight: 700;
-        color: var(--g-t1,#021F4A);
+        color: var(--g-t1, #021F4A);
         margin: 0 0 12px;
         letter-spacing: 0.2px;
     }
@@ -59,11 +59,11 @@
     .sidebar-search {
         width: 100%;
         box-sizing: border-box;
-        border: 1px solid var(--g-b,#e2e8f0);
+        border: 1px solid var(--g-b, #e2e8f0);
         border-radius: 8px;
         padding: 8px 12px;
         font-size: 13px;
-        color: var(--g-t1,#334155);
+        color: var(--g-t1, #334155);
         outline: none;
         transition: border-color 0.15s, box-shadow 0.15s;
     }
@@ -84,7 +84,7 @@
     }
 
     .vehicle-list::-webkit-scrollbar-thumb {
-        background: var(--g-s3,#e2e8f0);
+        background: var(--g-s3, #e2e8f0);
         border-radius: 4px;
     }
 
@@ -101,11 +101,11 @@
     }
 
     .vehicle-card:hover {
-        background: var(--g-s2,#f8fafc);
+        background: var(--g-s2, #f8fafc);
     }
 
     .vehicle-card.active {
-        background: var(--g-orbg,#fff7f0);
+        background: var(--g-orbg, #fff7f0);
         border-color: #FA6908;
     }
 
@@ -117,7 +117,7 @@
         width: 38px;
         height: 38px;
         border-radius: 9px;
-        background: var(--g-navy,#021F4A);
+        background: var(--g-navy, #021F4A);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -129,7 +129,7 @@
     }
 
     .vehicle-icon.has-photo {
-        background: var(--g-s2,#eef2f7);
+        background: var(--g-s2, #eef2f7);
     }
 
     .vehicle-icon img {
@@ -152,7 +152,7 @@
     .vehicle-plate {
         font-size: 13px;
         font-weight: 700;
-        color: var(--g-t1,#021F4A);
+        color: var(--g-t1, #021F4A);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -160,7 +160,7 @@
 
     .vehicle-name {
         font-size: 11px;
-        color: var(--g-t2,#64748b);
+        color: var(--g-t2, #64748b);
         margin-top: 2px;
         white-space: nowrap;
         overflow: hidden;
@@ -177,15 +177,18 @@
     /* Period bar */
     .stats-period-bar {
         padding: 10px 24px;
-        background: var(--g-s1,#fff);
-        border-bottom: 1px solid var(--g-b,#e2e8f0);
+        background: var(--g-s1, #fff);
+        border-bottom: 1px solid var(--g-b, #e2e8f0);
         display: flex;
         align-items: center;
         gap: 8px;
         flex-shrink: 0;
         flex-wrap: wrap;
     }
-    .stats-period-bar[hidden] { display: none; }
+
+    .stats-period-bar[hidden] {
+        display: none;
+    }
 
     .period-spacer {
         flex: 1;
@@ -194,9 +197,9 @@
     .period-btn {
         padding: 6px 18px;
         border-radius: 20px;
-        border: 1px solid var(--g-b,#e2e8f0);
-        background: var(--g-s1,#fff);
-        color: var(--g-t2,#475569);
+        border: 1px solid var(--g-b, #e2e8f0);
+        background: var(--g-s1, #fff);
+        color: var(--g-t2, #475569);
         font-size: 13px;
         font-weight: 500;
         cursor: pointer;
@@ -228,9 +231,9 @@
         gap: 6px;
         padding: 6px 14px;
         border-radius: 20px;
-        border: 1px solid var(--g-b,#e2e8f0);
-        background: var(--g-s1,#fff);
-        color: var(--g-t2,#475569);
+        border: 1px solid var(--g-b, #e2e8f0);
+        background: var(--g-s1, #fff);
+        color: var(--g-t2, #475569);
         font-size: 13px;
         font-weight: 500;
         cursor: pointer;
@@ -242,8 +245,8 @@
     .btn-export:hover,
     .btn-export.open {
         border-color: #021F4A;
-        color: var(--g-t1,#021F4A);
-        background: var(--g-s2,#f8fafc);
+        color: var(--g-t1, #021F4A);
+        background: var(--g-s2, #f8fafc);
     }
 
     .btn-export svg {
@@ -265,8 +268,8 @@
         position: absolute;
         right: 0;
         top: calc(100% + 6px);
-        background: var(--g-s1,#fff);
-        border: 1px solid var(--g-b,#e2e8f0);
+        background: var(--g-s1, #fff);
+        border: 1px solid var(--g-b, #e2e8f0);
         border-radius: 10px;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10);
         min-width: 160px;
@@ -284,13 +287,13 @@
         gap: 10px;
         padding: 10px 16px;
         font-size: 13px;
-        color: var(--g-t1,#334155);
+        color: var(--g-t1, #334155);
         cursor: pointer;
         transition: background 0.12s;
     }
 
     .export-item:hover {
-        background: var(--g-s2,#f8fafc);
+        background: var(--g-s2, #f8fafc);
     }
 
     .export-item svg {
@@ -307,7 +310,7 @@
     .export-item small {
         display: block;
         font-size: 11px;
-        color: var(--g-t3,#94a3b8);
+        color: var(--g-t3, #94a3b8);
         font-weight: 400;
     }
 
@@ -335,7 +338,7 @@
         align-items: center;
         justify-content: center;
         min-height: 420px;
-        color: var(--g-t3,#94a3b8);
+        color: var(--g-t3, #94a3b8);
         text-align: center;
     }
 
@@ -349,12 +352,12 @@
     .stats-empty p {
         font-size: 15px;
         margin: 0;
-        color: var(--g-t3,#94a3b8);
+        color: var(--g-t3, #94a3b8);
     }
 
     .stats-empty small {
         font-size: 12px;
-        color: var(--g-t3,#b0bec5);
+        color: var(--g-t3, #b0bec5);
         margin-top: 6px;
     }
 
@@ -383,14 +386,14 @@
         gap: 16px;
         margin-bottom: 24px;
         padding-bottom: 20px;
-        border-bottom: 1px solid var(--g-b,#f1f5f9);
+        border-bottom: 1px solid var(--g-b, #f1f5f9);
     }
 
     .icon-big {
         width: 56px;
         height: 56px;
         border-radius: 14px;
-        background: var(--g-navy,#021F4A);
+        background: var(--g-navy, #021F4A);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -406,13 +409,13 @@
     .plate {
         font-size: 22px;
         font-weight: 800;
-        color: var(--g-t1,#021F4A);
+        color: var(--g-t1, #021F4A);
         letter-spacing: 0.5px;
     }
 
     .meta {
         font-size: 13px;
-        color: var(--g-t2,#64748b);
+        color: var(--g-t2, #64748b);
         margin-top: 3px;
     }
 
@@ -425,7 +428,7 @@
     }
 
     .tile {
-        background: var(--g-s1,#fff);
+        background: var(--g-s1, #fff);
         border-radius: 14px;
         padding: 18px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -470,7 +473,7 @@
     }
 
     .tile-icon.navy svg {
-        fill: #021F4A;
+        fill: var(--g-blt, #93c5fd);
     }
 
     .tile-icon.red svg {
@@ -479,7 +482,7 @@
 
     .tile-label {
         font-size: 11.5px;
-        color: var(--g-t2,#64748b);
+        color: var(--g-t2, #64748b);
         font-weight: 500;
         letter-spacing: 0.2px;
     }
@@ -487,13 +490,13 @@
     .tile-value {
         font-size: 26px;
         font-weight: 800;
-        color: var(--g-t1,#021F4A);
+        color: var(--g-t1, #021F4A);
         line-height: 1;
     }
 
     .tile-unit {
         font-size: 12px;
-        color: var(--g-t3,#94a3b8);
+        color: var(--g-t3, #94a3b8);
         font-weight: 500;
         margin-left: 2px;
     }
@@ -502,18 +505,18 @@
     .tile-value .dur-h {
         font-size: 14px;
         font-weight: 600;
-        color: var(--g-t2,#475569);
+        color: var(--g-t2, #475569);
     }
 
     .tile-value .dur-m {
         font-size: 14px;
         font-weight: 600;
-        color: var(--g-t2,#475569);
+        color: var(--g-t2, #475569);
     }
 
     /* Alert tile: highlight if non-zero */
     .tile.alert-active .tile-value {
-        color: var(--g-redt,#ef4444);
+        color: var(--g-redt, #ef4444);
     }
 
     .tile.alert-active {
@@ -528,7 +531,7 @@
     }
 
     .chart-card {
-        background: var(--g-s1,#fff);
+        background: var(--g-s1, #fff);
         border-radius: 14px;
         padding: 20px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
@@ -541,7 +544,7 @@
     .chart-card h3 {
         font-size: 11px;
         font-weight: 700;
-        color: var(--g-t3,#94a3b8);
+        color: var(--g-t3, #94a3b8);
         margin: 0 0 14px;
         text-transform: uppercase;
         letter-spacing: 0.8px;
@@ -557,7 +560,7 @@
         align-items: center;
         justify-content: center;
         height: 200px;
-        color: var(--g-t3,#b0bec5);
+        color: var(--g-t3, #b0bec5);
         font-size: 13px;
     }
 
@@ -568,7 +571,12 @@
             height: auto;
             overflow: visible;
         }
-        .sidebar, .stats-main { width: 100%; min-width: 0; }
+
+        .sidebar,
+        .stats-main {
+            width: 100%;
+            min-width: 0;
+        }
 
         .stats-wrap {
             min-height: 0;
@@ -576,7 +584,7 @@
 
         .sidebar {
             border-right: none;
-            border-bottom: 1px solid var(--g-b,#e2e8f0);
+            border-bottom: 1px solid var(--g-b, #e2e8f0);
             height: auto;
             overflow: visible;
         }
@@ -637,16 +645,26 @@
             grid-template-columns: 1fr 1fr;
         }
 
-        .stats-main { display: block; }
+        .stats-main {
+            display: block;
+        }
 
         .stats-period-bar {
             display: grid;
-            grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
             padding: 10px 16px;
         }
 
-        .period-btn, .export-wrap { min-width: 0; }
-        .export-wrap { grid-column: 1 / -1; position: relative; margin-left: 0; }
+        .period-btn,
+        .export-wrap {
+            min-width: 0;
+        }
+
+        .export-wrap {
+            grid-column: 1 / -1;
+            position: relative;
+            margin-left: 0;
+        }
 
         .period-btn {
             flex: 1 1 auto;
@@ -1006,7 +1024,10 @@
 
         // On phones the vehicle strip sits above the data — bring the data into view
         if (window.innerWidth <= 900) {
-            document.getElementById('stats-period-bar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.getElementById('stats-period-bar').scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
         }
     }
 
@@ -1084,7 +1105,7 @@
             .filter(Boolean);
         document.getElementById('vh-meta').textContent = parts.join(' · ');
         document.getElementById('vh-icon').style.background =
-            selectedVehicleIsDemo ? '#FA6908' : '#021F4A';
+            selectedVehicleIsDemo ? '#FA6908' : '#60a5fa';
 
         // Tiles — distance
         document.getElementById('t-distance').textContent = fmt(d.totalDistanceKm, 2);
@@ -1161,7 +1182,7 @@
                 display: false
             },
             tooltip: {
-                backgroundColor: '#021F4A',
+                backgroundColor: 'rgba(2,31,74,.96)',
                 titleColor: '#fff',
                 bodyColor: '#e2e8f0',
                 padding: 10,
@@ -1316,9 +1337,13 @@
     // Both files are built on the server from fresh API data (correct Sri Lanka
     // time, real charts, every number) — the browser only says which vehicle and
     // period to export.
-    function exportCSV() { exportFile('csv'); }
+    function exportCSV() {
+        exportFile('csv');
+    }
 
-    function exportPDF() { exportFile('pdf'); }
+    function exportPDF() {
+        exportFile('pdf');
+    }
 
     async function exportFile(format) {
         if (!lastData || !selectedVehicleId) return;
@@ -1329,8 +1354,13 @@
         btn.textContent = format === 'pdf' ? 'Building PDF…' : 'Preparing…';
 
         try {
-            const qs = new URLSearchParams({ period: activePeriod, format });
-            const res = await fetch(`/stats/${selectedVehicleId}/export?${qs}`, { credentials: 'include' });
+            const qs = new URLSearchParams({
+                period: activePeriod,
+                format
+            });
+            const res = await fetch(`/stats/${selectedVehicleId}/export?${qs}`, {
+                credentials: 'include'
+            });
 
             if (res.status === 401) {
                 window.location.href = '/login?expired=1';
@@ -1338,14 +1368,14 @@
             }
             if (!res.ok) {
                 const json = await res.json().catch(() => ({}));
-                throw new Error(json.message || (res.status === 429
-                    ? 'Too many downloads — please wait a minute.'
-                    : `Server error (${res.status})`));
+                throw new Error(json.message || (res.status === 429 ?
+                    'Too many downloads — please wait a minute.' :
+                    `Server error (${res.status})`));
             }
 
             const blob = await res.blob();
-            const filename = res.headers.get('Content-Disposition')?.match(/filename="?([^";]+)"?/)?.[1]
-                || `shalotrack_${selectedVehiclePlate}_${activePeriod}.${format}`;
+            const filename = res.headers.get('Content-Disposition')?.match(/filename="?([^";]+)"?/)?.[1] ||
+                `shalotrack_${selectedVehiclePlate}_${activePeriod}.${format}`;
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;

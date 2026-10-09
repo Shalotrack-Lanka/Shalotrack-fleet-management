@@ -6,7 +6,10 @@
 
 @section('content')
 <style>
-    html, body { overflow: hidden; }
+    html,
+    body {
+        overflow: hidden;
+    }
 
     /* ── Full-screen map ────────────────────────── */
     #map {
@@ -37,43 +40,194 @@
         font-size: 13px;
     }
 
-    .d-brand { top: 18px; left: 20px; padding: 0 20px; gap: 10px; text-decoration: none; }
-    .d-brand .dot { width: 10px; height: 10px; border-radius: 50%; background: #FA6908; box-shadow: 0 0 12px #FA6908; }
-    .d-brand b { font-size: 18px; font-weight: 700; letter-spacing: .2px; color: #fff; }
-    .d-brand b span { color: #FA6908; }
+    .d-brand {
+        top: 18px;
+        left: 20px;
+        padding: 0 20px;
+        gap: 10px;
+        text-decoration: none;
+    }
+
+    .d-brand .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #FA6908;
+        box-shadow: 0 0 12px #FA6908;
+    }
+
+    .d-brand b {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: .2px;
+        color: #fff;
+    }
+
+    .d-brand b span {
+        color: #FA6908;
+    }
 
     /* ── Stats pill ─────────────────────────────── */
-    .d-stats { top: 18px; left: 50%; transform: translateX(-50%); padding: 0 6px; gap: 2px; white-space: nowrap; }
-    .d-stat { padding: 0 14px; display: flex; align-items: center; gap: 7px; color: rgba(255, 255, 255, .78); }
-    .d-stat b { color: #fff; font-size: 16px; font-weight: 700; }
-    .d-stat + .d-stat { border-left: 1px solid rgba(255, 255, 255, .2); }
-    .d-stat i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-    .d-stat i.on { background: #34d399; box-shadow: 0 0 10px #34d399; }
-    .d-stat i.off { background: #94a3b8; }
-    .d-stat i.mv { background: #FA6908; box-shadow: 0 0 10px #FA6908; }
-    .conn-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; }
-    .conn-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .d-stats {
+        top: 18px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 0 6px;
+        gap: 2px;
+        white-space: nowrap;
+    }
+
+    .d-stat {
+        padding: 0 14px;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        color: rgba(255, 255, 255, .78);
+    }
+
+    .d-stat b {
+        color: #fff;
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .d-stat+.d-stat {
+        border-left: 1px solid rgba(255, 255, 255, .2);
+    }
+
+    .d-stat i {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .d-stat i.on {
+        background: #34d399;
+        box-shadow: 0 0 10px #34d399;
+    }
+
+    .d-stat i.off {
+        background: #94a3b8;
+    }
+
+    .d-stat i.mv {
+        background: #FA6908;
+        box-shadow: 0 0 10px #FA6908;
+    }
+
+    .conn-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .conn-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+    }
 
     /* ── User chip + map theme ──────────────────── */
-    .d-user-wrap { position: fixed; top: 18px; right: 20px; z-index: 22; display: flex; align-items: center; gap: 10px; }
+    .d-user-wrap {
+        position: fixed;
+        top: 18px;
+        right: 20px;
+        z-index: 22;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
     .d-iconbtn {
-        width: 48px; height: 48px; border-radius: 50%; padding: 0; cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        padding: 0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
-    .d-iconbtn svg { width: 20px; height: 20px; stroke: #fff; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+    .d-iconbtn svg {
+        width: 20px;
+        height: 20px;
+        stroke: #fff;
+        fill: none;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
     .d-user-btn {
-        height: 48px; border-radius: 24px; padding: 0 6px 0 18px; gap: 12px; cursor: pointer;
-        display: flex; align-items: center; font-size: 14px; font-weight: 500; font-family: inherit;
+        height: 48px;
+        border-radius: 24px;
+        padding: 0 6px 0 18px;
+        gap: 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        font-size: 14px;
+        font-weight: 500;
+        font-family: inherit;
     }
-    .d-user-btn .av { width: 36px; height: 36px; border-radius: 50%; background: #FA6908; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; }
-    .d-user-menu { position: absolute; top: 56px; right: 0; width: 200px; border-radius: 18px; padding: 6px; }
-    .d-user-menu a, .d-user-menu button {
-        display: flex; width: 100%; align-items: center; gap: 10px; padding: 10px 12px; border: 0; border-radius: 12px;
-        background: none; color: #fff; font-family: inherit; font-weight: 600; font-size: 13px; line-height: 1; text-align: left; text-decoration: none; cursor: pointer;
+
+    .d-user-btn .av {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #FA6908;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: #fff;
     }
-    .d-user-menu a:hover, .d-user-menu button:hover { background: rgba(255, 255, 255, .14); }
-    .d-user-menu .out { color: #fca5a5; }
-    .d-user-menu form { margin: 0; }
+
+    .d-user-menu {
+        position: absolute;
+        top: 56px;
+        right: 0;
+        width: 200px;
+        border-radius: 18px;
+        padding: 6px;
+    }
+
+    .d-user-menu a,
+    .d-user-menu button {
+        display: flex;
+        width: 100%;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border: 0;
+        border-radius: 12px;
+        background: none;
+        color: #fff;
+        font-family: inherit;
+        font-weight: 600;
+        font-size: 13px;
+        line-height: 1;
+        text-align: left;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .d-user-menu a:hover,
+    .d-user-menu button:hover {
+        background: rgba(255, 255, 255, .14);
+    }
+
+    .d-user-menu .out {
+        color: #fca5a5;
+    }
+
+    .d-user-menu form {
+        margin: 0;
+    }
 
     /* ── Vehicle islands ────────────────────────── */
     #vehicle-panel {
@@ -91,20 +245,59 @@
         scrollbar-width: none;
         pointer-events: none;
     }
-    #vehicle-panel::-webkit-scrollbar { display: none; }
-    @media (min-width: 768px) {
-        #vehicle-panel { -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 30px), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 30px), transparent); }
+
+    #vehicle-panel::-webkit-scrollbar {
+        display: none;
     }
-    #vehicle-panel > * { pointer-events: auto; flex: none; }
+
+    @media (min-width: 768px) {
+        #vehicle-panel {
+            -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 30px), transparent);
+            mask-image: linear-gradient(to bottom, #000 calc(100% - 30px), transparent);
+        }
+    }
+
+    #vehicle-panel>* {
+        pointer-events: auto;
+        flex: none;
+    }
 
     .d-vhead {
-        border-radius: 22px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
-        font-size: 13px; font-weight: 600;
+        border-radius: 22px;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 13px;
+        font-weight: 600;
     }
-    .d-vhead .sum { font-weight: 500; color: rgba(255, 255, 255, .7); font-size: 12px; margin-left: 8px; }
-    .d-vhead button { background: none; border: 0; color: #fff; cursor: pointer; padding: 4px 8px; border-radius: 10px; font-family: inherit; font-weight: 600; font-size: 12px; }
-    .d-vhead button:hover { background: rgba(255, 255, 255, .14); }
-    #vehicle-panel.collapsed .vrow { display: none; }
+
+    .d-vhead .sum {
+        font-weight: 500;
+        color: rgba(255, 255, 255, .7);
+        font-size: 12px;
+        margin-left: 8px;
+    }
+
+    .d-vhead button {
+        background: none;
+        border: 0;
+        color: #fff;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 10px;
+        font-family: inherit;
+        font-weight: 600;
+        font-size: 12px;
+    }
+
+    .d-vhead button:hover {
+        background: rgba(255, 255, 255, .14);
+    }
+
+    #vehicle-panel.collapsed .vrow {
+        display: none;
+    }
 
     .vrow {
         border-radius: 22px;
@@ -115,76 +308,371 @@
         gap: 12px;
         transition: border-color .2s, box-shadow .2s;
     }
-    .vrow:hover { border-color: rgba(255, 255, 255, .5); }
-    .vrow:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
-    .vrow.active { border-color: rgba(250, 105, 8, .85); box-shadow: 0 0 0 1px rgba(250, 105, 8, .6), 0 0 26px rgba(250, 105, 8, .35), var(--gl-shadow); }
-    .vrow-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-    .vrow-dot.online { background: #34d399; box-shadow: 0 0 12px #34d399; }
-    .vrow-dot.offline { background: #94a3b8; }
-    .vrow-body { flex: 1; min-width: 0; }
-    .vrow-plate { font-size: 15px; font-weight: 700; letter-spacing: .2px; color: #fff; margin: 0; }
-    .vrow-make { font-size: 12px; color: rgba(255, 255, 255, .7); margin: 2px 0 0; }
-    .vrow-meta { font-size: 12px; color: rgba(255, 255, 255, .85); margin: 4px 0 0; }
-    .vrow-meta.offline-text { color: rgba(255, 255, 255, .55); }
-    .badge-online, .badge-offline { font-size: 10px; font-weight: 700; letter-spacing: .4px; border-radius: 999px; padding: 3px 9px; white-space: nowrap; flex-shrink: 0; }
-    .badge-online { color: #a7f3d0; background: rgba(52, 211, 153, .25); }
-    .badge-offline { color: rgba(255, 255, 255, .7); background: rgba(148, 163, 184, .25); }
-    .tag-demo { font-size: 10px; color: #fdba74; font-weight: 700; margin-left: 4px; }
-    .tag-shared { font-size: 10px; color: #d8b4fe; font-weight: 700; margin-left: 4px; }
 
-    /* Gentle float: only with a pointer + room + motion allowed, and only for small fleets (blur repaints). */
-    @keyframes d-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
-    @media (hover: hover) and (min-width: 768px) and (prefers-reduced-motion: no-preference) {
-        .vrow.float { animation: d-float 7s ease-in-out infinite; animation-delay: calc(var(--i, 0) * -2.3s); }
-        .vrow.float:hover { animation-play-state: paused; }
+    .vrow:hover {
+        border-color: rgba(255, 255, 255, .5);
     }
 
-    .d-empty { border-radius: 22px; padding: 22px 20px; text-align: center; font-size: 13px; color: rgba(255, 255, 255, .85); }
-    .d-empty a { color: #fdba74; font-weight: 600; display: inline-block; margin-top: 8px; }
+    .vrow:focus-visible {
+        outline: 3px solid #fff;
+        outline-offset: 2px;
+    }
+
+    .vrow.active {
+        border-color: rgba(250, 105, 8, .85);
+        box-shadow: 0 0 0 1px rgba(250, 105, 8, .6), 0 0 26px rgba(250, 105, 8, .35), var(--gl-shadow);
+    }
+
+    .vrow-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .vrow-dot.online {
+        background: #34d399;
+        box-shadow: 0 0 12px #34d399;
+    }
+
+    .vrow-dot.offline {
+        background: #94a3b8;
+    }
+
+    .vrow-body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .vrow-plate {
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: .2px;
+        color: #fff;
+        margin: 0;
+    }
+
+    .vrow-make {
+        font-size: 12px;
+        color: rgba(255, 255, 255, .7);
+        margin: 2px 0 0;
+    }
+
+    .vrow-meta {
+        font-size: 12px;
+        color: rgba(255, 255, 255, .85);
+        margin: 4px 0 0;
+    }
+
+    .vrow-meta.offline-text {
+        color: rgba(255, 255, 255, .55);
+    }
+
+    .badge-online,
+    .badge-offline {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: .4px;
+        border-radius: 999px;
+        padding: 3px 9px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .badge-online {
+        color: #a7f3d0;
+        background: rgba(52, 211, 153, .25);
+    }
+
+    .badge-offline {
+        color: rgba(255, 255, 255, .7);
+        background: rgba(148, 163, 184, .25);
+    }
+
+    .tag-demo {
+        font-size: 10px;
+        color: #fdba74;
+        font-weight: 700;
+        margin-left: 4px;
+    }
+
+    .tag-shared {
+        font-size: 10px;
+        color: #d8b4fe;
+        font-weight: 700;
+        margin-left: 4px;
+    }
+
+    /* Gentle float: only with a pointer + room + motion allowed, and only for small fleets (blur repaints). */
+    @keyframes d-float {
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-7px);
+        }
+    }
+
+    @media (hover: hover) and (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+        .vrow.float {
+            animation: d-float 7s ease-in-out infinite;
+            animation-delay: calc(var(--i, 0) * -2.3s);
+        }
+
+        .vrow.float:hover {
+            animation-play-state: paused;
+        }
+    }
+
+    .d-empty {
+        border-radius: 22px;
+        padding: 22px 20px;
+        text-align: center;
+        font-size: 13px;
+        color: rgba(255, 255, 255, .85);
+    }
+
+    .d-empty a {
+        color: #fdba74;
+        font-weight: 600;
+        display: inline-block;
+        margin-top: 8px;
+    }
 
     /* ── SOS island ─────────────────────────────── */
     .d-sos {
-        position: fixed; z-index: 20; left: 20px; bottom: 30px; height: 56px; padding: 0 22px 0 8px; border-radius: 28px;
-        display: flex; align-items: center; gap: 12px; cursor: pointer; font: inherit; text-align: left;
+        position: fixed;
+        z-index: 20;
+        left: 20px;
+        bottom: 30px;
+        height: 56px;
+        padding: 0 22px 0 8px;
+        border-radius: 28px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        font: inherit;
+        text-align: left;
     }
-    .d-sos:hover { transform: scale(1.03); }
-    .d-sos:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
-    .d-sos .c { width: 40px; height: 40px; border-radius: 50%; background: #ef4444; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; box-shadow: 0 0 18px rgba(239, 68, 68, .8); color: #fff; }
-    .d-sos .t { font-size: 13px; line-height: 1.25; color: #fff; }
-    .d-sos .t small { display: block; color: rgba(255, 255, 255, .75); font-size: 11.5px; }
+
+    .d-sos:hover {
+        transform: scale(1.03);
+    }
+
+    .d-sos:focus-visible {
+        outline: 3px solid #fff;
+        outline-offset: 3px;
+    }
+
+    .d-sos .c {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #ef4444;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 12px;
+        box-shadow: 0 0 18px rgba(239, 68, 68, .8);
+        color: #fff;
+    }
+
+    .d-sos .t {
+        font-size: 13px;
+        line-height: 1.25;
+        color: #fff;
+    }
+
+    .d-sos .t small {
+        display: block;
+        color: rgba(255, 255, 255, .75);
+        font-size: 11.5px;
+    }
 
     .d-error {
-        position: fixed; z-index: 21; top: 76px; left: 50%; transform: translateX(-50%); max-width: min(560px, calc(100% - 32px));
-        border-radius: 18px; padding: 12px 16px; font-size: 13px; display: flex; align-items: center; gap: 10px;
+        position: fixed;
+        z-index: 21;
+        top: 76px;
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: min(560px, calc(100% - 32px));
+        border-radius: 18px;
+        padding: 12px 16px;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
-    .d-error button { margin-left: auto; background: none; border: 0; color: #fff; text-decoration: underline; cursor: pointer; font: inherit; }
-    .d-center { position: fixed; z-index: 15; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+    .d-error button {
+        margin-left: auto;
+        background: none;
+        border: 0;
+        color: #fff;
+        text-decoration: underline;
+        cursor: pointer;
+        font: inherit;
+    }
+
+    .d-center {
+        position: fixed;
+        z-index: 15;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
 
     /* Google's own UI keeps clear of our islands. */
-    .gm-style .gm-style-iw-c { border-radius: 16px; }
+    .gm-style .gm-style-iw-c {
+        border-radius: 16px;
+    }
+
+    /* ── Tablets / small laptops: tighten the top chips so they never collide ── */
+    @media (min-width: 768px) and (max-width: 1099px) {
+        .d-user-btn .nm {
+            display: none;
+        }
+
+        .conn-pill .lbl {
+            display: none;
+        }
+
+        .d-stat {
+            padding: 0 10px;
+        }
+
+        .d-brand {
+            padding: 0 16px;
+        }
+    }
+
+    @media (min-width: 768px) and (max-width: 899px) {
+        .d-stat {
+            padding: 0 8px;
+            gap: 5px;
+            font-size: 12px;
+        }
+
+        .d-stat b {
+            font-size: 14px;
+        }
+
+        .d-brand b {
+            font-size: 16px;
+        }
+
+        .d-brand {
+            padding: 0 14px;
+            gap: 8px;
+        }
+    }
 
     /* ── Phones ─────────────────────────────────── */
     @media (max-width: 767px) {
-        .d-brand { top: 14px; left: 14px; padding: 0 16px; height: 44px; }
-        .d-user-wrap { top: 14px; right: 14px; gap: 8px; }
-        .d-iconbtn { width: 44px; height: 44px; }
-        .d-user-btn { height: 44px; padding: 0 4px; }
-        .d-user-btn .nm { display: none; }
-        .d-stats { top: 68px; left: 14px; right: 14px; transform: none; justify-content: space-around; height: 44px; }
-        .d-stat { padding: 0 8px; font-size: 12px; gap: 5px; }
-        .d-stat b { font-size: 15px; }
-        .conn-pill .lbl { display: none; }
-        .d-error { top: 120px; }
-        .d-vhead { display: none; }
-        #vehicle-panel {
-            top: auto; left: 0; right: 0; bottom: 104px; width: auto; flex-direction: row; gap: 12px;
-            overflow-x: auto; overflow-y: hidden; padding: 6px 16px 8px; scroll-snap-type: x proximity;
+        .d-brand {
+            top: 14px;
+            left: 14px;
+            padding: 0 16px;
+            height: 44px;
         }
-        .vrow { flex: 0 0 236px; scroll-snap-align: start; padding: 12px 14px; }
-        .d-empty { flex: 0 0 100%; }
-        .d-sos { left: 14px; bottom: 26px; height: 52px; width: 52px; padding: 0; justify-content: center; }
-        .d-sos .t { display: none; }
-        .d-sos .c { width: 38px; height: 38px; }
+
+        .d-user-wrap {
+            top: 14px;
+            right: 14px;
+            gap: 8px;
+        }
+
+        .d-iconbtn {
+            width: 44px;
+            height: 44px;
+        }
+
+        .d-user-btn {
+            height: 44px;
+            padding: 0 4px;
+        }
+
+        .d-user-btn .nm {
+            display: none;
+        }
+
+        .d-stats {
+            top: 68px;
+            left: 14px;
+            right: 14px;
+            transform: none;
+            justify-content: space-around;
+            height: 44px;
+        }
+
+        .d-stat {
+            padding: 0 8px;
+            font-size: 12px;
+            gap: 5px;
+        }
+
+        .d-stat b {
+            font-size: 15px;
+        }
+
+        .conn-pill .lbl {
+            display: none;
+        }
+
+        .d-error {
+            top: 120px;
+        }
+
+        .d-vhead {
+            display: none;
+        }
+
+        #vehicle-panel {
+            top: auto;
+            left: 0;
+            right: 0;
+            bottom: 104px;
+            width: auto;
+            flex-direction: row;
+            gap: 12px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 6px 16px 8px;
+            scroll-snap-type: x proximity;
+        }
+
+        .vrow {
+            flex: 0 0 236px;
+            scroll-snap-align: start;
+            padding: 12px 14px;
+        }
+
+        .d-empty {
+            flex: 0 0 100%;
+        }
+
+        .d-sos {
+            left: 14px;
+            bottom: 26px;
+            height: 52px;
+            width: 52px;
+            padding: 0;
+            justify-content: center;
+        }
+
+        .d-sos .t {
+            display: none;
+        }
+
+        .d-sos .c {
+            width: 38px;
+            height: 38px;
+        }
     }
 </style>
 
@@ -192,11 +680,11 @@
 <div class="d-vignette" aria-hidden="true"></div>
 
 @php
-    $dashVehicles = $dashboard['vehicles'] ?? [];
-    $dashName = Session::get('customer_name') ?: Session::get('firebase_phone', 'Account');
-    $movingCount = collect($dashVehicles)
-        ->filter(fn($v) => ($v['online'] ?? false) && ($v['speed'] ?? 0) > 0)
-        ->count();
+$dashVehicles = $dashboard['vehicles'] ?? [];
+$dashName = Session::get('customer_name') ?: Session::get('firebase_phone', 'Account');
+$movingCount = collect($dashVehicles)
+->filter(fn($v) => ($v['online'] ?? false) && ($v['speed'] ?? 0) > 0)
+->count();
 @endphp
 
 {{-- ─── TOP CHIPS ───────────────────────────────────── --}}
@@ -216,7 +704,9 @@
 
 <div class="d-user-wrap">
     <button type="button" id="map-theme-btn" class="d-iconbtn gl" aria-label="Switch map to light" title="Map theme">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z" />
+        </svg>
     </button>
     <div style="position:relative;">
         <button type="button" id="d-user-btn" class="d-user-btn gl" aria-haspopup="true" aria-expanded="false" aria-controls="d-user-menu">
@@ -372,7 +862,7 @@
     });
     VehicleIcons.preload(vehiclesRaw.map(v => v.vehicleType ?? v.type));
 
-    if (deletedIds.size) recalcStats();   // online/offline/moving tiles must exclude deleted vehicles
+    if (deletedIds.size) recalcStats(); // online/offline/moving tiles must exclude deleted vehicles
 
     /* ── Map state ─────────────────────────────────────────── */
     let gmap = null;
@@ -520,14 +1010,18 @@
             gmap.setZoom(15);
             openInfo(vid);
         }
-        row?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+        row?.scrollIntoView({
+            block: 'nearest',
+            inline: 'center',
+            behavior: 'smooth'
+        });
     }
 
     /* ── Google Maps callback ─────────────────────────────── */
     /* Map theme (dark/light) lives in partials/map-style (shared with the other map pages). */
 
     /* Vehicle panel: collapse so the whole map is visible. */
-    document.getElementById('vpanel-toggle')?.addEventListener('click', function () {
+    document.getElementById('vpanel-toggle')?.addEventListener('click', function() {
         const panel = document.getElementById('vehicle-panel');
         const collapsed = panel.classList.toggle('collapsed');
         this.textContent = collapsed ? 'Show' : 'Hide';
@@ -535,33 +1029,58 @@
     });
 
     /* User chip menu. */
-    (function () {
+    (function() {
         const btn = document.getElementById('d-user-btn');
         const menu = document.getElementById('d-user-menu');
         if (!btn || !menu) return;
-        const set = open => { menu.hidden = !open; btn.setAttribute('aria-expanded', open ? 'true' : 'false'); };
-        btn.addEventListener('click', e => { e.stopPropagation(); set(menu.hidden); });
-        document.addEventListener('click', e => { if (!menu.contains(e.target)) set(false); });
-        document.addEventListener('keydown', e => { if (e.key === 'Escape') set(false); });
+        const set = open => {
+            menu.hidden = !open;
+            btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        };
+        btn.addEventListener('click', e => {
+            e.stopPropagation();
+            set(menu.hidden);
+        });
+        document.addEventListener('click', e => {
+            if (!menu.contains(e.target)) set(false);
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') set(false);
+        });
     })();
 
     /* Space the map's framing around the floating islands. */
     function mapPadding() {
         const phone = window.innerWidth < 768;
-        return phone
-            ? { top: 130, right: 30, bottom: 230, left: 30 }
-            : { top: 100, right: 370, bottom: 130, left: 60 };
+        return phone ?
+            {
+                top: 130,
+                right: 30,
+                bottom: 230,
+                left: 30
+            } :
+            {
+                top: 100,
+                right: 370,
+                bottom: 130,
+                left: 60
+            };
     }
 
     function initMap() {
         const mapEl = document.getElementById('map');
         if (!mapEl) return;
         gmap = new google.maps.Map(mapEl, {
-            center: { lat: 7.8731, lng: 80.7718 },
+            center: {
+                lat: 7.8731,
+                lng: 80.7718
+            },
             zoom: 8,
             disableDefaultUI: true,
             zoomControl: window.innerWidth >= 768,
-            zoomControlOptions: { position: google.maps.ControlPosition.LEFT_CENTER },
+            zoomControlOptions: {
+                position: google.maps.ControlPosition.LEFT_CENTER
+            },
             gestureHandling: 'greedy',
             clickableIcons: false,
             styles: STMap.styles(),
@@ -659,7 +1178,10 @@
             /* Glide to the new fix instead of hopping. GPS noise and impossible jumps
                are rejected and must not touch the trail or the stored position. */
             const result = MarkerGlide.move(vehicleId, markers[vehicleId], pos, heading, devMs, {
-                paint: deg => { markers[vehicleId]._deg = deg; markers[vehicleId].setIcon(makeMarkerIcon(true, deg, vehicleId, data.speed)); },
+                paint: deg => {
+                    markers[vehicleId]._deg = deg;
+                    markers[vehicleId].setIcon(makeMarkerIcon(true, deg, vehicleId, data.speed));
+                },
                 frame: p => {
                     const path = polylines[vehicleId]?.getPath();
                     if (path && path.getLength()) path.setAt(path.getLength() - 1, new google.maps.LatLng(p.lat, p.lng));
@@ -913,7 +1435,9 @@
             {{-- Step 2: sent --}}
             <div id="sos-step-sent" class="hidden">
                 <div style="width:48px;height:48px;border-radius:50%;background:#f0fdf4;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
-                    <svg width="24" height="24" fill="none" stroke="#16a34a" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                    <svg width="24" height="24" fill="none" stroke="#16a34a" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
                 </div>
                 <h3 class="font-semibold text-gray-800 mb-1">SOS sent</h3>
                 <p class="text-sm text-gray-500 mb-4">The monitoring centre has been alerted. You can also call your emergency contacts:</p>
