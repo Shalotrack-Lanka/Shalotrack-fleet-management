@@ -524,47 +524,7 @@
     }
 
     /* ── Google Maps callback ─────────────────────────────── */
-    /* Map themes: dark navy matches the glass; light stays available (saved per browser). */
-    const MAP_STYLES = {
-        dark: [
-            { elementType: 'geometry', stylers: [{ color: '#0b2a55' }] },
-            { elementType: 'labels.text.stroke', stylers: [{ color: '#06182f' }] },
-            { elementType: 'labels.text.fill', stylers: [{ color: '#8fa8c8' }] },
-            { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#c3d3ea' }] },
-            { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-            { featureType: 'transit', stylers: [{ visibility: 'off' }] },
-            { featureType: 'landscape', elementType: 'geometry', stylers: [{ color: '#0d305f' }] },
-            { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#1b4379' }] },
-            { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#0b2a55' }] },
-            { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#7f9bc2' }] },
-            { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#2a5a9a' }] },
-            { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#031428' }] },
-            { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#4a6a95' }] },
-        ],
-        light: [
-            { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-            { featureType: 'transit', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-        ],
-    };
-    let mapTheme = 'dark';
-    try { if (localStorage.getItem('st_map_theme') === 'light') mapTheme = 'light'; } catch (_) {}
-
-    function applyMapTheme() {
-        if (gmap) gmap.setOptions({ styles: MAP_STYLES[mapTheme] });
-        const btn = document.getElementById('map-theme-btn');
-        if (btn) {
-            btn.setAttribute('aria-label', mapTheme === 'dark' ? 'Switch map to light' : 'Switch map to dark');
-            btn.innerHTML = mapTheme === 'dark'
-                ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>'
-                : '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
-        }
-    }
-    document.getElementById('map-theme-btn')?.addEventListener('click', () => {
-        mapTheme = mapTheme === 'dark' ? 'light' : 'dark';
-        try { localStorage.setItem('st_map_theme', mapTheme); } catch (_) {}
-        applyMapTheme();
-    });
-    applyMapTheme();
+    /* Map theme (dark/light) lives in partials/map-style (shared with the other map pages). */
 
     /* Vehicle panel: collapse so the whole map is visible. */
     document.getElementById('vpanel-toggle')?.addEventListener('click', function () {
@@ -604,8 +564,9 @@
             zoomControlOptions: { position: google.maps.ControlPosition.LEFT_CENTER },
             gestureHandling: 'greedy',
             clickableIcons: false,
-            styles: MAP_STYLES[mapTheme],
+            styles: STMap.styles(),
         });
+        STMap.register(gmap);
 
         const bounds = new google.maps.LatLngBounds();
         let hasPoint = false;

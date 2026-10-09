@@ -33,13 +33,13 @@ $pendingCount = count($pendingInvites);
     .sh-title {
         font-size: 1.5rem;
         font-weight: 800;
-        color: #021F4A;
+        color: var(--g-t1,#021F4A);
         line-height: 1.2;
     }
 
     .sh-subtitle {
         font-size: .875rem;
-        color: #6b7280;
+        color: var(--g-t2,#6b7280);
         margin-top: .3rem;
     }
 
@@ -66,12 +66,12 @@ $pendingCount = count($pendingInvites);
 
     /* Error banner */
     .sh-error {
-        background: #fef2f2;
-        border: 1px solid #fecaca;
+        background: var(--g-redbg,#fef2f2);
+        border: 1px solid var(--g-redb,#fecaca);
         border-radius: .75rem;
         padding: 1rem 1.25rem;
         font-size: .875rem;
-        color: #dc2626;
+        color: var(--g-redt,#dc2626);
         margin-bottom: 1.25rem;
     }
 
@@ -79,7 +79,7 @@ $pendingCount = count($pendingInvites);
     .sh-tabs {
         display: flex;
         gap: .25rem;
-        border-bottom: 2px solid #e5e7eb;
+        border-bottom: 2px solid var(--g-b,#e5e7eb);
         margin-bottom: 1.75rem;
         overflow-x: auto;
         scrollbar-width: none;
@@ -96,7 +96,7 @@ $pendingCount = count($pendingInvites);
         padding: .75rem 1.125rem;
         font-size: .875rem;
         font-weight: 600;
-        color: #6b7280;
+        color: var(--g-t2,#6b7280);
         background: none;
         border: none;
         border-bottom: 2px solid transparent;
@@ -147,8 +147,8 @@ $pendingCount = count($pendingInvites);
     }
 
     .sh-card {
-        background: #fff;
-        border: 1px solid #e5e7eb;
+        background: var(--g-s1,#fff);
+        border: 1px solid var(--g-b,#e5e7eb);
         border-radius: .875rem;
         padding: 1.125rem 1.25rem;
         display: flex;
@@ -165,7 +165,7 @@ $pendingCount = count($pendingInvites);
     .sh-card-icon {
         width: 44px;
         height: 44px;
-        background: #f0f9ff;
+        background: var(--g-blbg,#f0f9ff);
         border-radius: .625rem;
         display: flex;
         align-items: center;
@@ -174,11 +174,11 @@ $pendingCount = count($pendingInvites);
     }
 
     .sh-card-icon.orange {
-        background: #fff7f0;
+        background: var(--g-orbg,#fff7f0);
     }
 
     .sh-card-icon svg {
-        color: #0284c7;
+        color: var(--g-blt,#0284c7);
     }
 
     .sh-card-icon.orange svg {
@@ -193,31 +193,31 @@ $pendingCount = count($pendingInvites);
     .sh-card-vehicle {
         font-size: .9375rem;
         font-weight: 700;
-        color: #021F4A;
+        color: var(--g-t1,#021F4A);
     }
 
     .sh-card-make {
         font-size: .8125rem;
-        color: #6b7280;
+        color: var(--g-t2,#6b7280);
         margin-top: .15rem;
     }
 
     .sh-card-person {
         font-size: .8125rem;
-        color: #374151;
+        color: var(--g-t1,#374151);
         margin-top: .35rem;
         font-weight: 500;
     }
 
     .sh-card-phone {
         font-size: .75rem;
-        color: #9ca3af;
+        color: var(--g-t3,#9ca3af);
         margin-top: .1rem;
     }
 
     .sh-card-meta {
         font-size: .75rem;
-        color: #9ca3af;
+        color: var(--g-t3,#9ca3af);
         margin-top: .25rem;
     }
 
@@ -241,21 +241,21 @@ $pendingCount = count($pendingInvites);
     }
 
     .sh-status.pending {
-        background: #fffbeb;
-        color: #b45309;
-        border-color: #fde68a;
+        background: var(--g-ambg,#fffbeb);
+        color: var(--g-amt,#b45309);
+        border-color: var(--g-amb,#fde68a);
     }
 
     .sh-status.accepted {
-        background: #f0fdf4;
-        color: #16a34a;
-        border-color: #bbf7d0;
+        background: var(--g-grbg,#f0fdf4);
+        color: var(--g-grt,#16a34a);
+        border-color: var(--g-grb,#bbf7d0);
     }
 
     .sh-status.revoked {
-        background: #f9fafb;
-        color: #6b7280;
-        border-color: #e5e7eb;
+        background: var(--g-s2,#f9fafb);
+        color: var(--g-t2,#6b7280);
+        border-color: var(--g-b,#e5e7eb);
     }
 
     .sh-status-dot {
@@ -292,12 +292,12 @@ $pendingCount = count($pendingInvites);
 
     .sh-btn-decline {
         padding: .5rem .875rem;
-        background: #fff;
-        border: 1px solid #fecaca;
+        background: var(--g-s1,#fff);
+        border: 1px solid var(--g-redb,#fecaca);
         border-radius: .5rem;
         font-size: .8125rem;
         font-weight: 600;
-        color: #dc2626;
+        color: var(--g-redt,#dc2626);
         cursor: pointer;
         transition: background .15s;
         white-space: nowrap;
@@ -305,7 +305,7 @@ $pendingCount = count($pendingInvites);
     }
 
     .sh-btn-decline:hover {
-        background: #fef2f2;
+        background: var(--g-redbg,#fef2f2);
     }
 
     .sh-btn-decline:disabled {
@@ -333,12 +333,12 @@ $pendingCount = count($pendingInvites);
     .sh-btn-track:hover { background: #e55d00; }
     .sh-btn-revoke {
         padding: .5rem .875rem;
-        background: #fff;
-        border: 1px solid #e5e7eb;
+        background: var(--g-s1,#fff);
+        border: 1px solid var(--g-b,#e5e7eb);
         border-radius: .5rem;
         font-size: .8125rem;
         font-weight: 600;
-        color: #6b7280;
+        color: var(--g-t2,#6b7280);
         cursor: pointer;
         transition: background .15s;
         white-space: nowrap;
@@ -346,9 +346,9 @@ $pendingCount = count($pendingInvites);
     }
 
     .sh-btn-revoke:hover {
-        background: #fef2f2;
-        border-color: #fecaca;
-        color: #dc2626;
+        background: var(--g-redbg,#fef2f2);
+        border-color: var(--g-redb,#fecaca);
+        color: var(--g-redt,#dc2626);
     }
 
     .sh-btn-revoke:disabled {
@@ -358,8 +358,8 @@ $pendingCount = count($pendingInvites);
 
     /* Empty state */
     .sh-empty {
-        background: #fff;
-        border: 1px dashed #e5e7eb;
+        background: var(--g-s1,#fff);
+        border: 1px dashed var(--g-b,#e5e7eb);
         border-radius: .875rem;
         padding: 3rem 1.5rem;
         text-align: center;
@@ -368,7 +368,7 @@ $pendingCount = count($pendingInvites);
     .sh-empty-icon {
         width: 54px;
         height: 54px;
-        background: #f9fafb;
+        background: var(--g-s2,#f9fafb);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -377,18 +377,18 @@ $pendingCount = count($pendingInvites);
     }
 
     .sh-empty-icon svg {
-        color: #d1d5db;
+        color: var(--g-t3,#d1d5db);
     }
 
     .sh-empty-title {
         font-size: 1rem;
         font-weight: 700;
-        color: #021F4A;
+        color: var(--g-t1,#021F4A);
     }
 
     .sh-empty-desc {
         font-size: .8125rem;
-        color: #6b7280;
+        color: var(--g-t2,#6b7280);
         margin-top: .375rem;
         max-width: 360px;
         margin-left: auto;
@@ -436,7 +436,7 @@ $pendingCount = count($pendingInvites);
     }
 
     .sh-modal {
-        background: #fff;
+        background: var(--g-s1,#fff);
         border-radius: 1rem;
         width: 100%;
         max-width: 480px;
@@ -448,13 +448,13 @@ $pendingCount = count($pendingInvites);
         align-items: center;
         justify-content: space-between;
         padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid #f3f4f6;
+        border-bottom: 1px solid var(--g-b,#f3f4f6);
     }
 
     .sh-modal-title {
         font-size: 1.0625rem;
         font-weight: 800;
-        color: #021F4A;
+        color: var(--g-t1,#021F4A);
     }
 
     .sh-modal-close {
@@ -463,7 +463,7 @@ $pendingCount = count($pendingInvites);
         background: none;
         border: none;
         cursor: pointer;
-        color: #9ca3af;
+        color: var(--g-t3,#9ca3af);
         border-radius: .5rem;
         display: flex;
         align-items: center;
@@ -471,8 +471,8 @@ $pendingCount = count($pendingInvites);
     }
 
     .sh-modal-close:hover {
-        background: #f3f4f6;
-        color: #374151;
+        background: var(--g-s3,#f3f4f6);
+        color: var(--g-t1,#374151);
     }
 
     .sh-modal-body {
@@ -481,7 +481,7 @@ $pendingCount = count($pendingInvites);
 
     .sh-modal-foot {
         padding: .875rem 1.5rem;
-        border-top: 1px solid #f3f4f6;
+        border-top: 1px solid var(--g-b,#f3f4f6);
         display: flex;
         justify-content: flex-end;
         gap: .75rem;
@@ -495,12 +495,12 @@ $pendingCount = count($pendingInvites);
         display: block;
         font-size: .8125rem;
         font-weight: 600;
-        color: #374151;
+        color: var(--g-t1,#374151);
         margin-bottom: .375rem;
     }
 
     .sh-label .req {
-        color: #dc2626;
+        color: var(--g-redt,#dc2626);
         margin-left: .1em;
     }
 
@@ -508,11 +508,11 @@ $pendingCount = count($pendingInvites);
     .sh-select {
         width: 100%;
         padding: .625rem .875rem;
-        border: 1px solid #d1d5db;
+        border: 1px solid var(--g-b,#d1d5db);
         border-radius: .625rem;
         font-size: .875rem;
-        color: #111827;
-        background: #fff;
+        color: var(--g-t1,#111827);
+        background: var(--g-s1,#fff);
         transition: border-color .15s;
         box-sizing: border-box;
         font-family: inherit;
@@ -526,23 +526,23 @@ $pendingCount = count($pendingInvites);
     }
 
     .sh-modal-err {
-        background: #fef2f2;
-        border: 1px solid #fecaca;
+        background: var(--g-redbg,#fef2f2);
+        border: 1px solid var(--g-redb,#fecaca);
         border-radius: .5rem;
         padding: .75rem 1rem;
         font-size: .8125rem;
-        color: #dc2626;
+        color: var(--g-redt,#dc2626);
         margin-bottom: 1rem;
         display: none;
     }
 
     .sh-modal-hint {
-        background: #f0fdf4;
-        border: 1px solid #bbf7d0;
+        background: var(--g-grbg,#f0fdf4);
+        border: 1px solid var(--g-grb,#bbf7d0);
         border-radius: .5rem;
         padding: .75rem 1rem;
         font-size: .8125rem;
-        color: #16a34a;
+        color: var(--g-grt,#16a34a);
         margin-top: 1rem;
         display: flex;
         gap: .5rem;
@@ -556,18 +556,18 @@ $pendingCount = count($pendingInvites);
 
     .sh-btn-cancel {
         padding: .625rem 1.125rem;
-        background: #f9fafb;
-        border: 1px solid #e5e7eb;
+        background: var(--g-s2,#f9fafb);
+        border: 1px solid var(--g-b,#e5e7eb);
         border-radius: .625rem;
         font-size: .875rem;
         font-weight: 600;
-        color: #374151;
+        color: var(--g-t1,#374151);
         cursor: pointer;
         font-family: inherit;
     }
 
     .sh-btn-cancel:hover {
-        background: #f3f4f6;
+        background: var(--g-s3,#f3f4f6);
     }
 
     .sh-btn-primary {
@@ -594,7 +594,7 @@ $pendingCount = count($pendingInvites);
 
     /* Revoke confirm modal */
     .sh-confirm {
-        background: #fff;
+        background: var(--g-s1,#fff);
         border-radius: 1rem;
         width: 100%;
         max-width: 380px;
@@ -606,7 +606,7 @@ $pendingCount = count($pendingInvites);
     .sh-confirm-icon {
         width: 54px;
         height: 54px;
-        background: #fef2f2;
+        background: var(--g-redbg,#fef2f2);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -617,12 +617,12 @@ $pendingCount = count($pendingInvites);
     .sh-confirm-title {
         font-size: 1.0625rem;
         font-weight: 800;
-        color: #021F4A;
+        color: var(--g-t1,#021F4A);
     }
 
     .sh-confirm-text {
         font-size: .875rem;
-        color: #6b7280;
+        color: var(--g-t2,#6b7280);
         margin: .5rem 0 1.5rem;
         line-height: 1.5;
     }
@@ -661,7 +661,7 @@ $pendingCount = count($pendingInvites);
         bottom: 1.5rem;
         right: 1.5rem;
         z-index: 3000;
-        background: #021F4A;
+        background: var(--g-navy,#021F4A);
         color: #fff;
         font-size: .875rem;
         font-weight: 600;
@@ -856,7 +856,7 @@ $pendingCount = count($pendingInvites);
                 <input id="sh-phone-in" type="tel" class="sh-input"
                     placeholder="e.g. +94 77 987 6543"
                     autocomplete="off">
-                <div style="font-size:.75rem;color:#6b7280;margin-top:.35rem">
+                <div style="font-size:.75rem;color:var(--g-t2,#6b7280);margin-top:.35rem">
                     Include country code · Must match their ShaloTrack account
                 </div>
             </div>
@@ -934,7 +934,7 @@ $pendingCount = count($pendingInvites);
         const make = s.make ?? '';
         const model = s.model ?? '';
         const sub = [make, model].filter(Boolean).join(' ');
-        return sub ? `${esc(s.vehicleNumber)} <span style="font-weight:400;color:#6b7280">· ${esc(sub)}</span>` : esc(s.vehicleNumber ?? '');
+        return sub ? `${esc(s.vehicleNumber)} <span style="font-weight:400;color:var(--g-t2,#6b7280)">· ${esc(sub)}</span>` : esc(s.vehicleNumber ?? '');
     }
 
     /* ── Toast ──────────────────────────────────────────────────────────────────── */

@@ -8,9 +8,9 @@
 <style>
     /* ── Controls bar ── */
     .rpt-controls {
-        background: #fff;
+        background: var(--g-s1,#fff);
         border-radius: .875rem;
-        border: 1px solid #e5e7eb;
+        border: 1px solid var(--g-b,#e5e7eb);
         box-shadow: 0 1px 4px rgba(2, 31, 74, .06);
         padding: 1.25rem 1.5rem;
         margin-bottom: 1.5rem;
@@ -29,7 +29,7 @@
     .rpt-label {
         font-size: .6875rem;
         font-weight: 700;
-        color: #6b7280;
+        color: var(--g-t2,#6b7280);
         text-transform: uppercase;
         letter-spacing: .06em;
     }
@@ -37,11 +37,11 @@
     .rpt-select,
     .rpt-date {
         padding: .5rem .875rem;
-        border: 1.5px solid #e5e7eb;
+        border: 1.5px solid var(--g-b,#e5e7eb);
         border-radius: .625rem;
         font-size: .875rem;
-        color: #111827;
-        background: #fff;
+        color: var(--g-t1,#111827);
+        background: var(--g-s1,#fff);
         outline: none;
         transition: border-color .15s, box-shadow .15s;
         min-width: 180px;
@@ -78,10 +78,10 @@
 
     /* ── Error / empty states ── */
     .rpt-error {
-        background: #fef2f2;
-        border: 1px solid #fecaca;
+        background: var(--g-redbg,#fef2f2);
+        border: 1px solid var(--g-redb,#fecaca);
         border-radius: .75rem;
-        color: #dc2626;
+        color: var(--g-redt,#dc2626);
         padding: 1rem 1.25rem;
         font-size: .875rem;
         margin-bottom: 1.5rem;
@@ -89,9 +89,9 @@
     }
 
     .rpt-empty {
-        background: #fff;
+        background: var(--g-s1,#fff);
         border-radius: .875rem;
-        border: 1px solid #e5e7eb;
+        border: 1px solid var(--g-b,#e5e7eb);
         padding: 5rem 2rem;
         text-align: center;
     }
@@ -99,17 +99,17 @@
     .rpt-empty svg {
         width: 64px;
         height: 64px;
-        color: #e5e7eb;
+        color: var(--g-t3,#e5e7eb);
         margin: 0 auto 1rem;
     }
 
     .rpt-empty p {
-        color: #9ca3af;
+        color: var(--g-t3,#9ca3af);
         font-size: .9375rem;
     }
 
     .rpt-empty .sub {
-        color: #d1d5db;
+        color: var(--g-t3,#d1d5db);
         font-size: .8125rem;
         margin-top: .25rem;
     }
@@ -123,9 +123,9 @@
     }
 
     .rpt-tile {
-        background: #fff;
+        background: var(--g-s1,#fff);
         border-radius: .875rem;
-        border: 1px solid #e5e7eb;
+        border: 1px solid var(--g-b,#e5e7eb);
         padding: 1.125rem 1.25rem;
         box-shadow: 0 1px 3px rgba(0, 0, 0, .04);
     }
@@ -141,25 +141,25 @@
     }
 
     .rpt-tile-icon.orange {
-        background: #fff7ed;
+        background: var(--g-orbg,#fff7ed);
     }
 
     .rpt-tile-icon.navy {
-        background: #eef2ff;
+        background: var(--g-blbg,#eef2ff);
     }
 
     .rpt-tile-icon.green {
-        background: #f0fdf4;
+        background: var(--g-grbg,#f0fdf4);
     }
 
     .rpt-tile-icon.red {
-        background: #fef2f2;
+        background: var(--g-redbg,#fef2f2);
     }
 
     .rpt-tile-label {
         font-size: .6875rem;
         font-weight: 700;
-        color: #9ca3af;
+        color: var(--g-t3,#9ca3af);
         text-transform: uppercase;
         letter-spacing: .05em;
         margin-bottom: .375rem;
@@ -168,22 +168,22 @@
     .rpt-tile-value {
         font-size: 1.625rem;
         font-weight: 800;
-        color: #021F4A;
+        color: var(--g-t1,#021F4A);
         line-height: 1;
     }
 
     .rpt-tile-unit {
         font-size: .75rem;
         font-weight: 500;
-        color: #6b7280;
+        color: var(--g-t2,#6b7280);
         margin-left: .25rem;
     }
 
     /* ── Chart card ── */
     .rpt-card {
-        background: #fff;
+        background: var(--g-s1,#fff);
         border-radius: .875rem;
-        border: 1px solid #e5e7eb;
+        border: 1px solid var(--g-b,#e5e7eb);
         box-shadow: 0 1px 3px rgba(0, 0, 0, .04);
         padding: 1.25rem 1.5rem;
         margin-bottom: 1.5rem;
@@ -192,7 +192,7 @@
     .rpt-card-title {
         font-size: .8125rem;
         font-weight: 700;
-        color: #021F4A;
+        color: var(--g-t1,#021F4A);
         text-transform: uppercase;
         letter-spacing: .05em;
         margin-bottom: 1rem;
@@ -221,30 +221,30 @@
     }
 
     table.rpt-table thead th {
-        background: #f9fafb;
-        color: #6b7280;
+        background: var(--g-s2,#f9fafb);
+        color: var(--g-t2,#6b7280);
         font-weight: 700;
         font-size: .6875rem;
         text-transform: uppercase;
         letter-spacing: .05em;
         padding: .75rem 1rem;
         text-align: left;
-        border-bottom: 1px solid #e5e7eb;
+        border-bottom: 1px solid var(--g-b,#e5e7eb);
         white-space: nowrap;
     }
 
     table.rpt-table tbody tr {
-        border-bottom: 1px solid #f3f4f6;
+        border-bottom: 1px solid var(--g-b,#f3f4f6);
         transition: background .1s;
     }
 
     table.rpt-table tbody tr:hover {
-        background: #fafafa;
+        background: var(--g-s2,#fafafa);
     }
 
     table.rpt-table tbody td {
         padding: .75rem 1rem;
-        color: #374151;
+        color: var(--g-t1,#374151);
         vertical-align: middle;
     }
 
@@ -258,13 +258,13 @@
     }
 
     .rpt-badge-green {
-        background: #f0fdf4;
-        color: #15803d;
+        background: var(--g-grbg,#f0fdf4);
+        color: var(--g-grt,#15803d);
     }
 
     .rpt-badge-orange {
-        background: #fff7ed;
-        color: #c2410c;
+        background: var(--g-orbg,#fff7ed);
+        color: var(--g-amt,#c2410c);
     }
 
     /* ── Export buttons ── */
@@ -280,9 +280,9 @@
         align-items: center;
         gap: .4rem;
         padding: .4375rem 1rem;
-        background: #fff;
-        color: #021F4A;
-        border: 1.5px solid #e5e7eb;
+        background: var(--g-s1,#fff);
+        color: var(--g-t1,#021F4A);
+        border: 1.5px solid var(--g-b,#e5e7eb);
         border-radius: .5rem;
         font-size: .8125rem;
         font-weight: 600;
@@ -292,7 +292,7 @@
     }
 
     .rpt-export-btn:hover {
-        background: #f9fafb;
+        background: var(--g-s2,#f9fafb);
         border-color: #FA6908;
         color: #FA6908;
     }
@@ -304,14 +304,14 @@
     }
 
     .rpt-export-btn.pdf {
-        border-color: #fecaca;
-        color: #dc2626;
+        border-color: var(--g-redb,#fecaca);
+        color: var(--g-redt,#dc2626);
     }
 
     .rpt-export-btn.pdf:hover {
-        background: #fef2f2;
+        background: var(--g-redbg,#fef2f2);
         border-color: #dc2626;
-        color: #dc2626;
+        color: var(--g-redt,#dc2626);
     }
 
     /* ── Loading skeleton ── */
@@ -336,7 +336,7 @@
     .rpt-tabs {
         display: flex;
         gap: .25rem;
-        background: #f3f4f6;
+        background: var(--g-s3,#f3f4f6);
         padding: .25rem;
         border-radius: .75rem;
         margin-bottom: 1rem;
@@ -350,7 +350,7 @@
         padding: .5rem .5rem;
         font-size: .8125rem;
         font-weight: 600;
-        color: #6b7280;
+        color: var(--g-t2,#6b7280);
         background: transparent;
         border: none;
         border-radius: .5rem;
@@ -360,7 +360,7 @@
     }
 
     .rpt-tab.active {
-        background: #fff;
+        background: var(--g-s1,#fff);
         color: #FA6908;
         box-shadow: 0 1px 3px rgba(0, 0, 0, .1);
     }
@@ -376,9 +376,9 @@
         padding: .4375rem .75rem;
         font-size: .75rem;
         font-weight: 600;
-        color: #374151;
-        background: #fff;
-        border: 1.5px solid #e5e7eb;
+        color: var(--g-t1,#374151);
+        background: var(--g-s1,#fff);
+        border: 1.5px solid var(--g-b,#e5e7eb);
         border-radius: 999px;
         cursor: pointer;
         white-space: nowrap;
@@ -391,7 +391,7 @@
 
     .rpt-sub {
         font-size: .75rem;
-        color: #9ca3af;
+        color: var(--g-t3,#9ca3af);
         margin: -.25rem 0 1rem;
     }
 
@@ -401,8 +401,8 @@
         padding: .0625rem .375rem;
         font-size: .625rem;
         font-weight: 700;
-        color: #0369a1;
-        background: #e0f2fe;
+        color: var(--g-blt,#0369a1);
+        background: var(--g-blbg,#e0f2fe);
         border-radius: 999px;
         vertical-align: middle;
     }
@@ -413,8 +413,8 @@
         gap: .375rem;
         padding: .1875rem .625rem;
         border-radius: 999px;
-        background: #f3f4f6;
-        color: #374151;
+        background: var(--g-s3,#f3f4f6);
+        color: var(--g-t1,#374151);
         font-size: .75rem;
         font-weight: 600;
         margin: 0 .375rem .375rem 0;
@@ -426,11 +426,11 @@
 
     .rpt-addr {
         font-weight: 600;
-        color: #021F4A;
+        color: var(--g-t1,#021F4A);
         line-height: 1.3;
         margin-bottom: 2px;
     }
-    .rpt-addr.pending { color: #9ca3af; font-weight: 500; }
+    .rpt-addr.pending { color: var(--g-t3,#9ca3af); font-weight: 500; }
     .rpt-addr-btn {
         background: none;
         border: 0;
@@ -442,7 +442,7 @@
     }
 
     .rpt-map-link {
-        color: #0369a1;
+        color: var(--g-blt,#0369a1);
         text-decoration: none;
         font-size: .75rem;
     }
@@ -520,7 +520,7 @@
         table.rpt-table.stack tr {
             display: block;
             padding: .625rem 0;
-            border-bottom: 1px solid #f3f4f6;
+            border-bottom: 1px solid var(--g-b,#f3f4f6);
         }
 
         table.rpt-table.stack td {
@@ -533,7 +533,7 @@
 
         table.rpt-table.stack td::before {
             content: attr(data-label);
-            color: #9ca3af;
+            color: var(--g-t3,#9ca3af);
             font-size: .6875rem;
             font-weight: 700;
             text-transform: uppercase;
@@ -604,7 +604,7 @@
 
     {{-- Export bar --}}
     <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem">
-        <div style="font-size:.875rem;font-weight:700;color:#021F4A" id="rpt-heading"></div>
+        <div style="font-size:.875rem;font-weight:700;color:var(--g-t1,#021F4A)" id="rpt-heading"></div>
         <div class="rpt-export-group">
             <button class="rpt-export-btn" id="btn-csv" onclick="download('csv')" title="Download as a spreadsheet (CSV)">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
@@ -641,7 +641,7 @@
         <div class="rpt-card">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:.5rem;flex-wrap:wrap">
                 <div class="rpt-card-title" style="margin:0">Trip Details</div>
-                <span style="font-size:.6875rem;font-weight:600;color:#9ca3af;letter-spacing:.04em;text-transform:uppercase">↓ Latest First</span>
+                <span style="font-size:.6875rem;font-weight:600;color:var(--g-t3,#9ca3af);letter-spacing:.04em;text-transform:uppercase">↓ Latest First</span>
             </div>
             <div class="rpt-table-wrap">
                 <table class="rpt-table stack">
@@ -810,9 +810,9 @@
         chartCard.style.display = d.daily.length > 1 ? '' : 'none';
         if (d.daily.length > 1) renderBarChart(d.daily.map(r => r.label), d.daily.map(r => r.distanceKm));
 
-        const dash = '<span style="color:#9ca3af">—</span>';
+        const dash = '<span style="color:var(--g-t3,#9ca3af)">—</span>';
         document.getElementById('km-daily').innerHTML = d.daily.map(r => `<tr>
-            <td data-label="Date" style="font-weight:600;color:#021F4A">${esc(r.weekday)}, ${esc(r.label)}</td>
+            <td data-label="Date" style="font-weight:600;color:var(--g-t1,#021F4A)">${esc(r.weekday)}, ${esc(r.label)}</td>
             <td data-label="Distance">${r.distanceKm > 0 ? '<strong>' + r.distanceKm.toFixed(2) + '</strong> km' : dash}</td>
             <td data-label="Trips">${r.trips || dash}</td>
             <td data-label="Stops">${r.stops || dash}</td>
@@ -821,19 +821,19 @@
             <td data-label="Ignition on">${r.ignitionMin > 0 ? esc(r.ignitionLabel) : dash}</td></tr>`).join('');
 
         document.getElementById('km-trips').innerHTML = d.trips.length ? d.trips.map((t, i) => `<tr>
-            <td data-label="#" style="color:#9ca3af">${i + 1}</td>
-            <td data-label="Date" style="font-weight:600;color:#021F4A">${esc(t.date)}</td>
+            <td data-label="#" style="color:var(--g-t3,#9ca3af)">${i + 1}</td>
+            <td data-label="Date" style="font-weight:600;color:var(--g-t1,#021F4A)">${esc(t.date)}</td>
             <td data-label="Start">${esc(t.start)}</td>
             <td data-label="End">${t.inProgress ? '<span class="rpt-badge rpt-badge-orange">In progress</span>' : (t.end ? esc(t.end) : dash)}</td>
             <td data-label="Duration">${esc(t.duration)}</td>
             <td data-label="Distance"><strong>${t.distanceKm.toFixed(2)}</strong> km</td>
             <td data-label="Max speed">${t.maxSpeed} km/h</td>
             <td data-label="Avg speed">${t.avgSpeed.toFixed(1)} km/h</td></tr>`).join('')
-            : `<tr><td colspan="8" style="text-align:center;color:#9ca3af;padding:1.5rem">No individual trips in this period.</td></tr>`;
+            : `<tr><td colspan="8" style="text-align:center;color:var(--g-t3,#9ca3af);padding:1.5rem">No individual trips in this period.</td></tr>`;
     }
 
     function mapLink(lat, lng) {
-        if (lat === null || lng === null) return '<span style="color:#9ca3af">—</span>';
+        if (lat === null || lng === null) return '<span style="color:var(--g-t3,#9ca3af)">—</span>';
         return `<a class="rpt-map-link" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps?q=${encodeURIComponent(lat)},${encodeURIComponent(lng)}">${lat.toFixed(5)}, ${lng.toFixed(5)} ↗</a>`;
     }
 
@@ -844,8 +844,8 @@
             tile('Total stops', s.count) + tile('Total stopped time', s.totalLabel) +
             tile('Longest stop', s.longestLabel) + tile('Average stop', s.averageLabel);
         document.getElementById('stops-body').innerHTML = d.stops.map((x, i) => `<tr>
-            <td data-label="#" style="color:#9ca3af">${i + 1}</td>
-            <td data-label="Date" style="font-weight:600;color:#021F4A">${esc(x.date)}</td>
+            <td data-label="#" style="color:var(--g-t3,#9ca3af)">${i + 1}</td>
+            <td data-label="Date" style="font-weight:600;color:var(--g-t1,#021F4A)">${esc(x.date)}</td>
             <td data-label="Arrived">${esc(x.arrived)}</td>
             <td data-label="Departed">${x.inProgress ? '<span class="rpt-badge rpt-badge-orange">Still stopped</span>' : (x.departed ? esc(x.departed) : '—')}</td>
             <td data-label="Duration"><strong>${esc(x.duration)}</strong></td>
@@ -912,8 +912,8 @@
         document.getElementById('alerts-types').innerHTML = types
             .map(([t, n]) => `<span class="rpt-type-chip">${esc(t)} <b>${n}</b></span>`).join('');
         document.getElementById('alerts-body').innerHTML = d.alerts.map((a, i) => `<tr>
-            <td data-label="#" style="color:#9ca3af">${i + 1}</td>
-            <td data-label="Date" style="font-weight:600;color:#021F4A">${esc(a.date)}</td>
+            <td data-label="#" style="color:var(--g-t3,#9ca3af)">${i + 1}</td>
+            <td data-label="Date" style="font-weight:600;color:var(--g-t1,#021F4A)">${esc(a.date)}</td>
             <td data-label="Time">${esc(a.time)}</td>
             <td data-label="Type"><span class="rpt-badge rpt-badge-orange">${esc(a.type)}</span></td>
             <td data-label="Message" style="text-align:left">${esc(a.message)}</td></tr>`).join('');

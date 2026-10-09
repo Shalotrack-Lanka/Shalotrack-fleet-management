@@ -2,58 +2,74 @@
 
 @section('page-title', 'Frequent Places')
 @section('title', 'Frequent Places')
+@section('fullbleed', '1')
 
 @section('content')
 {{-- Styles live inside @section('content'): the layout never renders @stack('styles'). --}}
 <style>
     .fp { max-width: 1280px; margin: 0 auto; padding: 20px 16px 40px; }
-    .fp-title { font-size: 22px; font-weight: 800; color: #021F4A; margin: 0 0 4px; }
-    .fp-sub { font-size: 14px; color: #64748b; margin: 0 0 16px; line-height: 1.5; }
+    .fp-title { font-size: 22px; font-weight: 800; color: var(--g-t1,#021F4A); margin: 0 0 4px; }
+    .fp-sub { font-size: 14px; color: var(--g-t2,#64748b); margin: 0 0 16px; line-height: 1.5; }
 
-    .fp-controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; background: #fff; border: 1px solid #e2e8f0;
+    .fp-controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; background: var(--g-s1,#fff); border: 1px solid var(--g-b,#e2e8f0);
                    border-radius: 14px; padding: 14px 16px; margin-bottom: 16px; }
     .fp-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-    .fp-label { font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #64748b; }
-    .fp-select { border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 12px; font-size: 16px; background: #fff; min-height: 44px; max-width: 100%; min-width: 220px; }
+    .fp-label { font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--g-t2,#64748b); }
+    .fp-select { border: 1px solid var(--g-b,#cbd5e1); border-radius: 10px; padding: 10px 12px; font-size: 16px; background: var(--g-s1,#fff); min-height: 44px; max-width: 100%; min-width: 220px; }
     .fp-seg { display: flex; gap: 8px; }
-    .fp-seg button { border: 1px solid #cbd5e1; background: #fff; color: #334155; font-size: 14px; font-weight: 600; padding: 10px 14px;
+    .fp-seg button { border: 1px solid var(--g-b,#cbd5e1); background: var(--g-s1,#fff); color: var(--g-t1,#334155); font-size: 14px; font-weight: 600; padding: 10px 14px;
                      border-radius: 999px; cursor: pointer; min-height: 44px; }
-    .fp-seg button[aria-pressed="true"] { background: #021F4A; border-color: #021F4A; color: #fff; }
+    .fp-seg button[aria-pressed="true"] { background: var(--g-navy,#021F4A); border-color: #021F4A; color: #fff; }
 
-    .fp-status { font-size: 13.5px; color: #475569; margin: 0 0 10px; min-height: 20px; }
-    .fp-error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; border-radius: 10px; padding: 10px 12px; font-size: 13.5px; margin-bottom: 12px; }
+    .fp-status { font-size: 13.5px; color: var(--g-t2,#475569); margin: 0 0 10px; min-height: 20px; }
+    .fp-error { background: var(--g-redbg,#fef2f2); border: 1px solid var(--g-redb,#fecaca); color: var(--g-redt,#991b1b); border-radius: 10px; padding: 10px 12px; font-size: 13.5px; margin-bottom: 12px; }
 
     .fp-body { display: grid; grid-template-columns: 1fr; gap: 16px; }
     @media (min-width: 900px) { .fp-body { grid-template-columns: 380px 1fr; align-items: start; } }
 
-    .fp-map-wrap { order: -1; background: #e2e8f0; border-radius: 14px; overflow: hidden; border: 1px solid #e2e8f0; height: 340px; }
+    .fp-map-wrap { order: -1; background: var(--g-s3,#e2e8f0); border-radius: 14px; overflow: hidden; border: 1px solid var(--g-b,#e2e8f0); height: 340px; }
     @media (min-width: 900px) { .fp-map-wrap { order: 0; height: 640px; position: sticky; top: 16px; } }
     #fp-map { width: 100%; height: 100%; }
 
     .fp-list { display: flex; flex-direction: column; gap: 10px; }
-    .fp-empty { background: #fff; border: 1px dashed #cbd5e1; border-radius: 14px; padding: 28px 16px; text-align: center; color: #64748b; font-size: 14.5px; line-height: 1.6; }
+    .fp-empty { background: var(--g-s1,#fff); border: 1px dashed var(--g-b,#cbd5e1); border-radius: 14px; padding: 28px 16px; text-align: center; color: var(--g-t2,#64748b); font-size: 14.5px; line-height: 1.6; }
 
-    .fp-card { background: #fff; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 12px 14px; display: flex; gap: 12px; cursor: pointer; }
-    .fp-card:hover { border-color: #cbd5e1; }
+    .fp-card { background: var(--g-s1,#fff); border: 1.5px solid var(--g-b,#e2e8f0); border-radius: 14px; padding: 12px 14px; display: flex; gap: 12px; cursor: pointer; }
+    .fp-card:hover { border-color: var(--g-b,#cbd5e1); }
     .fp-card.active { border-color: #FA6908; box-shadow: 0 0 0 3px rgba(250,105,8,.15); }
     .fp-rank { flex: 0 0 32px; height: 32px; border-radius: 50%; background: #FA6908; color: #fff; font-weight: 800; font-size: 14px;
                display: flex; align-items: center; justify-content: center; }
     .fp-info { min-width: 0; flex: 1; }
-    .fp-addr { font-size: 14.5px; font-weight: 700; color: #0f172a; line-height: 1.35; overflow-wrap: anywhere; }
-    .fp-meta { font-size: 12.5px; color: #64748b; margin-top: 3px; }
-    .fp-saved { display: inline-block; margin-top: 6px; font-size: 11.5px; font-weight: 800; color: #166534; background: #dcfce7; padding: 2px 8px; border-radius: 999px; }
+    .fp-addr { font-size: 14.5px; font-weight: 700; color: var(--g-t1,#0f172a); line-height: 1.35; overflow-wrap: anywhere; }
+    .fp-meta { font-size: 12.5px; color: var(--g-t2,#64748b); margin-top: 3px; }
+    .fp-saved { display: inline-block; margin-top: 6px; font-size: 11.5px; font-weight: 800; color: var(--g-grt,#166534); background: var(--g-grbg,#dcfce7); padding: 2px 8px; border-radius: 999px; }
     .fp-actions { margin-top: 8px; }
-    .fp-btn { border: 1px solid #FA6908; background: #fff; color: #c2410c; font-size: 13px; font-weight: 700; padding: 8px 12px; border-radius: 10px; cursor: pointer; min-height: 40px; }
+    .fp-btn { border: 1px solid #FA6908; background: var(--g-s1,#fff); color: var(--g-amt,#c2410c); font-size: 13px; font-weight: 700; padding: 8px 12px; border-radius: 10px; cursor: pointer; min-height: 40px; }
     .fp-btn.primary { background: #FA6908; color: #fff; }
-    .fp-btn.ghost { border-color: #cbd5e1; color: #475569; }
+    .fp-btn.ghost { border-color: var(--g-b,#cbd5e1); color: var(--g-t2,#475569); }
     .fp-btn:disabled { opacity: .6; cursor: default; }
     .fp-saveform { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-    .fp-saveform input { flex: 1 1 160px; min-width: 0; border: 1px solid #cbd5e1; border-radius: 10px; padding: 9px 11px; font-size: 16px; }
+    .fp-saveform input { flex: 1 1 160px; min-width: 0; border: 1px solid var(--g-b,#cbd5e1); border-radius: 10px; padding: 9px 11px; font-size: 16px; }
     .fp-msg { font-size: 12.5px; margin-top: 6px; }
-    .fp-msg.err { color: #b91c1c; }
+    .fp-msg.err { color: var(--g-redt,#b91c1c); }
+
+    /* ── Full-bleed (desktop): the map is the page, panels float over it ── */
+    @media (min-width: 821px) {
+        body.st-full .fp { max-width: none; margin: 0; padding: 0; }
+        body.st-full .fp-panel { position: fixed; top: 84px; left: 20px; width: 352px; z-index: 3; padding: 18px 18px 8px; border-radius: 24px;
+            background: var(--g-s1); border: 1px solid rgba(255,255,255,.22); box-shadow: var(--gl-shadow); }
+        body.st-full .fp-controls { background: none; border: 0; padding: 0; margin-bottom: 10px; flex-direction: column; align-items: stretch; }
+        body.st-full .fp-select { width: 100%; min-width: 0; }
+        body.st-full .fp-body { display: block; }
+        body.st-full .fp-map-wrap { position: fixed; inset: 0; height: auto; order: 0; border: 0; border-radius: 0; z-index: 0; top: 0; }
+        body.st-full .fp-list { position: fixed; top: 84px; right: 20px; bottom: 112px; width: 352px; overflow-y: auto; z-index: 3; padding: 4px; scrollbar-width: none; }
+        body.st-full .fp-list::-webkit-scrollbar { display: none; }
+        body.st-full .fp-card { box-shadow: var(--gl-shadow); }
+    }
 </style>
 
 <div class="fp">
+<div class="fp-panel">
     <h1 class="fp-title">Frequent places</h1>
     <p class="fp-sub">The places a vehicle keeps ending its trips at. Spot depots, customers and parking habits, then save the ones that matter.</p>
 
@@ -77,6 +93,7 @@
 
     <p class="fp-status" id="fp-status" role="status" aria-live="polite"></p>
     <div id="fp-errors"></div>
+</div>{{-- /fp-panel --}}
 
     <div class="fp-body">
         <div class="fp-map-wrap"><div id="fp-map" aria-label="Map of frequent places"></div></div>
@@ -275,10 +292,12 @@
             mapTypeId: 'roadmap',
             streetViewControl: false,
             mapTypeControl: false,
-            fullscreenControl: true,
+            fullscreenControl: false,
+            zoomControlOptions: { position: google.maps.ControlPosition.LEFT_CENTER },
             gestureHandling: 'greedy',
             clickableIcons: false,
         });
+        STMap.register(map);
         mapReady = true;
         drawMarkers();
         fitMap();

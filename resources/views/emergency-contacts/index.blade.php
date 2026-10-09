@@ -27,13 +27,13 @@ $error = $error ?? null;
     .ec-title {
         font-size: 1.5rem;
         font-weight: 800;
-        color: #021F4A;
+        color: var(--g-t1,#021F4A);
         line-height: 1.2;
     }
 
     .ec-subtitle {
         font-size: .875rem;
-        color: #6b7280;
+        color: var(--g-t2,#6b7280);
         margin-top: .3rem;
     }
 
@@ -60,12 +60,12 @@ $error = $error ?? null;
 
     /* Error banner */
     .ec-error {
-        background: #fef2f2;
-        border: 1px solid #fecaca;
+        background: var(--g-redbg,#fef2f2);
+        border: 1px solid var(--g-redb,#fecaca);
         border-radius: .75rem;
         padding: 1rem 1.25rem;
         font-size: .875rem;
-        color: #dc2626;
+        color: var(--g-redt,#dc2626);
         margin-bottom: 1.25rem;
     }
 
@@ -74,18 +74,18 @@ $error = $error ?? null;
         display: flex;
         align-items: center;
         gap: .75rem;
-        background: #f0f9ff;
-        border: 1px solid #bae6fd;
+        background: var(--g-blbg,#f0f9ff);
+        border: 1px solid var(--g-blb,#bae6fd);
         border-radius: .75rem;
         padding: .875rem 1.25rem;
         font-size: .8125rem;
-        color: #0369a1;
+        color: var(--g-blt,#0369a1);
         margin-bottom: 1.5rem;
     }
 
     .ec-info svg {
         flex-shrink: 0;
-        color: #0284c7;
+        color: var(--g-blt,#0284c7);
     }
 
     /* Contact cards */
@@ -96,8 +96,8 @@ $error = $error ?? null;
     }
 
     .ec-card {
-        background: #fff;
-        border: 1px solid #e5e7eb;
+        background: var(--g-s1,#fff);
+        border: 1px solid var(--g-b,#e5e7eb);
         border-radius: .875rem;
         padding: 1.125rem 1.25rem;
         display: flex;
@@ -113,7 +113,7 @@ $error = $error ?? null;
     .ec-avatar {
         width: 46px;
         height: 46px;
-        background: #fff7f0;
+        background: var(--g-orbg,#fff7f0);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -133,7 +133,7 @@ $error = $error ?? null;
     .ec-name {
         font-size: .9375rem;
         font-weight: 700;
-        color: #021F4A;
+        color: var(--g-t1,#021F4A);
         display: flex;
         align-items: center;
         gap: .5rem;
@@ -145,8 +145,8 @@ $error = $error ?? null;
         font-size: .6875rem;
         font-weight: 600;
         color: #FA6908;
-        background: #fff7f0;
-        border: 1px solid #fed7aa;
+        background: var(--g-orbg,#fff7f0);
+        border: 1px solid var(--g-orb,#fed7aa);
         border-radius: 99px;
         padding: .1em .65em;
         line-height: 1.6;
@@ -154,14 +154,14 @@ $error = $error ?? null;
 
     .ec-phone {
         font-size: .8125rem;
-        color: #374151;
+        color: var(--g-t1,#374151);
         margin-top: .2rem;
         font-weight: 500;
     }
 
     .ec-meta {
         font-size: .75rem;
-        color: #9ca3af;
+        color: var(--g-t3,#9ca3af);
         margin-top: .2rem;
     }
 
@@ -169,9 +169,9 @@ $error = $error ?? null;
         width: 36px;
         height: 36px;
         background: none;
-        border: 1px solid #fecaca;
+        border: 1px solid var(--g-redb,#fecaca);
         border-radius: .5rem;
-        color: #dc2626;
+        color: var(--g-redt,#dc2626);
         cursor: pointer;
         flex-shrink: 0;
         display: flex;
@@ -181,14 +181,14 @@ $error = $error ?? null;
     }
 
     .ec-del-btn:hover {
-        background: #fef2f2;
+        background: var(--g-redbg,#fef2f2);
         border-color: #dc2626;
     }
 
     /* Empty state */
     .ec-empty {
-        background: #fff;
-        border: 1px dashed #e5e7eb;
+        background: var(--g-s1,#fff);
+        border: 1px dashed var(--g-b,#e5e7eb);
         border-radius: .875rem;
         padding: 3.5rem 1.5rem;
         text-align: center;
@@ -197,7 +197,7 @@ $error = $error ?? null;
     .ec-empty-icon {
         width: 56px;
         height: 56px;
-        background: #f9fafb;
+        background: var(--g-s2,#f9fafb);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -206,18 +206,18 @@ $error = $error ?? null;
     }
 
     .ec-empty-icon svg {
-        color: #d1d5db;
+        color: var(--g-t3,#d1d5db);
     }
 
     .ec-empty-title {
         font-size: 1rem;
         font-weight: 700;
-        color: #021F4A;
+        color: var(--g-t1,#021F4A);
     }
 
     .ec-empty-desc {
         font-size: .8125rem;
-        color: #6b7280;
+        color: var(--g-t2,#6b7280);
         margin-top: .375rem;
         max-width: 340px;
         margin-left: auto;
@@ -241,7 +241,7 @@ $error = $error ?? null;
     }
 
     .ec-modal {
-        background: #fff;
+        background: var(--g-s1,#fff);
         border-radius: 1rem;
         width: 100%;
         max-width: 460px;
@@ -253,13 +253,13 @@ $error = $error ?? null;
         align-items: center;
         justify-content: space-between;
         padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid #f3f4f6;
+        border-bottom: 1px solid var(--g-b,#f3f4f6);
     }
 
     .ec-modal-title {
         font-size: 1.0625rem;
         font-weight: 800;
-        color: #021F4A;
+        color: var(--g-t1,#021F4A);
     }
 
     .ec-modal-close {
@@ -268,7 +268,7 @@ $error = $error ?? null;
         background: none;
         border: none;
         cursor: pointer;
-        color: #9ca3af;
+        color: var(--g-t3,#9ca3af);
         border-radius: .5rem;
         display: flex;
         align-items: center;
@@ -276,8 +276,8 @@ $error = $error ?? null;
     }
 
     .ec-modal-close:hover {
-        background: #f3f4f6;
-        color: #374151;
+        background: var(--g-s3,#f3f4f6);
+        color: var(--g-t1,#374151);
     }
 
     .ec-modal-body {
@@ -286,7 +286,7 @@ $error = $error ?? null;
 
     .ec-modal-foot {
         padding: .875rem 1.5rem;
-        border-top: 1px solid #f3f4f6;
+        border-top: 1px solid var(--g-b,#f3f4f6);
         display: flex;
         justify-content: flex-end;
         gap: .75rem;
@@ -300,17 +300,17 @@ $error = $error ?? null;
         display: block;
         font-size: .8125rem;
         font-weight: 600;
-        color: #374151;
+        color: var(--g-t1,#374151);
         margin-bottom: .375rem;
     }
 
     .ec-label .opt {
-        color: #9ca3af;
+        color: var(--g-t3,#9ca3af);
         font-weight: 400;
     }
 
     .ec-label .req {
-        color: #dc2626;
+        color: var(--g-redt,#dc2626);
         margin-left: .1em;
     }
 
@@ -318,11 +318,11 @@ $error = $error ?? null;
     .ec-select {
         width: 100%;
         padding: .625rem .875rem;
-        border: 1px solid #d1d5db;
+        border: 1px solid var(--g-b,#d1d5db);
         border-radius: .625rem;
         font-size: .875rem;
-        color: #111827;
-        background: #fff;
+        color: var(--g-t1,#111827);
+        background: var(--g-s1,#fff);
         transition: border-color .15s;
         box-sizing: border-box;
         font-family: inherit;
@@ -336,12 +336,12 @@ $error = $error ?? null;
     }
 
     .ec-modal-err {
-        background: #fef2f2;
-        border: 1px solid #fecaca;
+        background: var(--g-redbg,#fef2f2);
+        border: 1px solid var(--g-redb,#fecaca);
         border-radius: .5rem;
         padding: .75rem 1rem;
         font-size: .8125rem;
-        color: #dc2626;
+        color: var(--g-redt,#dc2626);
         margin-bottom: 1rem;
         display: none;
     }
@@ -349,18 +349,18 @@ $error = $error ?? null;
     /* Buttons */
     .ec-btn-cancel {
         padding: .625rem 1.125rem;
-        background: #f9fafb;
-        border: 1px solid #e5e7eb;
+        background: var(--g-s2,#f9fafb);
+        border: 1px solid var(--g-b,#e5e7eb);
         border-radius: .625rem;
         font-size: .875rem;
         font-weight: 600;
-        color: #374151;
+        color: var(--g-t1,#374151);
         cursor: pointer;
         font-family: inherit;
     }
 
     .ec-btn-cancel:hover {
-        background: #f3f4f6;
+        background: var(--g-s3,#f3f4f6);
     }
 
     .ec-btn-primary {
@@ -409,7 +409,7 @@ $error = $error ?? null;
 
     /* Delete confirm modal */
     .ec-confirm {
-        background: #fff;
+        background: var(--g-s1,#fff);
         border-radius: 1rem;
         width: 100%;
         max-width: 380px;
@@ -421,7 +421,7 @@ $error = $error ?? null;
     .ec-confirm-icon {
         width: 54px;
         height: 54px;
-        background: #fef2f2;
+        background: var(--g-redbg,#fef2f2);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -432,12 +432,12 @@ $error = $error ?? null;
     .ec-confirm-title {
         font-size: 1.0625rem;
         font-weight: 800;
-        color: #021F4A;
+        color: var(--g-t1,#021F4A);
     }
 
     .ec-confirm-text {
         font-size: .875rem;
-        color: #6b7280;
+        color: var(--g-t2,#6b7280);
         margin: .5rem 0 1.5rem;
         line-height: 1.5;
     }
@@ -550,7 +550,7 @@ $error = $error ?? null;
                 <input id="ec-phone" type="tel" class="ec-input"
                     placeholder="e.g. +94 77 123 4567"
                     autocomplete="tel">
-                <div style="font-size:.75rem;color:#6b7280;margin-top:.35rem">
+                <div style="font-size:.75rem;color:var(--g-t2,#6b7280);margin-top:.35rem">
                     Include country code (e.g. +94 for Sri Lanka)
                 </div>
             </div>

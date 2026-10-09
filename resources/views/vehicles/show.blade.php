@@ -287,8 +287,8 @@
             lng
         };
         const popup = `<div style="min-width:160px;font-family:system-ui,sans-serif;padding:4px 2px">
-            <p style="font-weight:700;font-size:14px;color:#021F4A;margin:0 0 2px">${esc(vehicleNum)}</p>
-            <p style="font-size:12px;color:#6B7280;margin:0 0 4px">${esc(vehicleMake)} ${esc(vehicleMod)}</p>
+            <p style="font-weight:700;font-size:14px;color:var(--g-t1,#021F4A);margin:0 0 2px">${esc(vehicleNum)}</p>
+            <p style="font-size:12px;color:var(--g-t2,#6B7280);margin:0 0 4px">${esc(vehicleMake)} ${esc(vehicleMod)}</p>
             <p style="font-size:12px;margin:0">
                 ${Math.round(speed ?? 0)} km/h &nbsp;·&nbsp;
                 ${ignition ? 'Ignition on' : 'Ignition off'}
@@ -349,11 +349,12 @@
                 }]
             }],
         });
+        STMap.register(gmap);
 
         if (!hasGps) {
             // Show info window explaining no GPS
             new google.maps.InfoWindow({
-                content: '<p style="color:#9CA3AF;font-size:13px;padding:4px 2px;text-align:center">No GPS device linked to this vehicle.</p>',
+                content: '<p style="color:var(--g-t3,#9CA3AF);font-size:13px;padding:4px 2px;text-align:center">No GPS device linked to this vehicle.</p>',
                 position: {
                     lat: 7.8731,
                     lng: 80.7718
