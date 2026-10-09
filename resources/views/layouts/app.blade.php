@@ -387,10 +387,46 @@
             }
         }
 
+
+        /* ── Glass skin for every non-dashboard page ─────────────────────────────
+           Navy backdrop, floating glass chips for the top bar, and the page itself
+           sits in one frosted sheet. Pages keep their own markup/styles untouched.
+           (No transform/filter/overflow on the sheet: those would trap fixed modals.) */
+        .st-bg {
+            background:
+                radial-gradient(900px 520px at 88% -8%, rgba(250,105,8,.24), transparent 62%),
+                radial-gradient(800px 600px at -5% 105%, rgba(56,140,255,.20), transparent 60%),
+                linear-gradient(160deg, #021F4A 0%, #0a3570 52%, #010F25 100%);
+            background-attachment: fixed;
+        }
+        .gl.gl-strong { background: linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.04)), rgba(2,31,74,.78); }
+        .st-top { position: sticky; top: 0; z-index: 40; padding: 12px 12px 0; pointer-events: none; }
+        @media (min-width: 768px) { .st-top { padding: 14px 24px 0; } }
+        .st-top > * { pointer-events: auto; }
+        .st-chip { height: 48px; border-radius: 24px; display: flex; align-items: center; color: #fff; box-shadow: 0 4px 14px rgba(0,8,30,.28), inset 0 1px 0 rgba(255,255,255,.38); }
+        .st-brand { padding: 0 18px; gap: 9px; text-decoration: none; font-weight: 700; font-size: 17px; letter-spacing: .2px; flex-shrink: 0; }
+        .st-brand .dot { width: 9px; height: 9px; border-radius: 50%; background: #FA6908; box-shadow: 0 0 10px #FA6908; }
+        .st-brand span.o { color: #FA6908; }
+        .st-title { padding: 0 20px; font-size: 15px; font-weight: 600; min-width: 0; }
+        .st-title h2 { margin: 0; font: inherit; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .st-user { padding: 0 6px 0 16px; gap: 10px; cursor: pointer; font: inherit; }
+        .st-user .nm { font-size: 13px; font-weight: 600; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .st-user .ph { display: block; font-size: 11px; font-weight: 400; color: rgba(255,255,255,.7); }
+        .st-user .av { width: 36px; height: 36px; border-radius: 50%; background: #FA6908; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+        .st-frame {
+            margin: 14px 12px 0;
+            border-radius: 26px;
+            background: rgba(243,244,246,.93);
+            border: 1px solid rgba(255,255,255,.55);
+            box-shadow: 0 18px 50px rgba(0,8,30,.45), inset 0 1px 0 rgba(255,255,255,.7);
+        }
+        @media (min-width: 768px) { .st-frame { margin: 16px 24px 0; border-radius: 30px; } }
+        @media (max-width: 767px) { .st-brand .t { display: none; } .st-brand { padding: 0 14px; } .st-user .nm-wrap { display: none; } .st-user { padding: 0 6px; } }
+        @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .st-chip.gl.gl-strong { background: rgba(2,31,74,.96); } }
     </style>
 </head>
 
-<body class="@hasSection('immersive') bg-[#010F25] @else bg-gray-100 @endif min-h-screen">
+<body class="@hasSection('immersive') bg-[#010F25] @else st-bg @endif min-h-screen">
 
     <div class="min-h-screen">
 
@@ -402,36 +438,35 @@
             {{-- Top bar (the immersive dashboard has floating chips instead) --}}
             @hasSection('immersive')
             @else
-            <header class="bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-40">
+            <header class="st-top flex items-center gap-2 md:gap-3">
 
-                <a href="/dashboard" class="mr-3 md:mr-4 flex-shrink-0 text-lg font-bold tracking-tight text-[#021F4A]" aria-label="ShaloTrack dashboard">
-                    Shalo<span class="text-[#FA6908]">Track</span>
+                <a href="/dashboard" class="st-chip st-brand gl gl-strong" aria-label="ShaloTrack dashboard">
+                    <span class="dot"></span><span class="t">Shalo<span class="o">Track</span></span>
                 </a>
 
-                <h2 class="text-base md:text-lg font-semibold text-gray-800 flex-1 min-w-0 truncate">
-                    @yield('page-title', 'Dashboard')
-                </h2>
+                <div class="st-chip st-title gl gl-strong flex-1 md:flex-none md:max-w-[50%] min-w-0">
+                    <h2>@yield('page-title', 'Dashboard')</h2>
+                </div>
+
+                <div class="flex-1 hidden md:block"></div>
 
                 {{-- Profile Dropdown Area --}}
-                <div class="relative group inline-block text-left ml-3" id="profile-menu">
+                <div class="relative group inline-block text-left" id="profile-menu">
                     <button type="button" id="profile-menu-btn" aria-haspopup="true" aria-expanded="false" aria-controls="profile-menu-panel"
-                        class="flex items-center gap-2 md:gap-3 cursor-pointer py-1 bg-transparent border-0 text-left">
-                        <div class="text-right hidden sm:block">
+                        class="st-chip st-user gl gl-strong text-left border-0">
+                        <span class="nm-wrap text-right hidden sm:block">
                             @if(Session::get('customer_name'))
-                            <p id="header-name" class="text-sm font-semibold text-gray-800 truncate max-w-[140px]">{{ Session::get('customer_name') }}</p>
-                            <p class="text-xs text-gray-400">{{ Session::get('firebase_phone') }}</p>
+                            <span id="header-name" class="nm block">{{ Session::get('customer_name') }}</span>
+                            <span class="ph">{{ Session::get('firebase_phone') }}</span>
                             @else
-                            <p id="header-name" class="text-sm text-gray-500 truncate max-w-[140px]">{{ Session::get('firebase_phone') }}</p>
+                            <span id="header-name" class="nm block">{{ Session::get('firebase_phone') }}</span>
                             @endif
-                        </div>
-                        <div id="header-avatar"
-                            class="w-9 h-9 rounded-full bg-[#FA6908] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                            {{ strtoupper(substr(Session::get('customer_name') ?? Session::get('firebase_phone', 'U'), 0, 1)) }}
-                        </div>
+                        </span>
+                        <span id="header-avatar" class="av">{{ strtoupper(substr(Session::get('customer_name') ?? Session::get('firebase_phone', 'U'), 0, 1)) }}</span>
                     </button>
 
                     <!-- Dropdown Menu -->
-                    <div id="profile-menu-panel" class="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible group-[.menu-open]:opacity-100 group-[.menu-open]:visible transition-all duration-200 z-50 border border-gray-100 overflow-hidden">
+                    <div id="profile-menu-panel" class="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible group-[.menu-open]:opacity-100 group-[.menu-open]:visible transition-all duration-200 z-50 border border-gray-100 overflow-hidden">
                         <a href="/profile"
                             class="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -459,7 +494,7 @@
                  SUBSCRIPTION_RENEWAL_REQUIRED; cleared on visiting /renewals.
                  Same signal the Android app turns into its app-wide prompt. --}}
             @if(Session::get('renewal_required') && !request()->is('renewals*'))
-            <div id="renewal-banner" class="@hasSection('immersive') fixed top-[78px] left-1/2 -translate-x-1/2 z-30 w-[calc(100%-32px)] max-w-2xl rounded-2xl shadow-lg @else border-b @endif bg-amber-50 border-amber-200 px-4 md:px-8 py-3 flex items-center gap-3 text-sm text-amber-800">
+            <div id="renewal-banner" class="@hasSection('immersive') fixed top-[78px] left-1/2 -translate-x-1/2 z-30 w-[calc(100%-32px)] max-w-2xl rounded-2xl shadow-lg @else mx-3 md:mx-6 mt-3 rounded-2xl border @endif bg-amber-50 border-amber-200 px-4 md:px-8 py-3 flex items-center gap-3 text-sm text-amber-800">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
                 </svg>
@@ -474,7 +509,7 @@
             @endif
 
             {{-- Page content --}}
-            <div class="@hasSection('immersive') @else p-4 md:p-8 pb-28 md:pb-28 @endif">
+            <div class="@hasSection('immersive') @else st-frame p-4 md:p-6 pb-24 md:pb-24 mb-4 @endif">
                 @yield('content')
             </div>
         </main>
