@@ -1661,8 +1661,27 @@
             return;
         }
 
+        // Validate here so the user gets a clear message instead of a failed request.
+        const today = lkDayKey(Date.now());
+        if (fromDate > today) {
+            showSbError('The From date is in the future. Pick today or an earlier day.');
+            return;
+        }
+        let toDay = toDate;
+        if (toDay > today) { // a future end date just means "up to now"
+            toDay = today;
+            document.getElementById('date-to').value = today;
+        }
+        const spanDays = Math.round((Date.parse(toDay + 'T00:00:00Z') - Date.parse(fromDate + 'T00:00:00Z')) / 864e5) + 1;
+        if (spanDays > 90) { // the API refuses anything longer
+            showSbError('Trip history can be loaded 90 days at a time. Please choose a shorter range.');
+            return;
+        }
+
         const fromDt = lkStartIso(fromDate); // Sri Lanka midnight → UTC
-        const toDt = lkEndIso(toDate);
+        // Today ends "now", not 23:59 tonight: never ask for the future, and a trip still in
+        // progress is then judged against the present moment.
+        const toDt = toDay === today ? new Date().toISOString() : lkEndIso(toDay);
 
         const btn = document.getElementById('btn-load');
         btn.disabled = true;
@@ -3074,6 +3093,9 @@
         // Last 7 days, counted in Sri Lanka time (not the browser's zone, and not UTC)
         document.getElementById('date-from').value = lkDayKey(Date.now() - 6 * 864e5);
         document.getElementById('date-to').value = lkDayKey(Date.now());
+        // The pickers themselves refuse future days.
+        document.getElementById('date-from').max = lkDayKey(Date.now());
+        document.getElementById('date-to').max = lkDayKey(Date.now());
     });
 
     /* Deep link from the Sharing page: /trips?vehicle=<id>&mode=live opens that

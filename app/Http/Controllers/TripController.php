@@ -99,11 +99,7 @@ class TripController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('TripController: points failed', ['error' => $e->getMessage()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Could not load trip data. Please try again.',
-            ], 422);
+            return $this->historyError($e, 'points', 'Could not load trip data. Please try again.');
         }
     }
 
@@ -136,12 +132,31 @@ class TripController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('TripController: summary failed', ['error' => $e->getMessage()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Could not load trip summary. Please try again.',
-            ], 422);
+            return $this->historyError($e, 'summary', 'Could not load trip summary. Please try again.');
         }
+    }
+
+    /**
+     * Turn an API failure into the honest message and status for the history tab.
+     * Previously every failure (expired subscription, wrong vehicle, rate limit, bad range)
+     * collapsed into one generic 422, which made real causes impossible to tell apart —
+     * in the page and in the logs. The status code is now always logged.
+     */
+    private function historyError(\Exception $e, string $what, string $fallback)
+    {
+        $code = (int) $e->getCode();
+        Log::warning("TripController: {$what} failed", ['status' => $code, 'error' => $e->getMessage()]);
+
+        return match (true) {
+            $code === 401 => response()->json(['success' => false, 'expired' => true], 401),
+            $code === 402 => response()->json(['success' => false, 'message' => 'Subscription expired — renew to view trip history.'], 402),
+            $code === 403 => response()->json(['success' => false, 'message' => 'You do not have access to this vehicle.'], 403),
+            $code === 404 => response()->json(['success' => false, 'message' => 'Vehicle not found.'], 404),
+            $code === 429 => response()->json(['success' => false, 'message' => 'Too many requests — please wait a moment and try again.'], 429),
+            // 400: the API's own explanation of a bad range (e.g. longer than 90 days) is safe to show.
+            $code === 400 && $e->getMessage() !== '' && !str_contains($e->getMessage(), '_') => response()->json(['success' => false, 'message' => $e->getMessage()], 422),
+            default => response()->json(['success' => false, 'message' => $fallback], 422),
+        };
     }
 
     /**
