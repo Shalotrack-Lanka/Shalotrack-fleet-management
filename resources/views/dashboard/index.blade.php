@@ -1,442 +1,321 @@
 @extends('layouts.app')
 @section('title', 'Dashboard — ShaloTrack Fleet')
 @section('page-title', 'Dashboard')
+{{-- Immersive: the layout drops its white top bar and padding; the map is the page. --}}
+@section('immersive', '1')
 
 @section('content')
 <style>
-    /* ── Stat tiles ─────────────────────────────── */
-    .stat-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 20px;
-        margin-bottom: 28px;
-    }
+    html, body { overflow: hidden; }
 
-    .stat-card {
-        background: white;
-        border-radius: 14px;
-        border: 1px solid #f3f4f6;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-        padding: 20px;
-        display: flex;
-        align-items: center;
-        gap: 16px;
-    }
-
-    .stat-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-
-    .stat-icon.navy {
-        background: #eef1f7;
-    }
-
-    .stat-icon.green {
-        background: #f0fdf4;
-    }
-
-    .stat-icon.gray {
-        background: #f9fafb;
-    }
-
-    .stat-icon.orange {
-        background: #fff7ed;
-    }
-
-    .stat-label {
-        font-size: 12px;
-        color: #9ca3af;
-        margin-bottom: 4px;
-        font-weight: 500;
-    }
-
-    .stat-value {
-        font-size: 28px;
-        font-weight: 700;
-        line-height: 1;
-    }
-
-    .stat-value.navy {
-        color: #021F4A;
-    }
-
-    .stat-value.green {
-        color: #16a34a;
-    }
-
-    .stat-value.gray {
-        color: #9ca3af;
-    }
-
-    .stat-value.orange {
-        color: #FA6908;
-    }
-
-    /* ── Main grid ──────────────────────────────── */
-    .dash-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 320px;
-        gap: 24px;
-    }
-
-    /* ── Map panel ──────────────────────────────── */
+    /* ── Full-screen map ────────────────────────── */
     #map {
-        height: 500px;
+        position: fixed;
+        inset: 0;
         width: 100%;
+        height: 100%;
+        z-index: 0;
+        background: #0d305f;
     }
 
-    /* ── Vehicle sidebar ────────────────────────── */
-    .vlist {
-        max-height: 538px;
-        overflow-y: auto;
+    /* Soft vignette so the glass keeps its contrast at the edges. */
+    .d-vignette {
+        position: fixed;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+        background: radial-gradient(120% 90% at 50% 40%, rgba(2, 15, 40, 0) 55%, rgba(2, 15, 40, .45) 100%);
     }
+
+    .d-chip {
+        position: fixed;
+        z-index: 20;
+        height: 48px;
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        font-size: 13px;
+    }
+
+    .d-brand { top: 18px; left: 20px; padding: 0 20px; gap: 10px; text-decoration: none; }
+    .d-brand .dot { width: 10px; height: 10px; border-radius: 50%; background: #FA6908; box-shadow: 0 0 12px #FA6908; }
+    .d-brand b { font-size: 18px; font-weight: 700; letter-spacing: .2px; color: #fff; }
+    .d-brand b span { color: #FA6908; }
+
+    /* ── Stats pill ─────────────────────────────── */
+    .d-stats { top: 18px; left: 50%; transform: translateX(-50%); padding: 0 6px; gap: 2px; white-space: nowrap; }
+    .d-stat { padding: 0 14px; display: flex; align-items: center; gap: 7px; color: rgba(255, 255, 255, .78); }
+    .d-stat b { color: #fff; font-size: 16px; font-weight: 700; }
+    .d-stat + .d-stat { border-left: 1px solid rgba(255, 255, 255, .2); }
+    .d-stat i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .d-stat i.on { background: #34d399; box-shadow: 0 0 10px #34d399; }
+    .d-stat i.off { background: #94a3b8; }
+    .d-stat i.mv { background: #FA6908; box-shadow: 0 0 10px #FA6908; }
+    .conn-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; }
+    .conn-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+    /* ── User chip + map theme ──────────────────── */
+    .d-user-wrap { position: fixed; top: 18px; right: 20px; z-index: 22; display: flex; align-items: center; gap: 10px; }
+    .d-iconbtn {
+        width: 48px; height: 48px; border-radius: 50%; padding: 0; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .d-iconbtn svg { width: 20px; height: 20px; stroke: #fff; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .d-user-btn {
+        height: 48px; border-radius: 24px; padding: 0 6px 0 18px; gap: 12px; cursor: pointer;
+        display: flex; align-items: center; font-size: 14px; font-weight: 500; font-family: inherit;
+    }
+    .d-user-btn .av { width: 36px; height: 36px; border-radius: 50%; background: #FA6908; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; }
+    .d-user-menu { position: absolute; top: 56px; right: 0; width: 200px; border-radius: 18px; padding: 6px; }
+    .d-user-menu a, .d-user-menu button {
+        display: flex; width: 100%; align-items: center; gap: 10px; padding: 10px 12px; border: 0; border-radius: 12px;
+        background: none; color: #fff; font-family: inherit; font-weight: 600; font-size: 13px; line-height: 1; text-align: left; text-decoration: none; cursor: pointer;
+    }
+    .d-user-menu a:hover, .d-user-menu button:hover { background: rgba(255, 255, 255, .14); }
+    .d-user-menu .out { color: #fca5a5; }
+    .d-user-menu form { margin: 0; }
+
+    /* ── Vehicle islands ────────────────────────── */
+    #vehicle-panel {
+        position: fixed;
+        z-index: 15;
+        top: 84px;
+        right: 20px;
+        bottom: 112px;
+        width: 312px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        overflow-y: auto;
+        padding: 6px 4px 10px 10px;
+        scrollbar-width: none;
+        pointer-events: none;
+    }
+    #vehicle-panel::-webkit-scrollbar { display: none; }
+    @media (min-width: 768px) {
+        #vehicle-panel { -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 30px), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 30px), transparent); }
+    }
+    #vehicle-panel > * { pointer-events: auto; flex: none; }
+
+    .d-vhead {
+        border-radius: 22px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
+        font-size: 13px; font-weight: 600;
+    }
+    .d-vhead .sum { font-weight: 500; color: rgba(255, 255, 255, .7); font-size: 12px; margin-left: 8px; }
+    .d-vhead button { background: none; border: 0; color: #fff; cursor: pointer; padding: 4px 8px; border-radius: 10px; font-family: inherit; font-weight: 600; font-size: 12px; }
+    .d-vhead button:hover { background: rgba(255, 255, 255, .14); }
+    #vehicle-panel.collapsed .vrow { display: none; }
 
     .vrow {
-        padding: 14px 18px;
-        border-bottom: 1px solid #f9fafb;
+        border-radius: 22px;
+        padding: 14px 16px;
         cursor: pointer;
-        transition: background 0.15s;
         display: flex;
         align-items: center;
         gap: 12px;
+        transition: border-color .2s, box-shadow .2s;
+    }
+    .vrow:hover { border-color: rgba(255, 255, 255, .5); }
+    .vrow:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+    .vrow.active { border-color: rgba(250, 105, 8, .85); box-shadow: 0 0 0 1px rgba(250, 105, 8, .6), 0 0 26px rgba(250, 105, 8, .35), var(--gl-shadow); }
+    .vrow-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .vrow-dot.online { background: #34d399; box-shadow: 0 0 12px #34d399; }
+    .vrow-dot.offline { background: #94a3b8; }
+    .vrow-body { flex: 1; min-width: 0; }
+    .vrow-plate { font-size: 15px; font-weight: 700; letter-spacing: .2px; color: #fff; margin: 0; }
+    .vrow-make { font-size: 12px; color: rgba(255, 255, 255, .7); margin: 2px 0 0; }
+    .vrow-meta { font-size: 12px; color: rgba(255, 255, 255, .85); margin: 4px 0 0; }
+    .vrow-meta.offline-text { color: rgba(255, 255, 255, .55); }
+    .badge-online, .badge-offline { font-size: 10px; font-weight: 700; letter-spacing: .4px; border-radius: 999px; padding: 3px 9px; white-space: nowrap; flex-shrink: 0; }
+    .badge-online { color: #a7f3d0; background: rgba(52, 211, 153, .25); }
+    .badge-offline { color: rgba(255, 255, 255, .7); background: rgba(148, 163, 184, .25); }
+    .tag-demo { font-size: 10px; color: #fdba74; font-weight: 700; margin-left: 4px; }
+    .tag-shared { font-size: 10px; color: #d8b4fe; font-weight: 700; margin-left: 4px; }
+
+    /* Gentle float: only with a pointer + room + motion allowed, and only for small fleets (blur repaints). */
+    @keyframes d-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+    @media (hover: hover) and (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+        .vrow.float { animation: d-float 7s ease-in-out infinite; animation-delay: calc(var(--i, 0) * -2.3s); }
+        .vrow.float:hover { animation-play-state: paused; }
     }
 
-    .vrow:last-child {
-        border-bottom: none;
+    .d-empty { border-radius: 22px; padding: 22px 20px; text-align: center; font-size: 13px; color: rgba(255, 255, 255, .85); }
+    .d-empty a { color: #fdba74; font-weight: 600; display: inline-block; margin-top: 8px; }
+
+    /* ── SOS island ─────────────────────────────── */
+    .d-sos {
+        position: fixed; z-index: 20; left: 20px; bottom: 30px; height: 56px; padding: 0 22px 0 8px; border-radius: 28px;
+        display: flex; align-items: center; gap: 12px; cursor: pointer; font: inherit; text-align: left;
     }
+    .d-sos:hover { transform: scale(1.03); }
+    .d-sos:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+    .d-sos .c { width: 40px; height: 40px; border-radius: 50%; background: #ef4444; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; box-shadow: 0 0 18px rgba(239, 68, 68, .8); color: #fff; }
+    .d-sos .t { font-size: 13px; line-height: 1.25; color: #fff; }
+    .d-sos .t small { display: block; color: rgba(255, 255, 255, .75); font-size: 11.5px; }
 
-    .vrow:hover {
-        background: #fafafa;
+    .d-error {
+        position: fixed; z-index: 21; top: 76px; left: 50%; transform: translateX(-50%); max-width: min(560px, calc(100% - 32px));
+        border-radius: 18px; padding: 12px 16px; font-size: 13px; display: flex; align-items: center; gap: 10px;
     }
+    .d-error button { margin-left: auto; background: none; border: 0; color: #fff; text-decoration: underline; cursor: pointer; font: inherit; }
+    .d-center { position: fixed; z-index: 15; top: 50%; left: 50%; transform: translate(-50%, -50%); }
 
-    .vrow.active {
-        background: #fff7ed;
-        border-left: 3px solid #FA6908;
-    }
+    /* Google's own UI keeps clear of our islands. */
+    .gm-style .gm-style-iw-c { border-radius: 16px; }
 
-    .vrow-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        flex-shrink: 0;
-        margin-top: 2px;
-    }
-
-    .vrow-dot.online {
-        background: #22c55e;
-    }
-
-    .vrow-dot.offline {
-        background: #d1d5db;
-    }
-
-    .vrow-body {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .vrow-plate {
-        font-size: 13px;
-        font-weight: 600;
-        color: #1f2937;
-    }
-
-    .vrow-make {
-        font-size: 11px;
-        color: #9ca3af;
-        margin-top: 1px;
-    }
-
-    .vrow-meta {
-        font-size: 11px;
-        color: #6b7280;
-        margin-top: 3px;
-    }
-
-    .vrow-meta.offline-text {
-        color: #d1d5db;
-    }
-
-    .badge-online {
-        font-size: 10px;
-        font-weight: 600;
-        color: #16a34a;
-        background: #f0fdf4;
-        border-radius: 6px;
-        padding: 2px 7px;
-        white-space: nowrap;
-        flex-shrink: 0;
-    }
-
-    .badge-offline {
-        font-size: 10px;
-        color: #9ca3af;
-        background: #f9fafb;
-        border-radius: 6px;
-        padding: 2px 7px;
-        white-space: nowrap;
-        flex-shrink: 0;
-    }
-
-    /* ── Connection status pill ─────────────────── */
-    .conn-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 12px;
-        font-weight: 500;
-    }
-
-    .conn-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-    }
-
-    /* ── Section headers ────────────────────────── */
-    .panel-header {
-        padding: 16px 20px;
-        border-bottom: 1px solid #f3f4f6;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .panel-title {
-        font-size: 14px;
-        font-weight: 600;
-        color: #1f2937;
-    }
-
-    /* ── Responsive ─────────────────────────────── */
-    @media (max-width: 1100px) {
-        .dash-grid {
-            grid-template-columns: minmax(0, 1fr);
-        }
-
-        .vlist {
-            max-height: 360px;
-        }
-    }
-
+    /* ── Phones ─────────────────────────────────── */
     @media (max-width: 767px) {
-        .stat-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 18px;
+        .d-brand { top: 14px; left: 14px; padding: 0 16px; height: 44px; }
+        .d-user-wrap { top: 14px; right: 14px; gap: 8px; }
+        .d-iconbtn { width: 44px; height: 44px; }
+        .d-user-btn { height: 44px; padding: 0 4px; }
+        .d-user-btn .nm { display: none; }
+        .d-stats { top: 68px; left: 14px; right: 14px; transform: none; justify-content: space-around; height: 44px; }
+        .d-stat { padding: 0 8px; font-size: 12px; gap: 5px; }
+        .d-stat b { font-size: 15px; }
+        .conn-pill .lbl { display: none; }
+        .d-error { top: 120px; }
+        .d-vhead { display: none; }
+        #vehicle-panel {
+            top: auto; left: 0; right: 0; bottom: 104px; width: auto; flex-direction: row; gap: 12px;
+            overflow-x: auto; overflow-y: hidden; padding: 6px 16px 8px; scroll-snap-type: x proximity;
         }
-
-        .stat-card {
-            padding: 14px;
-            gap: 10px;
-        }
-
-        .stat-icon {
-            width: 36px;
-            height: 36px;
-        }
-
-        .stat-value {
-            font-size: 22px;
-        }
-
-        .dash-grid {
-            gap: 16px;
-        }
-
-        #map {
-            height: 300px;
-        }
+        .vrow { flex: 0 0 236px; scroll-snap-align: start; padding: 12px 14px; }
+        .d-empty { flex: 0 0 100%; }
+        .d-sos { left: 14px; bottom: 26px; height: 52px; width: 52px; padding: 0; justify-content: center; }
+        .d-sos .t { display: none; }
+        .d-sos .c { width: 38px; height: 38px; }
     }
 </style>
 
+<div id="map" role="application" aria-label="Live map of your vehicles"></div>
+<div class="d-vignette" aria-hidden="true"></div>
+
+@php
+    $dashVehicles = $dashboard['vehicles'] ?? [];
+    $dashName = Session::get('customer_name') ?: Session::get('firebase_phone', 'Account');
+    $movingCount = collect($dashVehicles)
+        ->filter(fn($v) => ($v['online'] ?? false) && ($v['speed'] ?? 0) > 0)
+        ->count();
+@endphp
+
+{{-- ─── TOP CHIPS ───────────────────────────────────── --}}
+<a href="/dashboard" class="d-chip d-brand gl" aria-label="ShaloTrack dashboard">
+    <span class="dot"></span><b>Shalo<span>Track</span></b>
+</a>
+
+@if($dashboard)
+<div class="d-chip d-stats gl" role="status" aria-label="Fleet status">
+    <div class="d-stat">Total <b id="stat-total">{{ $dashboard['vehicleCount'] ?? 0 }}</b></div>
+    <div class="d-stat"><i class="on"></i>Online <b id="stat-online">{{ $dashboard['onlineVehicles'] ?? 0 }}</b></div>
+    <div class="d-stat"><i class="off"></i>Offline <b id="stat-offline">{{ $dashboard['offlineVehicles'] ?? 0 }}</b></div>
+    <div class="d-stat"><i class="mv"></i>Moving <b id="stat-moving">{{ $movingCount }}</b></div>
+    <div class="d-stat"><span id="realtime-status" class="conn-pill" style="color:#cbd5e1;"><span class="conn-dot" style="background:#94a3b8;"></span><span class="lbl">Connecting…</span></span></div>
+</div>
+@endif
+
+<div class="d-user-wrap">
+    <button type="button" id="map-theme-btn" class="d-iconbtn gl" aria-label="Switch map to light" title="Map theme">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+    </button>
+    <div style="position:relative;">
+        <button type="button" id="d-user-btn" class="d-user-btn gl" aria-haspopup="true" aria-expanded="false" aria-controls="d-user-menu">
+            <span class="nm">{{ $dashName }}</span>
+            <span class="av">{{ strtoupper(substr($dashName, 0, 1)) }}</span>
+        </button>
+        <div id="d-user-menu" class="d-user-menu gl" hidden>
+            <a href="/profile">Profile</a>
+            <form method="POST" action="/logout">
+                @csrf
+                <button type="submit" class="out">Logout</button>
+            </form>
+        </div>
+    </div>
+</div>
+
 {{-- ─── ERROR BANNER ──────────────────────────────────── --}}
 @if($error)
-<div style="margin-bottom:20px;padding:14px 18px;background:#fef2f2;border:1px solid #fecaca;border-radius:12px;color:#b91c1c;font-size:13px;display:flex;align-items:center;gap:10px;">
-    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;">
-        <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" />
-    </svg>
+<div class="d-error gl gl-red" role="alert">
     {{ $error }}
-    <button onclick="window.location.reload()" style="margin-left:auto;color:#b91c1c;text-decoration:underline;background:none;border:none;cursor:pointer;font-size:13px;">Retry</button>
+    <button type="button" onclick="window.location.reload()">Retry</button>
 </div>
 @endif
 
 @if($dashboard)
 
-{{-- ─── STAT TILES ──────────────────────────────────── --}}
-<div class="stat-grid">
-
-    {{-- Total --}}
-    <div class="stat-card">
-        <div class="stat-icon navy">
-            <svg width="22" height="22" fill="none" stroke="#021F4A" stroke-width="1.8" viewBox="0 0 24 24">
-                <path d="M1 17h22M5 17V9a2 2 0 012-2h10a2 2 0 012 2v8" stroke-linecap="round" />
-                <path d="M4 17l-1 2M20 17l1 2" stroke-linecap="round" />
-                <circle cx="7.5" cy="17" r="1.5" fill="#021F4A" stroke="none" />
-                <circle cx="16.5" cy="17" r="1.5" fill="#021F4A" stroke="none" />
-                <path d="M5 9h14" stroke-linecap="round" />
-            </svg>
-        </div>
-        <div>
-            <p class="stat-label">Total Vehicles</p>
-            <p class="stat-value navy" id="stat-total">{{ $dashboard['vehicleCount'] ?? 0 }}</p>
-        </div>
+{{-- ─── VEHICLE ISLANDS ───────────────────────────────── --}}
+<section id="vehicle-panel" aria-label="Vehicles">
+    <div class="d-vhead gl">
+        <span>Vehicles<span class="sum" id="vlist-summary">{{ count($dashVehicles) }} total</span></span>
+        <button type="button" id="vpanel-toggle" aria-expanded="true" aria-controls="vehicle-panel">Hide</button>
     </div>
 
-    {{-- Online --}}
-    <div class="stat-card">
-        <div class="stat-icon green">
-            <svg width="22" height="22" fill="none" stroke="#16a34a" stroke-width="1.8" viewBox="0 0 24 24">
-                <path d="M5 12.55a11 11 0 0114.08 0" stroke-linecap="round" />
-                <path d="M1.42 9a16 16 0 0121.16 0" stroke-linecap="round" />
-                <path d="M8.53 16.11a6 6 0 016.95 0" stroke-linecap="round" />
-                <circle cx="12" cy="20" r="1" fill="#16a34a" stroke="none" />
-            </svg>
-        </div>
-        <div>
-            <p class="stat-label">Online</p>
-            <p class="stat-value green" id="stat-online">{{ $dashboard['onlineVehicles'] ?? 0 }}</p>
-        </div>
+    @if(empty($dashVehicles))
+    <div class="d-empty gl">
+        No vehicles found.<br>
+        <a href="/vehicles">Add a vehicle →</a>
     </div>
-
-    {{-- Offline --}}
-    <div class="stat-card">
-        <div class="stat-icon gray">
-            <svg width="22" height="22" fill="none" stroke="#9ca3af" stroke-width="1.8" viewBox="0 0 24 24">
-                <path d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0119 12.55M5 12.55a10.94 10.94 0 015.17-2.39M10.71 5.05A16 16 0 0122.56 9M1.42 9a15.91 15.91 0 014.7-2.88M8.53 16.11a6 6 0 016.95 0M12 20h.01" stroke-linecap="round" />
-            </svg>
-        </div>
-        <div>
-            <p class="stat-label">Offline</p>
-            <p class="stat-value gray" id="stat-offline">{{ $dashboard['offlineVehicles'] ?? 0 }}</p>
-        </div>
-    </div>
-
-    {{-- Moving --}}
+    @else
+    @foreach($dashVehicles as $vehicle)
     @php
-    $movingCount = collect($dashboard['vehicles'] ?? [])
-    ->filter(fn($v) => ($v['online'] ?? false) && ($v['speed'] ?? 0) > 0)
-    ->count();
+    $vid = $vehicle['vehicleId'];
+    $online = (bool)($vehicle['online'] ?? false);
+    $plate = $vehicle['vehicleNumber'] ?? $vid;
+    $make = trim(($vehicle['make'] ?? '') . ' ' . ($vehicle['model'] ?? ''));
+    $speed = round($vehicle['speed'] ?? 0);
+    $ignition = (bool)($vehicle['ignition'] ?? false);
+    $lastSeen = $vehicle['lastUpdate'] ?? null;
     @endphp
-    <div class="stat-card">
-        <div class="stat-icon orange">
-            <svg width="22" height="22" fill="none" stroke="#FA6908" stroke-width="1.8" viewBox="0 0 24 24">
-                <path d="M13 17h8m0 0l-4-4m4 4l-4 4M3 12h8m0 0L7 8m4 4l-4 4" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-        </div>
-        <div>
-            <p class="stat-label">Moving</p>
-            <p class="stat-value orange" id="stat-moving">{{ $movingCount }}</p>
+    <div class="vrow gl{{ count($dashVehicles) <= 10 ? ' float' : '' }}" id="vrow-{{ $vid }}" style="--i: {{ $loop->index }}"
+        role="button" tabindex="0" onclick="focusVehicle('{{ $vid }}')"
+        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();focusVehicle('{{ $vid }}');}">
+        <div class="vrow-dot {{ $online ? 'online' : 'offline' }}" id="vdot-{{ $vid }}"></div>
+        @if($rowIcon = \App\Support\VehicleIcon::url($vehicle['vehicleType'] ?? $vehicle['type'] ?? null, $online ? 'green' : 'blue'))
+        <img src="{{ $rowIcon }}" alt="" width="18" height="32" style="height:32px;width:auto;flex-shrink:0;" loading="lazy" decoding="async">
+        @endif
+        <div class="vrow-body">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                <p class="vrow-plate">
+                    {{ $plate }}
+                    @if($vehicle['isDemoVehicle'] ?? $vehicle['isDemo'] ?? false)
+                    <span class="tag-demo">[DEMO]</span>
+                    @endif
+                    @if($vehicle['isShared'] ?? false)
+                    <span class="tag-shared">[SHARED]</span>
+                    @endif
+                </p>
+                <span id="vbadge-{{ $vid }}" class="{{ $online ? 'badge-online' : 'badge-offline' }}">
+                    {{ $online ? 'Online' : 'Offline' }}
+                </span>
+            </div>
+            @if($make)
+            <p class="vrow-make">{{ $make }}</p>
+            @endif
+            <p class="vrow-meta{{ !$online ? ' offline-text' : '' }}" id="vmeta-{{ $vid }}">
+                @if($online)
+                {{ $speed }} km/h · {{ $ignition ? 'Ignition on' : 'Ignition off' }}
+                @elseif($lastSeen)
+                Last seen {{ \App\Support\LocalTime::ago($lastSeen) }}
+                @else
+                No location data
+                @endif
+            </p>
         </div>
     </div>
+    @endforeach
+    @endif
+</section>
 
-</div>
-
-{{-- ─── SOS ─────────────────────────────────────────── --}}
-@if(!empty($dashboard['vehicles']))
-<div style="margin-bottom:20px;padding:12px 16px;background:#fef2f2;border:1px solid #fecaca;border-radius:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-    <div style="flex:1;min-width:200px;">
-        <p style="font-size:13px;font-weight:600;color:#991b1b;">Emergency SOS</p>
-        <p style="font-size:12px;color:#b91c1c;margin-top:2px;">Sends a distress signal for a vehicle. You must press and hold for 3 seconds to confirm.</p>
-    </div>
-    <button type="button" onclick="openSosModal()"
-        style="padding:9px 20px;background:#dc2626;color:#fff;font-size:13px;font-weight:700;border:none;border-radius:10px;cursor:pointer;">
-        SOS
-    </button>
-</div>
+{{-- ─── SOS ───────────────────────────────────────────── --}}
+@if(!empty($dashVehicles))
+<button type="button" class="d-sos gl gl-red" onclick="openSosModal()" aria-label="Emergency SOS">
+    <span class="c">SOS</span>
+    <span class="t">Emergency<small>Press and hold 3 s</small></span>
+</button>
 @endif
 
-{{-- ─── MAP + VEHICLES ──────────────────────────────── --}}
-<div class="dash-grid">
-
-    {{-- Live map --}}
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <div class="panel-header">
-            <h3 class="panel-title">Live Map</h3>
-            <span id="realtime-status" class="conn-pill" style="color:#9ca3af;">
-                <span class="conn-dot" style="background:#d1d5db;"></span>Connecting…
-            </span>
-        </div>
-        <div id="map"></div>
-    </div>
-
-    {{-- Vehicles sidebar --}}
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <div class="panel-header">
-            <h3 class="panel-title">Vehicles</h3>
-            <span style="font-size:11px;color:#9ca3af;" id="vlist-summary">
-                {{ count($dashboard['vehicles'] ?? []) }} total
-            </span>
-        </div>
-
-        @if(empty($dashboard['vehicles']))
-        <div style="padding:32px 20px;text-align:center;">
-            <p style="color:#9ca3af;font-size:13px;">No vehicles found.</p>
-            <a href="/vehicles" style="margin-top:10px;display:inline-block;color:#FA6908;font-size:13px;font-weight:500;">Add a vehicle →</a>
-        </div>
-        @else
-        <div class="vlist" id="vehicle-list">
-            @foreach($dashboard['vehicles'] as $vehicle)
-            @php
-            $vid = $vehicle['vehicleId'];
-            $online = (bool)($vehicle['online'] ?? false);
-            $plate = $vehicle['vehicleNumber'] ?? $vid;
-            $make = trim(($vehicle['make'] ?? '') . ' ' . ($vehicle['model'] ?? ''));
-            $speed = round($vehicle['speed'] ?? 0);
-            $ignition = (bool)($vehicle['ignition'] ?? false);
-            $lastSeen = $vehicle['lastUpdate'] ?? null;
-            @endphp
-            <div class="vrow" id="vrow-{{ $vid }}" onclick="focusVehicle('{{ $vid }}')">
-                <div class="vrow-dot {{ $online ? 'online' : 'offline' }}" id="vdot-{{ $vid }}"></div>
-                @if($rowIcon = \App\Support\VehicleIcon::url($vehicle['vehicleType'] ?? $vehicle['type'] ?? null, $online ? 'green' : 'blue'))
-                <img src="{{ $rowIcon }}" alt="" width="18" height="32" style="height:32px;width:auto;flex-shrink:0;" loading="lazy" decoding="async">
-                @endif
-                <div class="vrow-body">
-                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-                        <p class="vrow-plate">
-                            {{ $plate }}
-                            @if($vehicle['isDemoVehicle'] ?? $vehicle['isDemo'] ?? false)
-                            <span style="font-size:10px;color:#FA6908;font-weight:600;margin-left:4px;">[DEMO]</span>
-                            @endif
-                            @if($vehicle['isShared'] ?? false)
-                            <span style="font-size:10px;color:#7e22ce;font-weight:600;margin-left:4px;">[SHARED]</span>
-                            @endif
-                        </p>
-                        <span id="vbadge-{{ $vid }}" class="{{ $online ? 'badge-online' : 'badge-offline' }}">
-                            {{ $online ? 'Online' : 'Offline' }}
-                        </span>
-                    </div>
-                    @if($make)
-                    <p class="vrow-make">{{ $make }}</p>
-                    @endif
-                    <p class="vrow-meta{{ !$online ? ' offline-text' : '' }}" id="vmeta-{{ $vid }}">
-                        @if($online)
-                        {{ $speed }} km/h · {{ $ignition ? 'Ignition on' : 'Ignition off' }}
-                        @elseif($lastSeen)
-                        Last seen {{ \App\Support\LocalTime::ago($lastSeen) }}
-                        @else
-                        No location data
-                        @endif
-                    </p>
-                </div>
-            </div>
-            @endforeach
-        </div>
-        @endif
-    </div>
-
-</div>
-
 @elseif(!$error)
-<div style="text-align:center;padding:80px 20px;">
-    <p style="color:#9ca3af;font-size:14px;">No data available. Please refresh.</p>
-</div>
+<div class="d-center d-empty gl">No data available. Please refresh.</div>
 @endif
 
 @include('partials.marker-glide')
@@ -641,34 +520,91 @@
             gmap.setZoom(15);
             openInfo(vid);
         }
+        row?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
     }
 
     /* ── Google Maps callback ─────────────────────────────── */
+    /* Map themes: dark navy matches the glass; light stays available (saved per browser). */
+    const MAP_STYLES = {
+        dark: [
+            { elementType: 'geometry', stylers: [{ color: '#0b2a55' }] },
+            { elementType: 'labels.text.stroke', stylers: [{ color: '#06182f' }] },
+            { elementType: 'labels.text.fill', stylers: [{ color: '#8fa8c8' }] },
+            { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#c3d3ea' }] },
+            { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+            { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+            { featureType: 'landscape', elementType: 'geometry', stylers: [{ color: '#0d305f' }] },
+            { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#1b4379' }] },
+            { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#0b2a55' }] },
+            { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#7f9bc2' }] },
+            { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#2a5a9a' }] },
+            { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#031428' }] },
+            { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#4a6a95' }] },
+        ],
+        light: [
+            { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+            { featureType: 'transit', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+        ],
+    };
+    let mapTheme = 'dark';
+    try { if (localStorage.getItem('st_map_theme') === 'light') mapTheme = 'light'; } catch (_) {}
+
+    function applyMapTheme() {
+        if (gmap) gmap.setOptions({ styles: MAP_STYLES[mapTheme] });
+        const btn = document.getElementById('map-theme-btn');
+        if (btn) {
+            btn.setAttribute('aria-label', mapTheme === 'dark' ? 'Switch map to light' : 'Switch map to dark');
+            btn.innerHTML = mapTheme === 'dark'
+                ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>'
+                : '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+        }
+    }
+    document.getElementById('map-theme-btn')?.addEventListener('click', () => {
+        mapTheme = mapTheme === 'dark' ? 'light' : 'dark';
+        try { localStorage.setItem('st_map_theme', mapTheme); } catch (_) {}
+        applyMapTheme();
+    });
+    applyMapTheme();
+
+    /* Vehicle panel: collapse so the whole map is visible. */
+    document.getElementById('vpanel-toggle')?.addEventListener('click', function () {
+        const panel = document.getElementById('vehicle-panel');
+        const collapsed = panel.classList.toggle('collapsed');
+        this.textContent = collapsed ? 'Show' : 'Hide';
+        this.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    });
+
+    /* User chip menu. */
+    (function () {
+        const btn = document.getElementById('d-user-btn');
+        const menu = document.getElementById('d-user-menu');
+        if (!btn || !menu) return;
+        const set = open => { menu.hidden = !open; btn.setAttribute('aria-expanded', open ? 'true' : 'false'); };
+        btn.addEventListener('click', e => { e.stopPropagation(); set(menu.hidden); });
+        document.addEventListener('click', e => { if (!menu.contains(e.target)) set(false); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') set(false); });
+    })();
+
+    /* Space the map's framing around the floating islands. */
+    function mapPadding() {
+        const phone = window.innerWidth < 768;
+        return phone
+            ? { top: 130, right: 30, bottom: 230, left: 30 }
+            : { top: 100, right: 370, bottom: 130, left: 60 };
+    }
+
     function initMap() {
-        gmap = new google.maps.Map(document.getElementById('map'), {
-            center: {
-                lat: 7.8731,
-                lng: 80.7718
-            },
+        const mapEl = document.getElementById('map');
+        if (!mapEl) return;
+        gmap = new google.maps.Map(mapEl, {
+            center: { lat: 7.8731, lng: 80.7718 },
             zoom: 8,
-            mapTypeControl: false,
-            streetViewControl: false,
-            fullscreenControl: true,
-            styles: [{
-                    featureType: 'poi',
-                    elementType: 'labels',
-                    stylers: [{
-                        visibility: 'off'
-                    }]
-                },
-                {
-                    featureType: 'transit',
-                    elementType: 'labels',
-                    stylers: [{
-                        visibility: 'off'
-                    }]
-                },
-            ],
+            disableDefaultUI: true,
+            zoomControl: window.innerWidth >= 768,
+            zoomControlOptions: { position: google.maps.ControlPosition.LEFT_CENTER },
+            gestureHandling: 'greedy',
+            clickableIcons: false,
+            styles: MAP_STYLES[mapTheme],
         });
 
         const bounds = new google.maps.LatLngBounds();
@@ -722,12 +658,7 @@
         });
 
         if (hasPoint) {
-            gmap.fitBounds(bounds, {
-                top: 40,
-                right: 40,
-                bottom: 40,
-                left: 40
-            });
+            gmap.fitBounds(bounds, mapPadding());
             /* prevent over-zooming on a single marker */
             google.maps.event.addListenerOnce(gmap, 'bounds_changed', () => {
                 if (gmap.getZoom() > 14) gmap.setZoom(14);
@@ -889,20 +820,20 @@
         if (!el) return;
         const cfg = {
             live: {
-                color: '#16a34a',
-                dot: '#22c55e',
+                color: '#86efac',
+                dot: '#34d399',
                 label: 'Live',
                 pulse: true
             },
             reconnecting: {
-                color: '#d97706',
+                color: '#fcd34d',
                 dot: '#f59e0b',
                 label: 'Reconnecting…',
                 pulse: true
             },
             disconnected: {
-                color: '#9ca3af',
-                dot: '#d1d5db',
+                color: '#cbd5e1',
+                dot: '#94a3b8',
                 label: 'Disconnected',
                 pulse: false
             },
@@ -910,7 +841,8 @@
         if (!cfg) return;
         const anim = cfg.pulse ? 'animation:pulse 2s infinite;' : '';
         el.style.color = cfg.color;
-        el.innerHTML = `<span class="conn-dot" style="background:${cfg.dot};${anim}"></span>${cfg.label}`;
+        el.setAttribute('aria-label', 'Live connection: ' + cfg.label);
+        el.innerHTML = `<span class="conn-dot" style="background:${cfg.dot};${anim}"></span><span class="lbl">${cfg.label}</span>`;
     }
 
     /* ── SignalR bootstrap ────────────────────────────────── */
