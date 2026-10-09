@@ -577,9 +577,20 @@
         height: 0;
     }
 
+    /* Never squeeze the readouts: values stay on one line and the bar flows onto a second row
+       when it is too narrow (the floating bar is only ~550px wide on a 1400px screen). */
+    .live-bar:not(.hidden) {
+        height: auto;
+        min-height: var(--livebar-h);
+        flex-wrap: wrap;
+        gap: 6px 22px;
+        padding: 8px 18px;
+    }
+
     .ls-item {
         display: flex;
         flex-direction: column;
+        flex: 0 0 auto;
     }
 
     .ls-label {
@@ -595,6 +606,7 @@
         font-weight: 700;
         color: #fff;
         line-height: 1.25;
+        white-space: nowrap;
     }
 
     .ls-value.orange {
@@ -616,6 +628,8 @@
         font-weight: 700;
         letter-spacing: .04em;
         cursor: pointer;
+        white-space: nowrap;
+        flex: 0 0 auto;
     }
 
     .ls-follow.on {
@@ -784,8 +798,16 @@
         .live-bar:not(.hidden) {
             height: auto;
             flex-wrap: wrap;
-            gap: 6px 18px;
+            gap: 6px 12px;
             padding: 8px 14px;
+        }
+
+        .live-bar .ls-value {
+            font-size: 14px;
+        }
+
+        .live-bar .ls-follow {
+            padding: 5px 10px;
         }
 
         .playback-bar:not(.hidden) {
