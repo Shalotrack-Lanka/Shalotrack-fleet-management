@@ -14,12 +14,18 @@
 ARG PHP_VERSION=8.3
 ARG NODE_VERSION=22
 
+# Base images come from AWS's public mirror of the Docker Official Images, not Docker Hub:
+# the same images, but the build no longer depends on Docker Hub's login service (a 504 there
+# failed a deploy) or on Docker Hub's anonymous pull limits, which GitHub's shared runners hit.
+# Override with --build-arg BASE_REGISTRY=docker.io/library to build from Docker Hub instead.
+ARG BASE_REGISTRY=public.ecr.aws/docker/library
+
 # -----------------------------------------------------------------------------
 # Base: PHP-FPM + the extensions this app needs at runtime
 #   gd      → DomPDF renders the base64 PNG charts/logo in Stats & Trip PDFs
 #   opcache → compiled PHP kept in memory (big CPU win on a t3.micro)
 # -----------------------------------------------------------------------------
-FROM php:${PHP_VERSION}-fpm-alpine AS php-base
+FROM ${BASE_REGISTRY}/php:${PHP_VERSION}-fpm-alpine AS php-base
 
 RUN apk add --no-cache libpng libjpeg-turbo freetype \
  && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS libpng-dev libjpeg-turbo-dev freetype-dev \
@@ -31,9 +37,11 @@ RUN apk add --no-cache libpng libjpeg-turbo freetype \
 # -----------------------------------------------------------------------------
 # Stage 1: Composer dependencies
 # -----------------------------------------------------------------------------
+FROM ${BASE_REGISTRY}/composer:2 AS composer-bin
+
 FROM php-base AS vendor
 
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY --from=composer-bin /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 
 # Dependency layer first — only rebuilt when composer.json/lock change.
@@ -49,7 +57,7 @@ RUN composer dump-autoload --no-dev --optimize --classmap-authoritative --no-scr
 # -----------------------------------------------------------------------------
 # Stage 2: Frontend assets (Vite + Tailwind)
 # -----------------------------------------------------------------------------
-FROM node:${NODE_VERSION}-alpine AS assets
+FROM ${BASE_REGISTRY}/node:${NODE_VERSION}-alpine AS assets
 
 WORKDIR /app
 COPY package.json package-lock.json ./
