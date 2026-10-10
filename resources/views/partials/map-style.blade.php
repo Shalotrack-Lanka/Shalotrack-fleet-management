@@ -175,6 +175,10 @@
         };
         window.addEventListener('load', function() {
             setTimeout(function() {
+                // This partial is in the shared layout, so it also runs on pages that have no
+                // map at all (Reports, Stats, Settings...). Only complain when the page actually
+                // asked for Google Maps and it never arrived.
+                if (!document.querySelector('script[src*="maps.googleapis.com/maps/api/js"]')) return;
                 if (!(window.google && window.google.maps && window.google.maps.Map)) notice();
             }, 8000);
         });
