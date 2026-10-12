@@ -18,14 +18,14 @@ class SavedPlaceController extends Controller
             $data     = $response['data'] ?? $response;
             $places   = is_array($data) ? $data : [];
 
-            return view('saved-places.index', [
+            return view('saved-places.saved-places', [
                 'places' => $places,
                 'error'  => null,
             ]);
         } catch (\Exception $e) {
             Log::error('SavedPlaceController: load failed', ['error' => $e->getMessage()]);
             if ($e->getCode() === 401) { Session::flush(); return redirect('/login?expired=1'); }
-            return view('saved-places.index', [
+            return view('saved-places.saved-places', [
                 'places' => [],
                 'error'  => 'Could not load saved places. Please refresh.',
             ]);

@@ -28,7 +28,7 @@ class GeofenceController extends Controller
                 $vehicles  = is_array($vehicles) ? $vehicles : [];
             }
 
-            return view('geofences.index', [
+            return view('geofences.geofences', [
                 'geofences' => $geofences,
                 'vehicles'  => $vehicles,
                 'error'     => null,
@@ -37,7 +37,7 @@ class GeofenceController extends Controller
         } catch (\Exception $e) {
             Log::error('GeofenceController: Failed to load', ['error' => $e->getMessage()]);
             if ($e->getCode() === 401) { Session::flush(); return redirect('/login?expired=1'); }
-            return view('geofences.index', [
+            return view('geofences.geofences', [
                 'geofences' => [],
                 'vehicles'  => [],
                 'error'     => 'Could not load geofences. Please refresh.',

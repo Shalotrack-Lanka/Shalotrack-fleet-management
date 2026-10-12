@@ -17,7 +17,7 @@ class ProfileController extends Controller
             $response = $this->api->getMyProfile();
             $profile  = $response['data'] ?? $response;
 
-            return view('profile.index', [
+            return view('profile.profile', [
                 'profile' => $profile,
                 'error'   => null,
             ]);
@@ -25,7 +25,7 @@ class ProfileController extends Controller
         } catch (\Exception $e) {
             Log::error('ProfileController: Failed to load', ['error' => $e->getMessage()]);
             if ($e->getCode() === 401) { Session::flush(); return redirect('/login?expired=1'); }
-            return view('profile.index', [
+            return view('profile.profile', [
                 'profile' => null,
                 'error'   => 'Could not load profile. Please refresh.',
             ]);

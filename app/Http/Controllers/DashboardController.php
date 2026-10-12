@@ -19,7 +19,7 @@ class DashboardController extends Controller
             $customerId = $profile['data']['customerId'] ?? null;
 
             if (!$customerId) {
-                return view('dashboard.index', [
+                return view('dashboard.dashboard', [
                     'error'     => 'Could not load your profile. Please try again.',
                     'dashboard' => null,
                     'phone'     => Session::get('firebase_phone'),
@@ -42,7 +42,7 @@ class DashboardController extends Controller
             $data['onlineVehicles']  = $data['onlineVehicles']  ?? 0;
             $data['offlineVehicles'] = $data['offlineVehicles'] ?? 0;
 
-            return view('dashboard.index', [
+            return view('dashboard.dashboard', [
                 'dashboard' => $data,
                 'phone'     => Session::get('firebase_phone'),
                 'error'     => null,
@@ -60,14 +60,14 @@ class DashboardController extends Controller
             }
 
             if ($e->getCode() === 402) {
-                return view('dashboard.index', [
+                return view('dashboard.dashboard', [
                     'error'     => 'A subscription has expired, so your dashboard is paused. Renew it from the Renewals page.',
                     'dashboard' => null,
                     'phone'     => Session::get('firebase_phone'),
                 ]);
             }
 
-            return view('dashboard.index', [
+            return view('dashboard.dashboard', [
                 'error'     => 'Could not connect to the server. Please refresh the page.',
                 'dashboard' => null,
                 'phone'     => Session::get('firebase_phone'),

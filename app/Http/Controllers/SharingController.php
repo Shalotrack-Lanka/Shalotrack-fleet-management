@@ -37,7 +37,7 @@ class SharingController extends Controller
             $sharedWithMe  = is_array($sharedWithMe['data']  ?? null) ? $sharedWithMe['data']   : (is_array($sharedWithMe)   ? $sharedWithMe   : []);
             $pendingInvites= is_array($pendingInvites['data'] ?? null) ? $pendingInvites['data'] : (is_array($pendingInvites) ? $pendingInvites : []);
 
-            return view('sharing.index', [
+            return view('sharing.sharing', [
                 'vehicles'       => $vehicles,
                 'myShares'       => $myShares,
                 'sharedWithMe'   => $sharedWithMe,
@@ -48,7 +48,7 @@ class SharingController extends Controller
         } catch (\Exception $e) {
             Log::error('SharingController: Failed to load', ['error' => $e->getMessage()]);
             if ($e->getCode() === 401) { Session::flush(); return redirect('/login?expired=1'); }
-            return view('sharing.index', [
+            return view('sharing.sharing', [
                 'vehicles'       => [],
                 'myShares'       => [],
                 'sharedWithMe'   => [],
