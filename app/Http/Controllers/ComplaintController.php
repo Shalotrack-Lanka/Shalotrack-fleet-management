@@ -34,7 +34,7 @@ class ComplaintController extends Controller
             $complaintsRes = $this->api->getMyComplaints();
             $complaints    = is_array($complaintsRes['data'] ?? null) ? $complaintsRes['data'] : (is_array($complaintsRes) ? $complaintsRes : []);
 
-            return view('complaints.index', [
+            return view('complaints.complaints', [
                 'vehicles'   => $vehicles,
                 'complaints' => $complaints,
                 'error'      => null,
@@ -43,7 +43,7 @@ class ComplaintController extends Controller
         } catch (\Exception $e) {
             Log::error('ComplaintController: Failed to load', ['error' => $e->getMessage()]);
             if ($e->getCode() === 401) { Session::flush(); return redirect('/login?expired=1'); }
-            return view('complaints.index', [
+            return view('complaints.complaints', [
                 'vehicles'   => [],
                 'complaints' => [],
                 'error'      => 'Could not load complaints. Please refresh.',

@@ -18,14 +18,14 @@ class EmergencyContactController extends Controller
             $data      = $response['data'] ?? $response;
             $contacts  = is_array($data) ? $data : [];
 
-            return view('emergency-contacts.index', [
+            return view('emergency-contacts.emergency-contacts', [
                 'contacts' => $contacts,
                 'error'    => null,
             ]);
         } catch (\Exception $e) {
             Log::error('EmergencyContactController: load failed', ['error' => $e->getMessage()]);
             if ($e->getCode() === 401) { Session::flush(); return redirect('/login?expired=1'); }
-            return view('emergency-contacts.index', [
+            return view('emergency-contacts.emergency-contacts', [
                 'contacts' => [],
                 'error'    => 'Could not load emergency contacts. Please refresh.',
             ]);

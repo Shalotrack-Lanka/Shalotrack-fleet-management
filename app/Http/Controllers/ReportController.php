@@ -28,7 +28,7 @@ class ReportController extends Controller
             $customerId = $profile['data']['customerId'] ?? null;
             $vehicles   = $customerId ? $this->api->getTrackableVehicles($customerId) : [];
 
-            return view('reports.index', [
+            return view('reports.reports', [
                 'vehicles' => $vehicles,
                 'error'    => null,
             ]);
@@ -39,7 +39,7 @@ class ReportController extends Controller
                 Session::flush();
                 return redirect('/login?expired=1');
             }
-            return view('reports.index', [
+            return view('reports.reports', [
                 'vehicles' => [],
                 'error'    => 'Could not load vehicles. Please refresh.',
             ]);

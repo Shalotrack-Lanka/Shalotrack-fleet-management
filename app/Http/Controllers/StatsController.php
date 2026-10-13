@@ -23,7 +23,7 @@ class StatsController extends Controller
             // Owned + accepted shares (the API serves stats for both)
             $vehicles = $customerId ? $this->api->getTrackableVehicles($customerId) : [];
 
-            return view('stats.index', ['vehicles' => $vehicles, 'error' => null]);
+            return view('stats.stats', ['vehicles' => $vehicles, 'error' => null]);
         } catch (\Exception $e) {
             Log::error('StatsController::index — failed to load vehicles', [
                 'error' => $e->getMessage(),
@@ -34,7 +34,7 @@ class StatsController extends Controller
                 return redirect('/login?expired=1');
             }
 
-            return view('stats.index', [
+            return view('stats.stats', [
                 'vehicles' => [],
                 'error'    => 'Could not load vehicles. Please refresh the page.',
             ]);

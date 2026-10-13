@@ -50,7 +50,7 @@ class TripController extends Controller
                 $vehicles = $all;
             }
 
-            return view('trips.index', [
+            return view('trips.trips', [
                 'vehicles' => $vehicles,
                 'error'    => null,
             ]);
@@ -61,7 +61,7 @@ class TripController extends Controller
                 Session::flush();
                 return redirect('/login?expired=1');
             }
-            return view('trips.index', [
+            return view('trips.trips', [
                 'vehicles' => [],
                 'error'    => 'Could not load vehicles. Please refresh.',
             ]);

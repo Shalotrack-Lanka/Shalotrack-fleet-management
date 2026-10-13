@@ -24,7 +24,7 @@ class VehicleController extends Controller
             $customerId = $profile['data']['customerId'] ?? null;
 
             if (!$customerId) {
-                return view('vehicles.index', [
+                return view('vehicles.vehicles', [
                     'vehicles'   => [],
                     'customerId' => null,
                     'error'      => 'Could not load your profile.',
@@ -64,7 +64,7 @@ class VehicleController extends Controller
                 ];
             }
 
-            return view('vehicles.index', [
+            return view('vehicles.vehicles', [
                 'vehicles'   => array_merge($owned, $shared),
                 'customerId' => $customerId,
                 'error'      => null,
@@ -72,7 +72,7 @@ class VehicleController extends Controller
 
         } catch (\Exception $e) {
             $this->handleApiException($e);
-            return view('vehicles.index', [
+            return view('vehicles.vehicles', [
                 'vehicles'   => [],
                 'customerId' => null,
                 'error'      => 'Could not load vehicles. Please refresh.',

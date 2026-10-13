@@ -72,7 +72,7 @@ class RenewalController extends Controller
                 Log::warning('RenewalController: package list unavailable', ['code' => $e->getCode()]);
             }
 
-            return view('renewals.index', [
+            return view('renewals.renewals', [
                 'vehicles'  => $vehicles,
                 'renewals'  => $renewals,
                 'packages'  => $packages,
@@ -85,7 +85,7 @@ class RenewalController extends Controller
                 Session::flush();
                 return redirect('/login?expired=1');
             }
-            return view('renewals.index', [
+            return view('renewals.renewals', [
                 'vehicles' => [],
                 'renewals' => [],
                 'packages' => [],
