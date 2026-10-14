@@ -50,18 +50,17 @@ class TripController extends Controller
                 $vehicles = $all;
             }
 
-            return view('trips.index', [
+            return view('trips.trips', [
                 'vehicles' => $vehicles,
                 'error'    => null,
             ]);
-
         } catch (\Exception $e) {
             Log::error('TripController: Failed to load', ['error' => $e->getMessage()]);
             if ($e->getCode() === 401) {
                 Session::flush();
                 return redirect('/login?expired=1');
             }
-            return view('trips.index', [
+            return view('trips.trips', [
                 'vehicles' => [],
                 'error'    => 'Could not load vehicles. Please refresh.',
             ]);
@@ -97,7 +96,6 @@ class TripController extends Controller
                 'data'    => $points,
                 'count'   => count($points),
             ]);
-
         } catch (\Exception $e) {
             return $this->historyError($e, 'points', 'Could not load trip data. Please try again.');
         }
@@ -130,7 +128,6 @@ class TripController extends Controller
                 'success' => true,
                 'data'    => $data,
             ]);
-
         } catch (\Exception $e) {
             return $this->historyError($e, 'summary', 'Could not load trip summary. Please try again.');
         }
@@ -145,7 +142,20 @@ class TripController extends Controller
     private function historyError(\Exception $e, string $what, string $fallback)
     {
         $code = (int) $e->getCode();
-        Log::warning("TripController: {$what} failed", ['status' => $code, 'error' => $e->getMessage()]);
+        Log::warning("TripController: {$what} failed", [
+            'status' => $code,
+            'type'   => class_basename($e),   // ConnectionException = the API did not answer in time
+            'error'  => $e->getMessage(),
+        ]);
+
+        // The API did not answer within the allowed time: say so and suggest the practical fix.
+        if ($e instanceof \Illuminate\Http\Client\ConnectionException) {
+            return response()->json([
+                'success' => false,
+                'timeout' => true,
+                'message' => 'Loading took too long. Try a shorter date range, or try again in a moment.',
+            ], 422);   // not 504: a proxy in front may swap a 5xx body for its own error page
+        }
 
         return match (true) {
             $code === 401 => response()->json(['success' => false, 'expired' => true], 401),
@@ -272,7 +282,6 @@ class TripController extends Controller
 
             $filename = 'shalotrack_trip_report_' . LocalTime::now()->format('Y-m-d_His') . '.pdf';
             return $pdf->stream($filename);
-
         } catch (\Exception $e) {
             Log::error('TripController: report failed', [
                 'vehicleId' => $vehicleId,

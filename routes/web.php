@@ -25,12 +25,12 @@ use App\Http\Controllers\PublicLiveController;
 // ---- Public ----
 Route::get('/', fn() => view('landing'))->name('home');
 Route::get('/login',  [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:20,1')->name('login.post');   // OTP itself is rate-limited by Firebase; this stops token-verify spam
 Route::post('/logout',[AuthController::class, 'logout'])->name('logout');
 
 // Registration — accessible only when session exists but no profile yet
 Route::get('/register',  [RegisterController::class, 'show'])->name('register');
-Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
+Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:20,1')->name('register.store');
 
 // Email verification
 Route::get('/email/verify',         [EmailVerificationController::class, 'show'])->name('email.verify');

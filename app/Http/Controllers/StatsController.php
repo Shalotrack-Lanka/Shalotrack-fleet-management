@@ -23,7 +23,7 @@ class StatsController extends Controller
             // Owned + accepted shares (the API serves stats for both)
             $vehicles = $customerId ? $this->api->getTrackableVehicles($customerId) : [];
 
-            return view('stats.index', ['vehicles' => $vehicles, 'error' => null]);
+            return view('stats.stats', ['vehicles' => $vehicles, 'error' => null]);
         } catch (\Exception $e) {
             Log::error('StatsController::index — failed to load vehicles', [
                 'error' => $e->getMessage(),
@@ -34,7 +34,7 @@ class StatsController extends Controller
                 return redirect('/login?expired=1');
             }
 
-            return view('stats.index', [
+            return view('stats.stats', [
                 'vehicles' => [],
                 'error'    => 'Could not load vehicles. Please refresh the page.',
             ]);
@@ -104,14 +104,20 @@ class StatsController extends Controller
 
             return response()->json(['success' => true, 'data' => $data]);
         } catch (\Exception $e) {
+            $code = (int) $e->getCode();
+
+            // Always log the status and exception type: a generic message to the user must never mean
+            // an undiagnosable log line (the API's real reason used to be invisible here).
             Log::error('StatsController::data — API call failed', [
                 'vehicleId' => $vehicleId,
                 'period'    => $period,
+                'status'    => $code,
+                'type'      => class_basename($e),
                 'error'     => $e->getMessage(),
             ]);
 
             // ── Session expired — tell the client to redirect ──────────────
-            if ($e->getCode() === 401) {
+            if ($code === 401) {
                 return response()->json([
                     'success' => false,
                     'expired' => true,
@@ -119,10 +125,31 @@ class StatsController extends Controller
                 ], 401);
             }
 
+            // HTTP 200 + success:false is deliberate: the page's fetch() treats any non-2xx
+            // as a bare "Server error (NNN)" and would drop this message.
             return response()->json([
                 'success' => false,
-                'message' => 'Could not load statistics. Please try again.',
+                'message' => $this->errorMessage($e),
             ]);
         }
+    }
+
+    /** Honest, safe message for a failed stats call (never echoes raw API bodies). */
+    private function errorMessage(\Exception $e): string
+    {
+        $code = (int) $e->getCode();
+
+        return match (true) {
+            $e instanceof \Illuminate\Http\Client\ConnectionException
+            => 'Loading took too long. Try a shorter period, or try again in a moment.',
+            $code === 402 => 'Subscription expired — renew to view statistics.',
+            $code === 403 => 'You do not have access to this vehicle.',
+            $code === 404 => 'Vehicle not found.',
+            $code === 429 => 'Too many requests — please wait a moment and try again.',
+            // 400: the API's own explanation (e.g. a range that is too large) is safe to show.
+            $code === 400 && $e->getMessage() !== '' && !str_contains($e->getMessage(), '_')
+            => $e->getMessage(),
+            default       => 'Could not load statistics. Please try again.',
+        };
     }
 }

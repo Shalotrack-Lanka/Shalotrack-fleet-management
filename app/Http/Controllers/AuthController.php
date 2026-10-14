@@ -87,6 +87,11 @@ class AuthController extends Controller
             return back()->withErrors(['phone' => 'Authentication failed. Please try again.']);
         }
 
+        // Session-fixation defence: a session id that existed BEFORE this login (e.g. one planted from
+        // a sibling subdomain, since the cookie is shared across *.shalotrack.com) must never become
+        // the authenticated session. Rotate it first, then write the login data into the new one.
+        Session::regenerate();
+
         // Store in encrypted HTTP-only session — token never returned to browser
         Session::put('firebase_token',            $idToken);
         Session::put('firebase_token_expires_at', (int) ($payload['exp'] ?? 0));
