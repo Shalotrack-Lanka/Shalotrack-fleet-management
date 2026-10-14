@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\Session;
 class ShalotrackApiService
 {
     private string $baseUrl;
+    /** Seconds allowed for the heavy trip-history reads (GPS points + archive), vs the 10 s default. */
+    private const HISTORY_TIMEOUT = 30;
+
     private int $timeout;
 
     public function __construct()
@@ -276,7 +279,7 @@ class ShalotrackApiService
             'from'      => $from,
             'to'        => $to,
             'pageSize'  => 1000, // Max points for route playback
-        ]);
+        ], self::HISTORY_TIMEOUT);
     }
 
     /**
@@ -285,11 +288,12 @@ class ShalotrackApiService
      */
     public function getTripSummary(string $vehicleId, string $from, string $to): array
     {
+        // Reads the whole range from the database and the archive: allow longer than the 10 s default.
         return $this->get('/api/GpsTracking/trips', [
             'vehicleId' => $vehicleId,
             'from'      => $from,
             'to'        => $to,
-        ]);
+        ], self::HISTORY_TIMEOUT);
     }
 
     // -------------------------------------------------------------------------
@@ -600,9 +604,9 @@ class ShalotrackApiService
     // Internal HTTP helpers
     // -------------------------------------------------------------------------
 
-    private function get(string $path, array $query = []): array
+    private function get(string $path, array $query = [], ?int $timeout = null): array
     {
-        $response = $this->client()->get($this->baseUrl . $path, $query);
+        $response = $this->client($timeout)->get($this->baseUrl . $path, $query);
         return $this->handle($response, 'GET', $path);
     }
 
@@ -630,11 +634,11 @@ class ShalotrackApiService
         $this->handle($response, 'DELETE', $path);
     }
 
-    private function client()
+    private function client(?int $timeout = null)
     {
         $token = Session::get('firebase_token');
         return Http::withToken($token)
-            ->timeout($this->timeout)
+            ->timeout($timeout ?? $this->timeout)
             ->acceptJson()
             ->withHeaders(['Content-Type' => 'application/json']);
     }

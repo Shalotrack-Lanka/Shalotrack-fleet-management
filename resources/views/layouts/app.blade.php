@@ -556,12 +556,13 @@
         }
 
         .st-page {
-            padding: 14px 12px 0;
+            padding: 14px 12px 112px;
+            /* clears the floating dock */
         }
 
         @media (min-width: 768px) {
             .st-page {
-                padding: 18px 24px 0;
+                padding: 18px 24px 112px;
             }
         }
 
@@ -740,8 +741,7 @@
 
             function dialogOf(root) {
                 // The panel is the child that holds the controls; a sibling like .modal-backdrop is skipped.
-                return root.querySelector('[role="dialog"]') ||
-                    [...root.children].find(c => c.querySelector(FOCUSABLE)) ||
+                return root.querySelector('[role="dialog"]') || [...root.children].find(c => c.querySelector(FOCUSABLE)) ||
                     root;
             }
 
