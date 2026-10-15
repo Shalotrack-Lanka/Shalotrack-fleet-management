@@ -804,10 +804,10 @@
                 <p class="mb-5 mt-14 text-xs font-bold uppercase tracking-wider text-[#55627A]/70">Engineering</p>
                 <ul class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
                     @foreach ([
-                    ['Suwen', 'S', 'Systems Lead — TCP gateway, .NET API, Android backend'],
+                    ['Suwen Jayathunga', 'SJ', 'Systems Lead — TCP gateway, .NET API, Android backend'],
                     ['Nuwan Akalanka', 'NA', 'Web & QA — Laravel admin portal, web UI/UX'],
                     ['Rohansa Edirisinghe', 'RE', 'Mobile & UI — Android UI/UX, quality assurance'],
-                    ['Amoda', 'A', 'Infrastructure — cloud, DevOps/SRE, security and networking'],
+                    ['Amoda Rashmika', 'AR', 'Infrastructure — cloud, DevOps/SRE, security and networking'],
                     ] as $i => $m)
                     <li data-reveal
                         class="group translate-y-8 rounded-2xl bg-white p-6 opacity-0 shadow-sm ring-1 ring-[#D9DFEA] transition duration-700 ease-out hover:-translate-y-1 hover:shadow-xl hover:ring-[#FA6908]/50 data-[in]:translate-y-0 data-[in]:opacity-100 motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:transition-none"
