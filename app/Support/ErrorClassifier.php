@@ -23,6 +23,15 @@ class ErrorClassifier
     {
         $class = get_class($e);
 
+        // ── Missing / unsafe server setting (env var, app key) ────────────────
+        if ($e instanceof \App\Exceptions\ConfigurationException
+            || $e instanceof \Illuminate\Encryption\MissingAppKeyException) {
+            return [
+                'category' => 'Configuration error',
+                'summary'  => 'A required server setting is missing or unsafe. Check the environment variables (.env locally, container env in production).',
+            ];
+        }
+
         // ── Database ──────────────────────────────────────────────────────────
         if ($e instanceof \Illuminate\Database\QueryException) {
             return [
