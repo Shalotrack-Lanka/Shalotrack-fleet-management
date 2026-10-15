@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\ApiErrors;
 use App\Services\ShalotrackApiService;
 use App\Support\DeviceHealth;
 use Illuminate\Http\Request;
@@ -30,6 +31,8 @@ class VehicleController extends Controller
                     'error'      => 'Could not load your profile.',
                 ]);
             }
+
+            Session::put('customer_id', $customerId);   // used server-side when creating a vehicle
 
             // Owned vehicles
             $response = $this->api->getVehiclesByCustomer($customerId);
@@ -180,7 +183,7 @@ class VehicleController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'customerId'    => 'required|uuid',
+            'customerId'    => 'nullable|uuid',   // ignored: the owner is always the signed-in customer
             'vehicleNumber' => 'required|string|max:20',
             'make'          => 'required|string|max:50',
             'model'         => 'required|string|max:50',
@@ -193,8 +196,11 @@ class VehicleController extends Controller
         ]);
 
         try {
+            // SECURITY: never trust an owner id sent by the browser — it could name someone else's account.
+            $customerId = $this->signedInCustomerId();
+
             $response = $this->api->createVehicle([
-                'CustomerId'    => $validated['customerId'],
+                'CustomerId'    => $customerId,
                 'VehicleNumber' => strtoupper($validated['vehicleNumber']),
                 'Make'          => $validated['make'],
                 'Model'         => $validated['model'],
@@ -213,11 +219,7 @@ class VehicleController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('VehicleController: create failed', ['error' => $e->getMessage()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to add vehicle. Please try again.',
-            ], 422);
+            return ApiErrors::json($e, 'vehicle.create', 'Failed to add vehicle. Please try again.');
         }
     }
 
@@ -259,11 +261,7 @@ class VehicleController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('VehicleController: update failed', ['error' => $e->getMessage()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update vehicle. Please try again.',
-            ], 422);
+            return ApiErrors::json($e, 'vehicle.update', 'Failed to update vehicle. Please try again.');
         }
     }
 
@@ -281,11 +279,7 @@ class VehicleController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('VehicleController: delete failed', ['error' => $e->getMessage()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete vehicle. Please try again.',
-            ], 422);
+            return ApiErrors::json($e, 'vehicle.delete', 'Failed to delete vehicle. Please try again.');
         }
     }
 
@@ -297,10 +291,18 @@ class VehicleController extends Controller
     public function linkDevice(Request $request, string $id)
     {
         $request->validate([
-            'imei' => 'required|string|min:15|max:17',
+            // IMEI is 15 digits (16-17 with software version): digits only, checked BEFORE any lookup.
+            'imei' => ['required', 'string', 'regex:/^\s*[0-9][0-9 -]{13,20}[0-9]\s*$/'],
         ]);
 
         $imei = preg_replace('/\D/', '', $request->input('imei'));
+        if (strlen($imei) < 15 || strlen($imei) > 17) {
+            return response()->json([
+                'success' => false,
+                'code'    => 'INVALID_IMEI',
+                'message' => 'Enter the 15-digit IMEI printed on the device or its box.',
+            ], 422);
+        }
 
         try {
             // Step 1: Lookup device by IMEI
@@ -324,18 +326,10 @@ class VehicleController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('VehicleController: linkDevice failed', ['error' => $e->getMessage()]);
-
-            $message = match ($e->getCode()) {
-                404     => 'No GPS device found with that IMEI.',
-                403     => 'This device is not available for linking.',
-                default => 'Failed to link device. Please try again.',
-            };
-
-            return response()->json([
-                'success' => false,
-                'message' => $message,
-            ], $e->getCode() ?: 422);
+            return ApiErrors::json($e, 'vehicle.link', 'Failed to link device. Please try again.', [
+                404 => 'No GPS device found with that IMEI.',
+                403 => 'This device is not available for linking.',
+            ]);
         }
     }
 
@@ -357,11 +351,7 @@ class VehicleController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('VehicleController: unlinkDevice failed', ['error' => $e->getMessage()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to unlink device. Please try again.',
-            ], 422);
+            return ApiErrors::json($e, 'vehicle.unlink', 'Failed to unlink device. Please try again.');
         }
     }
 
@@ -398,6 +388,23 @@ class VehicleController extends Controller
             'success' => false,
             'message' => $message,
         ], $status);
+    }
+
+    /** The signed-in customer's id, taken from the session (resolved from the API profile once). */
+    private function signedInCustomerId(): string
+    {
+        $id = Session::get('customer_id');
+
+        if (! is_string($id) || $id === '') {
+            $profile = $this->api->getMyProfile();
+            $id      = $profile['data']['customerId'] ?? ($profile['customerId'] ?? null);
+            if (! is_string($id) || $id === '') {
+                throw new \RuntimeException('Customer profile has no id.', 404);
+            }
+            Session::put('customer_id', $id);
+        }
+
+        return $id;
     }
 
     private function handleApiException(\Exception $e): void

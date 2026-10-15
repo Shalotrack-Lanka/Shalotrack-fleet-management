@@ -104,11 +104,21 @@
                     showStatus('Email verified! Redirecting...', 'text-green-600');
                     // Tell Laravel the email is now verified
                     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                    await fetch('/email/mark-verified', {
+                    // A fresh ID token carries Firebase's own email_verified claim; the server checks it.
+                    const idToken = await user.getIdToken(true);
+                    const res = await fetch('/email/mark-verified', {
                         method: 'POST',
                         credentials: 'include',
                         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                        body: JSON.stringify({ idToken }),
                     });
+                    if (!res.ok) {
+                        const j = await res.json().catch(() => ({}));
+                        showStatus(j.message || 'Could not confirm your email yet. Please try again.', 'text-red-500');
+                        btn.disabled = false;
+                        btn.textContent = "I've verified my email";
+                        return;
+                    }
                     window.location.href = '/dashboard';
                 } else {
                     showStatus('Email not verified yet. Please check your inbox and click the link.', 'text-red-500');
@@ -156,12 +166,14 @@
                 await auth.currentUser?.reload();
                 if (auth.currentUser?.emailVerified) {
                     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                    await fetch('/email/mark-verified', {
+                    const idToken = await auth.currentUser.getIdToken(true);
+                    const res = await fetch('/email/mark-verified', {
                         method: 'POST',
                         credentials: 'include',
                         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                        body: JSON.stringify({ idToken }),
                     });
-                    window.location.href = '/dashboard';
+                    if (res.ok) window.location.href = '/dashboard';
                 }
             } catch (e) {}
         }, 5000);

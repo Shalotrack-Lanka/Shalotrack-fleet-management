@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\ApiErrors;
 use App\Services\ShalotrackApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -36,8 +37,10 @@ class EmergencyContactController extends Controller
     {
         $request->validate([
             'name'         => 'required|string|max:100',
-            'phoneNumber'  => 'required|string|max:20',
+            'phoneNumber'  => ['required', 'string', 'max:20', 'regex:/^\+?[0-9][0-9\s().-]{6,19}$/'],
             'relationship' => 'nullable|string|max:50',
+        ], [
+            'phoneNumber.regex' => 'Enter a valid phone number, for example 077 123 4567.',
         ]);
 
         try {
@@ -48,11 +51,9 @@ class EmergencyContactController extends Controller
             ]);
             return response()->json(['success' => true, 'data' => $response['data'] ?? $response]);
         } catch (\Exception $e) {
-            Log::error('EmergencyContactController: create failed', ['error' => $e->getMessage()]);
-            $message = $e->getCode() === 422
-                ? 'Plan limit reached. You cannot add more emergency contacts on your current plan.'
-                : 'Failed to add contact. Please try again.';
-            return response()->json(['success' => false, 'message' => $message], 422);
+            return ApiErrors::json($e, 'emergency.create', 'Failed to add contact. Please try again.', [
+                422 => 'Plan limit reached. You cannot add more emergency contacts on your current plan.',
+            ]);
         }
     }
 
@@ -62,8 +63,7 @@ class EmergencyContactController extends Controller
             $this->api->deleteEmergencyContact($id);
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
-            Log::error('EmergencyContactController: delete failed', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'message' => 'Failed to delete contact.'], 422);
+            return ApiErrors::json($e, 'emergency.delete', 'Failed to delete contact.');
         }
     }
 }

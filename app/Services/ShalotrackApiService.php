@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
@@ -19,6 +20,11 @@ class ShalotrackApiService
     private string $baseUrl;
     /** Seconds allowed for the heavy trip-history reads (GPS points + archive), vs the 10 s default. */
     private const HISTORY_TIMEOUT = 30;
+
+    /** Seconds a cached read stays fresh (see cachedGet). Writes that change the data clear it at once. */
+    private const PROFILE_TTL = 30;
+    private const STATS_TTL = 60;
+    private const CATALOG_TTL = 300;
 
     private int $timeout;
 
@@ -46,17 +52,23 @@ class ShalotrackApiService
 
     public function getMyProfile(): array
     {
-        return $this->get('/api/Customers/me');
+        return $this->cachedGet('/api/Customers/me', [], self::PROFILE_TTL);
     }
 
     public function createProfile(array $data): array
     {
-        return $this->post('/api/Customers', $data);
+        $result = $this->post('/api/Customers', $data);
+        $this->forgetCached('/api/Customers/me');
+
+        return $result;
     }
 
     public function updateProfile(string $customerId, array $data): array
     {
-        return $this->put("/api/Customers/{$customerId}", $data);
+        $result = $this->put("/api/Customers/{$customerId}", $data);
+        $this->forgetCached('/api/Customers/me');
+
+        return $result;
     }
 
     // -------------------------------------------------------------------------
@@ -507,7 +519,7 @@ class ShalotrackApiService
 
     public function getRenewalPackages(): array
     {
-        return $this->get('/api/Renewals/packages');
+        return $this->cachedGet('/api/Renewals/packages', [], self::CATALOG_TTL);
     }
 
     public function getMyRenewals(): array
@@ -599,7 +611,7 @@ class ShalotrackApiService
 
     public function getVehicleStats(string $vehicleId, string $period = 'week'): array
     {
-        return $this->get("/api/VehicleStats/{$vehicleId}", ['period' => $period]);
+        return $this->cachedGet("/api/VehicleStats/{$vehicleId}", ['period' => $period], self::STATS_TTL);
     }
 
     /**
@@ -609,7 +621,7 @@ class ShalotrackApiService
      */
     public function getVehicleStatsForRange(string $vehicleId, string $from, string $to): array
     {
-        return $this->get("/api/VehicleStats/{$vehicleId}", ['from' => $from, 'to' => $to]);
+        return $this->cachedGet("/api/VehicleStats/{$vehicleId}", ['from' => $from, 'to' => $to], self::STATS_TTL);
     }
 
     // -------------------------------------------------------------------------
@@ -620,6 +632,42 @@ class ShalotrackApiService
     {
         $response = $this->client($timeout)->get($this->baseUrl . $path, $query);
         return $this->handle($response, 'GET', $path);
+    }
+
+    /**
+     * A short read-through cache for data that is expensive to compute and changes slowly (statistics
+     * rebuild from the GPS archive; profile and price list barely move). It exists so a burst of page
+     * loads costs one API call instead of dozens while only a few PHP workers are available.
+     *
+     * Safe by construction:
+     *   - the key contains a hash of the signed-in user's Firebase uid, so one customer can never be
+     *     served another's data (and nothing is cached when there is no signed-in user);
+     *   - only successful responses are stored — an error is never cached;
+     *   - live location, trips, alerts and every write bypass it entirely.
+     */
+    private function cachedGet(string $path, array $query, int $ttl): array
+    {
+        $key = $this->cacheKey($path, $query);
+
+        if ($key === null) {
+            return $this->get($path, $query);
+        }
+
+        return Cache::remember($key, $ttl, fn () => $this->get($path, $query));
+    }
+
+    private function forgetCached(string $path, array $query = []): void
+    {
+        if (($key = $this->cacheKey($path, $query)) !== null) {
+            Cache::forget($key);
+        }
+    }
+
+    private function cacheKey(string $path, array $query): ?string
+    {
+        $uid = (string) Session::get('firebase_uid', '');
+
+        return $uid === '' ? null : 'api:' . hash('sha256', $uid . '|' . $path . '|' . http_build_query($query));
     }
 
     private function post(string $path, array $data = []): array
@@ -650,6 +698,7 @@ class ShalotrackApiService
     {
         $token = Session::get('firebase_token');
         return Http::withToken($token)
+            ->connectTimeout((int) config('shalotrack.api_connect_timeout', 3))
             ->timeout($timeout ?? $this->timeout)
             ->acceptJson()
             ->withHeaders(['Content-Type' => 'application/json']);

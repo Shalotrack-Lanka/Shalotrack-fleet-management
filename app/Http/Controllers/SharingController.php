@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\ApiErrors;
 use App\Services\ShalotrackApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -66,7 +67,9 @@ class SharingController extends Controller
     {
         $request->validate([
             'vehicleId'   => 'required|uuid',
-            'phoneNumber' => 'required|string',
+            'phoneNumber' => 'required|string|max:25',
+        ], [
+            'phoneNumber.required' => 'Enter the mobile number of the person you want to share with.',
         ]);
 
         // Normalise phone to E.164
@@ -76,15 +79,22 @@ class SharingController extends Controller
         elseif (strlen($phone) === 11 && str_starts_with($phone, '94')) $phone = '+' . $phone;
         else $phone = '+' . $phone;
 
+        // Checked here so a typo never costs an API call (and never probes for accounts with junk numbers).
+        if (! preg_match('/^\+[1-9]\d{8,14}$/', $phone)) {
+            return response()->json([
+                'success' => false,
+                'code'    => 'INVALID_PHONE',
+                'message' => 'Enter a valid mobile number, for example 077 123 4567.',
+            ], 422);
+        }
+
         try {
             $response = $this->api->inviteShare($request->input('vehicleId'), $phone);
             return response()->json(['success' => true, 'data' => $response['data'] ?? $response]);
         } catch (\Exception $e) {
-            Log::error('SharingController: invite failed', ['error' => $e->getMessage()]);
-            $message = $e->getCode() === 404
-                ? 'No ShaloTrack account found with that phone number.'
-                : 'Failed to send invite. Please try again.';
-            return response()->json(['success' => false, 'message' => $message], 422);
+            return ApiErrors::json($e, 'sharing.invite', 'Failed to send invite. Please try again.', [
+                404 => 'No ShaloTrack account found with that phone number.',
+            ]);
         }
     }
 
@@ -98,8 +108,7 @@ class SharingController extends Controller
             $response = $this->api->respondToShare($id, true);
             return response()->json(['success' => true, 'data' => $response['data'] ?? $response]);
         } catch (\Exception $e) {
-            Log::error('SharingController: accept failed', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'message' => 'Failed to accept invite.'], 422);
+            return ApiErrors::json($e, 'sharing.accept', 'Failed to accept invite.');
         }
     }
 
@@ -113,8 +122,7 @@ class SharingController extends Controller
             $response = $this->api->respondToShare($id, false);
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
-            Log::error('SharingController: decline failed', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'message' => 'Failed to decline invite.'], 422);
+            return ApiErrors::json($e, 'sharing.decline', 'Failed to decline invite.');
         }
     }
 
@@ -128,8 +136,7 @@ class SharingController extends Controller
             $this->api->revokeShare($id);
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
-            Log::error('SharingController: revoke failed', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'message' => 'Failed to revoke share.'], 422);
+            return ApiErrors::json($e, 'sharing.revoke', 'Failed to revoke share.');
         }
     }
 }

@@ -22,6 +22,14 @@ use App\Http\Controllers\RenewalController;
 use App\Http\Controllers\SosController;
 use App\Http\Controllers\PublicLiveController;
 
+// ---- Route parameters ----
+// Every id in a URL ends up inside an API path, so only plain id characters may reach a controller
+// (no "..", "?", "#", spaces or encoded slashes). Anything else is a clean 404.
+Route::pattern('id', '[A-Za-z0-9\-]{1,64}');
+Route::pattern('vehicleId', '[A-Za-z0-9\-]{1,64}');
+Route::pattern('linkId', '[A-Za-z0-9\-]{1,64}');
+Route::pattern('reminderId', '[A-Za-z0-9\-]{1,64}');
+
 // ---- Public ----
 Route::get('/', fn() => view('landing'))->name('home');
 Route::get('/login',  [AuthController::class, 'showLogin'])->name('login');
@@ -74,7 +82,9 @@ Route::middleware('throttle:live-public')
     });
 
 // ---- Protected ----
-Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(function () {
+// 'portal' = 240 requests/min per signed-in user (see AppServiceProvider): a runaway script or a stuck
+// retry loop is cut off before it can tie up the few PHP workers.
+Route::middleware([\App\Http\Middleware\FirebaseAuthenticated::class, 'throttle:portal'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -115,7 +125,8 @@ Route::middleware(\App\Http\Middleware\FirebaseAuthenticated::class)->group(func
 
     // Sharing
     Route::get('/sharing',                [SharingController::class, 'index'])->name('sharing');
-    Route::post('/sharing',               [SharingController::class, 'store']);
+    // Invites reveal whether a phone number has an account: slow and capped per day (see 'invite' limiter).
+    Route::post('/sharing',               [SharingController::class, 'store'])->middleware('throttle:invite');
     Route::post('/sharing/{id}/accept',   [SharingController::class, 'accept']);
     Route::post('/sharing/{id}/decline',  [SharingController::class, 'decline']);
     Route::delete('/sharing/{id}',        [SharingController::class, 'destroy']);

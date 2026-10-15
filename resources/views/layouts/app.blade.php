@@ -603,6 +603,9 @@
 
 <body class="@hasSection('immersive') bg-[#010F25] @else st-bg @endif @hasSection('fullbleed') st-full @endif min-h-screen">
 
+    {{-- Toasts, confirm dialog and fetch() guard (session-expired / offline / rate-limit notices) --}}
+    @include('partials.notify')
+
     @include('partials.map-style')
 
     <div class="min-h-screen">

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\ApiErrors;
 use App\Services\ShalotrackApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -48,8 +49,7 @@ class SavedPlaceController extends Controller
             ]);
             return response()->json(['success' => true, 'data' => $response['data'] ?? $response]);
         } catch (\Exception $e) {
-            Log::error('SavedPlaceController: create failed', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'message' => 'Failed to save place.'], 422);
+            return ApiErrors::json($e, 'place.create', 'Failed to save place.');
         }
     }
 
@@ -59,8 +59,7 @@ class SavedPlaceController extends Controller
             $this->api->deleteSavedPlace($id);
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
-            Log::error('SavedPlaceController: delete failed', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'message' => 'Failed to delete place.'], 422);
+            return ApiErrors::json($e, 'place.delete', 'Failed to delete place.');
         }
     }
 }

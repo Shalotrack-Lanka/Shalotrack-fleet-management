@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\ApiErrors;
 use App\Services\ShalotrackApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -71,8 +72,7 @@ class GeofenceController extends Controller
             return response()->json(['success' => true, 'data' => $response['data'] ?? $response]);
 
         } catch (\Exception $e) {
-            Log::error('GeofenceController: store failed', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'message' => 'Failed to create geofence.'], 422);
+            return ApiErrors::json($e, 'geofence.store', 'Failed to create geofence.');
         }
     }
 
@@ -104,8 +104,7 @@ class GeofenceController extends Controller
             return response()->json(['success' => true, 'data' => $response['data'] ?? $response]);
 
         } catch (\Exception $e) {
-            Log::error('GeofenceController: update failed', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'message' => 'Failed to update geofence.'], 422);
+            return ApiErrors::json($e, 'geofence.update', 'Failed to update geofence.');
         }
     }
 
@@ -115,8 +114,7 @@ class GeofenceController extends Controller
             $this->api->deleteGeofence($id);
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
-            Log::error('GeofenceController: destroy failed', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'message' => 'Failed to delete geofence.'], 422);
+            return ApiErrors::json($e, 'geofence.destroy', 'Failed to delete geofence.');
         }
     }
 }
