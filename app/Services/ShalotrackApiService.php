@@ -29,12 +29,12 @@ class ShalotrackApiService
         // No silent fallback to a real API: a missing value must fail loudly, not send a
         // developer's (or a misconfigured container's) traffic to production.
         if ($this->baseUrl === '') {
-            throw new \RuntimeException('SHALOTRACK_API_BASE_URL is not configured.');
+            throw new \App\Exceptions\ConfigurationException('SHALOTRACK_API_BASE_URL is not configured.');
         }
 
         // The Firebase bearer token travels on every call: never over cleartext in production.
         if (app()->isProduction() && !str_starts_with($this->baseUrl, 'https://')) {
-            throw new \RuntimeException('SHALOTRACK_API_BASE_URL must use https:// in production.');
+            throw new \App\Exceptions\ConfigurationException('SHALOTRACK_API_BASE_URL must use https:// in production.');
         }
 
         $this->timeout = (int) config('shalotrack.api_timeout', 10);

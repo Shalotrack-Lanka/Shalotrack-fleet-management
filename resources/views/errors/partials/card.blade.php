@@ -122,7 +122,7 @@
     $bg = $c['bg'];
     $svgPath = $icon ?? $c['icon'];
     $displayTitle = $title ?? $c['dtitle'];
-    $displayMessage = $message ?? $c['dmsg'];
+    $displayMessage = $showDetails ? $technicalMessage : ($message ?? $c['dmsg']);
     @endphp
     <!DOCTYPE html>
     <html lang="en">
@@ -416,6 +416,10 @@
             <div class="body">
                 <p class="message">{{ $displayMessage }}</p>
 
+                @if ($showDetails)
+                    <p style="font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px; color: #94a3b8; margin: -6px 0 16px; word-break: break-all;">{{ $technicalFile }}</p>
+                @endif
+
                 {{-- Technical details — customer reads these out to support --}}
                 <div class="tech-box">
                     <div class="tech-box-label">Technical details — read these out when you call us</div>
@@ -429,21 +433,6 @@
                         <span class="tech-key">Type</span>
                         <span class="tech-val">{{ $techLabel }}</span>
                     </div>
-
-                    @if ($showDetails)
-                        <div class="tech-row">
-                            <span class="tech-key">Cause</span>
-                            <span class="tech-val">{{ $technicalSummary }}</span>
-                        </div>
-                        <div class="tech-row">
-                            <span class="tech-key">Message</span>
-                            <span class="tech-val">{{ $technicalMessage }}</span>
-                        </div>
-                        <div class="tech-row">
-                            <span class="tech-key">Where</span>
-                            <span class="tech-val">{{ $technicalFile }}</span>
-                        </div>
-                    @endif
 
                     <div class="tech-row">
                         <span class="tech-key">Ref</span>
