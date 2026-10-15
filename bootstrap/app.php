@@ -4,6 +4,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Support\Facades\Route;
+use App\Support\ErrorLogger;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -42,5 +44,39 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+
+        // Every reportable exception goes to the `app_errors` channel with a reference ID,
+        // a plain-English category and its location. The same ID is printed on the error
+        // page, so a customer's call finds the exact log line (same design as the Admin portal).
+        $exceptions->reportable(function (\Throwable $e) {
+            ErrorLogger::log($e, 'error');
+        });
+
+        // Branded error pages for every HTTP error and uncaught exception (never the default
+        // Laravel page). Raw message / file are NOT shown unless ERROR_PAGE_DETAILS=true.
+        $exceptions->render(function (\Throwable $e, $request) {
+            if ($request->expectsJson()) {
+                return null; // /api/* and fetch() callers keep Laravel's JSON error shape
+            }
+
+            // Redirects, validation errors and sign-out redirects keep Laravel's own handling.
+            if ($e instanceof \Illuminate\Http\Exceptions\HttpResponseException
+                || $e instanceof \Illuminate\Validation\ValidationException
+                || $e instanceof \Illuminate\Auth\AuthenticationException) {
+                return null;
+            }
+
+            $status = ErrorLogger::status($e);
+
+            // 4xx pages are not "reported" by Laravel, but the reference ID shown must still
+            // find a log line: write one (warning level) so support can always look it up.
+            if ($e instanceof HttpExceptionInterface && $status < 500) {
+                ErrorLogger::log($e, 'warning');
+            }
+
+            $view = view()->exists("errors.$status") ? "errors.$status" : 'errors.generic';
+
+            return response()->view($view, ErrorLogger::viewData($e), $status);
+        });
+
     })->create();

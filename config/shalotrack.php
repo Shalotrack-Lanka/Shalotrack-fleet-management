@@ -10,7 +10,9 @@ return [
     | Never call the C# API directly from a controller.
     |
     */
-    'api_base_url' => env('SHALOTRACK_API_BASE_URL', 'https://api.shalotrack.com'),
+    // No default on purpose: production sets it in the container (SSM / user-data), and a
+    // missing value must fail loudly rather than fall back to the live API.
+    'api_base_url' => env('SHALOTRACK_API_BASE_URL'),
 
     /*
     |--------------------------------------------------------------------------
