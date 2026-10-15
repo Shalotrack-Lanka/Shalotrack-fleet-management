@@ -7,8 +7,8 @@
 |
 | $referenceId — support ref (logged to app_errors channel with full context)
 | $statusCode — HTTP status integer
-| $technicalCategory — coarse category string from ErrorClassifier::classify()
-| $technicalSummary — human-readable one-liner from ErrorClassifier::classify()
+| $technicalCategory — real, safe category from ErrorClassifier::classify() (always shown)
+| $technicalSummary / $technicalMessage / $technicalFile — only passed when ERROR_PAGE_DETAILS=true
 |
 | Variables from individual error blades (e.g. errors/404.blade.php):
 | $statusCode — passed explicitly so the card works even when $exception is absent
@@ -16,8 +16,9 @@
 | $message — friendly explanation (overrides default for this code)
 | $icon — optional SVG <path> d="..." override
     |
-    | NOTE: $technicalMessage and $technicalFile are NOT displayed — they may
-    | contain raw SQL, internal paths, or stack details. They stay in the log only.
+    | NOTE: $technicalMessage / $technicalFile / $technicalSummary are displayed ONLY when
+    | config('app.error_details') (ERROR_PAGE_DETAILS=true) — they may contain raw SQL,
+    | internal URLs or paths. By default they stay in the log (look up the Ref).
     */
 
     // -------------------------------------------------------------------------
@@ -33,6 +34,8 @@
     // Fall back to a locally generated one only when rendered outside the pipeline
     // (e.g. artisan tinker, unit tests).
     // -------------------------------------------------------------------------
+    $showDetails = config('app.error_details') && isset($technicalMessage);
+
     $ref = $referenceId
     ?? strtoupper(date('Ymd') . '-' . substr(md5(microtime(true) . rand()), 0, 8));
 
@@ -41,7 +44,7 @@
     // Use $technicalSummary when available (from ErrorClassifier), otherwise
     // derive a safe label from the status code alone.
     // -------------------------------------------------------------------------
-    $techLabel = $technicalSummary ?? match(true) {
+    $techLabel = $technicalCategory ?? match(true) {
     $code === 401 => 'Authentication failed',
     $code === 403 => 'Authorisation denied',
     $code === 404 => 'Route not found',
@@ -427,6 +430,21 @@
                         <span class="tech-val">{{ $techLabel }}</span>
                     </div>
 
+                    @if ($showDetails)
+                        <div class="tech-row">
+                            <span class="tech-key">Cause</span>
+                            <span class="tech-val">{{ $technicalSummary }}</span>
+                        </div>
+                        <div class="tech-row">
+                            <span class="tech-key">Message</span>
+                            <span class="tech-val">{{ $technicalMessage }}</span>
+                        </div>
+                        <div class="tech-row">
+                            <span class="tech-key">Where</span>
+                            <span class="tech-val">{{ $technicalFile }}</span>
+                        </div>
+                    @endif
+
                     <div class="tech-row">
                         <span class="tech-key">Ref</span>
                         <span class="tech-val ref-val" id="ref-id">{{ $ref }}</span>
@@ -459,8 +477,12 @@
             function copyDetails() {
                 var text = [
                     'Error Code: HTTP {{ $code }}',
-                    'Type: {{ $techLabel }}',
-                    'Ref: {{ $ref }}',
+                    'Type: ' + @json($techLabel, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT),
+                    @if ($showDetails)
+                    'Message: ' + @json($technicalMessage, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT),
+                    'Where: ' + @json($technicalFile, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT),
+                    @endif
+                    'Ref: ' + @json($ref, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT),
                     'URL: ' + window.location.href,
                 ].join('\n');
 

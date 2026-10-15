@@ -17,7 +17,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // One reference ID per request: the log entry and the error page share it.
+        $this->app->scoped('error.reference_id', fn () => strtoupper(date('Ymd') . '-' . bin2hex(random_bytes(4))));
     }
 
     /**

@@ -42,6 +42,13 @@ return [
     'debug' => (bool) env('APP_DEBUG', false),
 
     /*
+    | Show the raw exception message and file:line on error pages (like the Admin portal).
+    | Keep OFF on the public customer site: messages can contain SQL, internal URLs and code
+    | paths. Turn on only for staging or a short support session.
+    */
+    'error_details' => (bool) env('ERROR_PAGE_DETAILS', false),
+
+    /*
     |--------------------------------------------------------------------------
     | Application URL
     |--------------------------------------------------------------------------
