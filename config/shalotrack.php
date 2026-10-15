@@ -26,6 +26,28 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Connect Timeout
+    |--------------------------------------------------------------------------
+    | Seconds to wait for the API to ACCEPT the connection. When the API host is down or unreachable,
+    | every request would otherwise hold one of the few PHP workers for the full timeout above; failing
+    | in 3 s frees the worker and shows the customer a clear message instead.
+    |
+    */
+    'api_connect_timeout' => env('SHALOTRACK_API_CONNECT_TIMEOUT', 3),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Live-tracking (SignalR) hub URL
+    |--------------------------------------------------------------------------
+    | Derived from the API base URL so a local or staging portal never connects to the PRODUCTION hub
+    | (the page sends a live Firebase token to this URL). Override only if the hub lives elsewhere.
+    |
+    */
+    'signalr_hub_url' => env('SHALOTRACK_SIGNALR_HUB_URL')
+        ?: (env('SHALOTRACK_API_BASE_URL') ? rtrim((string) env('SHALOTRACK_API_BASE_URL'), '/') . '/hubs/location' : null),
+
+    /*
+    |--------------------------------------------------------------------------
     | Firebase Project ID
     |--------------------------------------------------------------------------
     | Used to verify Firebase ID tokens server-side.

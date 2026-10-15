@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\ApiErrors;
 use App\Services\ShalotrackApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -65,8 +66,7 @@ class ProfileController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('ProfileController: update failed', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'message' => 'Failed to update profile.'], 422);
+            return ApiErrors::json($e, 'profile.update', 'Failed to update profile.');
         }
     }
 }

@@ -1434,7 +1434,7 @@ $movingCount = collect($dashVehicles)
         }
 
         const connection = new signalR.HubConnectionBuilder()
-            .withUrl('https://api.shalotrack.com/hubs/location', {
+            .withUrl(@json(config('shalotrack.signalr_hub_url')), {
                 accessTokenFactory: () => token,
             })
             .withAutomaticReconnect([2000, 5000, 10000, 30000])

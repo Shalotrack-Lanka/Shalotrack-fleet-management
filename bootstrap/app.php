@@ -55,11 +55,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Branded error pages for every HTTP error and uncaught exception (never the default
         // Laravel page). Raw message / file are NOT shown unless ERROR_PAGE_DETAILS=true.
         $exceptions->render(function (\Throwable $e, $request) {
-            if ($request->expectsJson()) {
-                return null; // /api/* and fetch() callers keep Laravel's JSON error shape
-            }
-
-            // Redirects, validation errors and sign-out redirects keep Laravel's own handling.
+            // Redirects, validation errors and sign-out redirects keep Laravel's own handling
+            // (validation stays {message, errors} with HTTP 422; the pages already read that).
             if ($e instanceof \Illuminate\Http\Exceptions\HttpResponseException
                 || $e instanceof \Illuminate\Validation\ValidationException
                 || $e instanceof \Illuminate\Auth\AuthenticationException) {
@@ -72,6 +69,12 @@ return Application::configure(basePath: dirname(__DIR__))
             // find a log line: write one (warning level) so support can always look it up.
             if ($e instanceof HttpExceptionInterface && $status < 500) {
                 ErrorLogger::log($e, 'warning');
+            }
+
+            // fetch()/AJAX callers get the same failure as safe JSON with the reference ID — never
+            // the HTML error page (res.json() on it throws "Unexpected token <" in the browser).
+            if ($request->expectsJson() || $request->ajax() || $request->is('api/*')) {
+                return ErrorLogger::json($e);
             }
 
             $view = view()->exists("errors.$status") ? "errors.$status" : 'errors.generic';

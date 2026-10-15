@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\FirebaseTokenVerifier;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
 class EmailVerificationController extends Controller
@@ -29,13 +31,43 @@ class EmailVerificationController extends Controller
 
     /**
      * POST /email/mark-verified
-     * Called by the JS client after Firebase confirms email is verified.
-     * Marks the session as verified so middleware allows access.
+     *
+     * SECURITY: this used to set the flag for ANY signed-in session that asked — a user could skip the
+     * email check with one request. Now the browser must send a FRESH Firebase ID token (taken after
+     * reloading the user), and the server verifies its signature, that it belongs to this session's
+     * account, and that Firebase itself says email_verified = true.
      */
-    public function markVerified(Request $request)
+    public function markVerified(Request $request, FirebaseTokenVerifier $verifier)
     {
         if (!Session::has('firebase_token')) {
             return response()->json(['success' => false], 401);
+        }
+
+        $idToken = (string) $request->input('idToken', '');
+        if ($idToken === '' || strlen($idToken) > 4096) {
+            return response()->json([
+                'success' => false,
+                'message' => 'We could not confirm your email yet. Please try again.',
+            ], 422);
+        }
+
+        try {
+            $payload = $verifier->verify($idToken, (string) config('shalotrack.firebase_project_id'));
+        } catch (\Throwable $e) {
+            Log::info('mark-verified: token rejected', ['type' => class_basename($e)]);
+            return response()->json([
+                'success' => false,
+                'message' => 'We could not confirm your email yet. Please try again.',
+            ], 422);
+        }
+
+        $uid         = (string) Session::get('firebase_uid');
+        $sameAccount = $uid !== '' && hash_equals($uid, (string) ($payload['sub'] ?? ''));
+        if (!$sameAccount || ($payload['email_verified'] ?? false) !== true) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Your email is not verified yet. Open the link we sent you, then try again.',
+            ], 422);
         }
 
         Session::put('email_verified', true);

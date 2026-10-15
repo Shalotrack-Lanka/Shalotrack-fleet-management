@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\ApiErrors;
 use App\Services\ShalotrackApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -97,11 +98,9 @@ class ComplaintController extends Controller
             );
             return response()->json(['success' => true, 'data' => $response['data'] ?? $response]);
         } catch (\Exception $e) {
-            Log::error('ComplaintController: file failed', ['error' => $e->getMessage()]);
-            $message = $e->getCode() === 403
-                ? 'You can only file a complaint against a vehicle you own.'
-                : 'Failed to submit complaint. Please try again.';
-            return response()->json(['success' => false, 'message' => $message], 422);
+            return ApiErrors::json($e, 'complaint.file', 'Failed to submit complaint. Please try again.', [
+                403 => 'You can only file a complaint against a vehicle you own.',
+            ]);
         }
     }
 
@@ -119,11 +118,9 @@ class ComplaintController extends Controller
             $response = $this->api->replyToComplaint($id, $request->input('message'));
             return response()->json(['success' => true, 'data' => $response['data'] ?? $response]);
         } catch (\Exception $e) {
-            Log::error('ComplaintController: reply failed', ['id' => $id, 'error' => $e->getMessage()]);
-            $message = $e->getCode() === 409
-                ? 'This complaint is closed and can no longer receive replies.'
-                : 'Failed to send reply. Please try again.';
-            return response()->json(['success' => false, 'message' => $message], 422);
+            return ApiErrors::json($e, 'complaint.reply', 'Failed to send reply. Please try again.', [
+                409 => 'This complaint is closed and can no longer receive replies.',
+            ]);
         }
     }
 }

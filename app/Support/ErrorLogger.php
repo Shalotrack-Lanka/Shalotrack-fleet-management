@@ -59,7 +59,7 @@ final class ErrorLogger
     }
 
     /** Writes the entry and returns the reference ID it was written under. */
-    public static function log(\Throwable $e, string $level = 'error'): string
+    public static function log(\Throwable $e, string $level = 'error', array $extra = []): string
     {
         $ref = app('error.reference_id');
 
@@ -80,12 +80,49 @@ final class ErrorLogger
                 'user'         => Pii::id($request && $request->hasSession() ? $request->session()->get('firebase_uid') : null),
                 'ip'           => $request?->ip(),
                 'user_agent'   => mb_substr((string) $request?->userAgent(), 0, 200),
-            ]);
+            ] + $extra);
         } catch (\Throwable) {
             // Logging must never break the error page.
         }
 
         return $ref;
+    }
+
+    /**
+     * The same failure as JSON, for fetch()/AJAX callers (they cannot use the HTML error page).
+     * Same contract as ApiErrors: { success:false, code, message, reference } — `message` is always
+     * safe to show a customer; raw detail only appears under `technical` when ERROR_PAGE_DETAILS=true.
+     */
+    public static function json(\Throwable $e): \Illuminate\Http\JsonResponse
+    {
+        $status = self::status($e);
+
+        [$code, $message] = match (true) {
+            $status === 419 => ['PAGE_EXPIRED', 'This page was open for too long. Reload it and try again.'],
+            $status === 429 => ['RATE_LIMITED', 'Too many requests. Please wait a moment and try again.'],
+            $status === 403 => ['FORBIDDEN', "You don't have access to do that."],
+            $status === 404 => ['NOT_FOUND', "We couldn't find that. It may have been removed."],
+            $status === 405 => ['METHOD_NOT_ALLOWED', 'That action is not available here. Reload the page and try again.'],
+            $status === 413 => ['TOO_LARGE', 'That upload is too large.'],
+            $status >= 500  => ['SERVER_ERROR', 'Something went wrong on our side. Please try again — if it keeps happening, quote the reference below.'],
+            default         => ['REQUEST_FAILED', 'That request could not be completed. Please try again.'],
+        };
+
+        $payload = ['success' => false, 'code' => $code, 'message' => $message, 'reference' => app('error.reference_id')];
+
+        if (config('app.error_details')) {
+            $c = self::classify($e);
+            $payload['technical'] = [
+                'category' => $c['category'],
+                'summary'  => $c['summary'],
+                'message'  => self::scrub($e->getMessage()),
+                'file'     => $e->getFile() . ':' . $e->getLine(),
+            ];
+        }
+
+        $headers = $e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface ? $e->getHeaders() : [];
+
+        return response()->json($payload, $status, $headers);
     }
 
     /**
