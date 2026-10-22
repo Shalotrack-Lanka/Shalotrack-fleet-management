@@ -44,7 +44,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                    <input type="text" name="fullName" value="{{ old('fullName') }}"
+                    <input type="text" name="fullName" value="{{ old('fullName', $pending['fullName'] ?? '') }}"
                            placeholder="John Silva"
                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-base sm:text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition @error('fullName') border-red-400 @enderror"
                            required autofocus />
@@ -55,7 +55,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
-                    <input type="email" name="email" value="{{ old('email') }}"
+                    <input type="email" name="email" value="{{ old('email', $pending['email'] ?? '') }}"
                            placeholder="john@example.com"
                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-base sm:text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition @error('email') border-red-400 @enderror"
                            required />
@@ -66,7 +66,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">NIC Number *</label>
-                    <input type="text" name="nicNumber" value="{{ old('nicNumber') }}"
+                    <input type="text" name="nicNumber" value="{{ old('nicNumber', $pending['nicNumber'] ?? '') }}"
                            placeholder="200175906423 or 980923858V"
                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-base sm:text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition font-mono @error('nicNumber') border-red-400 @enderror"
                            required />
@@ -79,7 +79,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
                     <textarea name="address" rows="2"
                               placeholder="No. 123, Main Street, Colombo"
-                              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-base sm:text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition resize-none">{{ old('address') }}</textarea>
+                              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-base sm:text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition resize-none">{{ old('address', $pending['address'] ?? '') }}</textarea>
                 </div>
 
                 <div class="pt-2">
