@@ -197,7 +197,7 @@
 
             } catch (err) {
                 console.error('OTP send error:', err);
-                showError('phone-error', getFriendlyError(err.code));
+                showError('phone-error', getFriendlyError(err));
                 // Reset reCAPTCHA on failure
                 recaptchaVerifier.clear();
                 recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
@@ -248,7 +248,7 @@
 
             } catch (err) {
                 console.error('OTP verify error:', err);
-                showError('otp-error', getFriendlyError(err.code));
+                showError('otp-error', getFriendlyError(err));
             } finally {
                 setLoading('verify-otp-btn', false, 'Verify & Sign In');
             }
@@ -263,14 +263,34 @@
         }
 
         // ---- Map Firebase error codes to user-friendly messages ----
-        function getFriendlyError(code) {
+        // Takes the caught error. Known codes get a plain-language message; anything else shows a short
+        // reference (the code is not a secret) so a user can read it out and support can see the real cause
+        // instead of an unexplained "something went wrong".
+        function getFriendlyError(err) {
+            const code = (err && err.code) ? String(err.code) : '';
             switch (code) {
-                case 'auth/invalid-phone-number':     return 'Invalid phone number. Please check and try again.';
-                case 'auth/too-many-requests':        return 'Too many attempts. Please wait a few minutes and try again.';
-                case 'auth/invalid-verification-code':return 'Incorrect code. Please check and try again.';
-                case 'auth/code-expired':             return 'The code has expired. Please request a new one.';
-                case 'auth/quota-exceeded':           return 'SMS quota exceeded. Please contact support.';
-                default:                              return 'Something went wrong. Please try again.';
+                case 'auth/invalid-phone-number':      return 'Invalid phone number. Please check and try again.';
+                case 'auth/missing-phone-number':      return 'Enter your phone number first.';
+                case 'auth/too-many-requests':         return 'Too many attempts. Please wait a few minutes and try again.';
+                case 'auth/invalid-verification-code': return 'Incorrect code. Please check and try again.';
+                case 'auth/missing-verification-code': return 'Enter the 6-digit code sent to your phone.';
+                case 'auth/code-expired':
+                case 'auth/session-expired':           return 'The code has expired. Please request a new one.';
+                case 'auth/quota-exceeded':            return 'SMS quota exceeded. Please contact support.';
+                case 'auth/network-request-failed':    return 'Network problem. Check your internet connection and try again.';
+                case 'auth/captcha-check-failed':
+                case 'auth/invalid-app-credential':
+                case 'auth/missing-app-credential':    return 'Security check failed. Reload the page, solve the check again, and try once more. (ref: ' + code + ')';
+                case 'auth/operation-not-allowed':     return 'Verification codes cannot be sent to this number. Use a Sri Lankan mobile number or contact support. (ref: ' + code + ')';
+                case 'auth/web-storage-unsupported':   return 'Your browser is blocking storage. Open this page in Chrome or Safari (not inside another app) and try again.';
+                case 'auth/user-disabled':             return 'This account has been disabled. Please contact support.';
+                case 'auth/popup-blocked':
+                case 'auth/cancelled-popup-request':
+                case 'auth/popup-closed-by-user':      return 'The security check was closed before it finished. Please try again.';
+                default: {
+                    const ref = code || (err && err.name ? 'client:' + err.name : 'unknown');
+                    return 'Something went wrong. Please try again. (ref: ' + ref + ')';
+                }
             }
         }
     </script>
