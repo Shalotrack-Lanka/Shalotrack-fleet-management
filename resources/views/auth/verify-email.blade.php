@@ -44,7 +44,15 @@
             {{-- Status message --}}
             <p id="status-msg" class="text-sm mb-4 hidden"></p>
 
-            <div class="space-y-3">
+            <div id="resign-box" class="hidden mb-4">
+                <a href="/email/resign-in"
+                   class="block w-full py-2.5 px-4 bg-[#FA6908] hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition">
+                    Sign in again
+                </a>
+                <p class="text-gray-400 text-xs mt-2">We will text you a new code. Your details are kept.</p>
+            </div>
+
+            <div class="space-y-3" id="actions">
                 <button onclick="checkVerification()"
                         id="check-btn"
                         class="w-full py-2.5 px-4 bg-[#FA6908] hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition">
@@ -102,6 +110,18 @@
             el.classList.remove('hidden');
         }
 
+        // The browser has no valid Firebase sign-in: nothing on this page can work, so say so and offer one click out.
+        function needSignIn() {
+            stopped = true;
+            currentUser = null;
+            showStatus('Your sign-in expired. Please sign in again.', 'text-red-500');
+            document.getElementById('resign-box').classList.remove('hidden');
+            ['check-btn', 'resend-btn'].forEach(id => document.getElementById(id).classList.add('hidden'));
+        }
+
+        const DEAD_SESSION = ['auth/user-token-expired', 'auth/user-disabled', 'auth/user-not-found', 'auth/invalid-user-token', 'auth/requires-recent-login'];
+        const isDeadSession = (e) => !!e && DEAD_SESSION.includes(e.code);
+
         function setCheckButton(busy) {
             const btn = document.getElementById('check-btn');
             btn.disabled = busy;
@@ -132,7 +152,7 @@
         function linkError(e) {
             switch (e && e.code) {
                 case 'auth/requires-recent-login':
-                    return 'For your security, please sign in again, then continue. (Use "Sign out and use a different account" below.)';
+                    return 'For your security, please sign in again, then continue. (Use the "Sign in again" button.)';
                 case 'auth/email-already-in-use':
                     return 'That email already belongs to another account. Use "Edit my details" to enter a different email.';
                 case 'auth/invalid-email':
@@ -189,7 +209,7 @@
 
         // The "I've verified my email" button
         async function checkVerification() {
-            if (!currentUser) { showStatus('Session expired. Please sign in again.', 'text-red-500'); return; }
+            if (!currentUser) { needSignIn(); return; }
             setCheckButton(true);
             try {
                 await currentUser.reload();
@@ -200,6 +220,7 @@
                     showStatus('Email not verified yet. Open the link in your email, then press this button again.', 'text-red-500');
                 }
             } catch (e) {
+                if (isDeadSession(e)) { needSignIn(); return; }
                 showStatus('Could not check verification status. Please try again.', 'text-red-500');
             }
             setCheckButton(false);
@@ -208,12 +229,13 @@
         // Resend verification email
         async function resendEmail() {
             const btn = document.getElementById('resend-btn');
-            if (!currentUser) { showStatus('Session expired. Please sign in again.', 'text-red-500'); return; }
+            if (!currentUser) { needSignIn(); return; }
             btn.disabled = true;
             btn.textContent = 'Sending...';
             try {
                 await sendLink(currentUser, true);
             } catch (e) {
+                if (isDeadSession(e) && e.code !== 'auth/requires-recent-login') { needSignIn(); return; }
                 showStatus(linkError(e), 'text-red-500');
             } finally {
                 setTimeout(() => {
@@ -227,10 +249,7 @@
         let unsubscribe = null;
         unsubscribe = auth.onAuthStateChanged(async (user) => {
             if (unsubscribe) unsubscribe();
-            if (!user) {
-                showStatus('Your sign-in expired. Please sign in again.', 'text-red-500');
-                return;
-            }
+            if (!user) { needSignIn(); return; }
             currentUser = user;
 
             try {
@@ -247,6 +266,7 @@
                     }
                 }
             } catch (e) {
+                if (isDeadSession(e) && e.code !== 'auth/requires-recent-login') { needSignIn(); return; }
                 showStatus(linkError(e), 'text-red-500');
             }
         });
@@ -257,7 +277,9 @@
             try {
                 await currentUser.reload();
                 if (alreadyVerified(currentUser)) await complete(currentUser);
-            } catch (e) { /* transient: try again next tick */ }
+            } catch (e) {
+                if (isDeadSession(e)) needSignIn();   // revoked (e.g. the email-change link was opened): stop polling
+            }
         }, 5000);
     </script>
 
