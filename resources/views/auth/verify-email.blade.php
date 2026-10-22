@@ -52,6 +52,25 @@
                 <p class="text-gray-400 text-xs mt-2">We will text you a new code. Your details are kept.</p>
             </div>
 
+            {{-- Step 3 of sign-up: choose a password (shown once the email link has been clicked) --}}
+            <div id="password-box" class="hidden mb-4 text-left">
+                <p class="text-sm font-semibold text-gray-800 mb-1">Email verified. Create your password</p>
+                <p class="text-xs text-gray-500 mb-3">You will sign in with your email and this password. No SMS code needed.</p>
+                <form onsubmit="return savePassword(event)" class="space-y-3" novalidate>
+                    <input type="email" id="pw-user" autocomplete="username" class="hidden" tabindex="-1" aria-hidden="true" value="{{ $email }}" />
+                    <input type="password" id="pw-1" autocomplete="new-password" placeholder="New password"
+                           class="w-full px-3 py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent" />
+                    <input type="password" id="pw-2" autocomplete="new-password" placeholder="Confirm password"
+                           class="w-full px-3 py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent" />
+                    <p class="text-xs text-gray-400">At least 8 characters, with a letter and a number.</p>
+                    <button type="submit" id="pw-btn"
+                            class="w-full py-2.5 px-4 bg-[#FA6908] hover:bg-orange-600 disabled:bg-orange-300 text-white text-sm font-semibold rounded-lg transition">
+                        Save password &amp; finish
+                    </button>
+                    <button type="button" onclick="skipPassword()" class="w-full py-1 text-xs text-gray-400 hover:text-gray-600">Skip for now (you can still sign in with a phone code)</button>
+                </form>
+            </div>
+
             <div class="space-y-3" id="actions">
                 <button onclick="checkVerification()"
                         id="check-btn"
@@ -170,9 +189,62 @@
             return user.emailVerified && sameEmail(user.email, TARGET_EMAIL);
         }
 
+        // ---- Password step: runs between "email verified" and "create the profile" ----
+        let passwordDone = false;
+        const hasPassword = (u) => (u.providerData || []).some(p => p.providerId === 'password');
+        const passwordProblem = (pw) => pw.length < 8 ? 'Use at least 8 characters.'
+            : (!/[A-Za-z]/.test(pw) || !/\d/.test(pw)) ? 'Include at least one letter and one number.' : '';
+
+        function askForPassword() {
+            stopped = true;   // pause polling while the customer types
+            document.getElementById('password-box').classList.remove('hidden');
+            ['check-btn', 'resend-btn', 'edit-link'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.getElementById('status-msg').classList.add('hidden');
+            document.getElementById('pw-1').focus();
+        }
+
+        async function savePassword(ev) {
+            if (ev) ev.preventDefault();
+            const a = document.getElementById('pw-1').value, b = document.getElementById('pw-2').value;
+            const bad = passwordProblem(a);
+            if (bad) { showStatus(bad, 'text-red-500'); return false; }
+            if (a !== b) { showStatus('The two passwords do not match.', 'text-red-500'); return false; }
+            const btn = document.getElementById('pw-btn');
+            btn.disabled = true;
+            try {
+                try {
+                    await currentUser.linkWithCredential(firebase.auth.EmailAuthProvider.credential(TARGET_EMAIL, a));
+                } catch (e) {
+                    if (e && e.code === 'auth/provider-already-linked') { await currentUser.updatePassword(a); } else { throw e; }
+                }
+                passwordDone = true;
+                stopped = false;
+                document.getElementById('password-box').classList.add('hidden');
+                await complete(currentUser);
+            } catch (e) {
+                const msg = e && e.code === 'auth/requires-recent-login'
+                    ? 'For your security, please sign in again to set your password. Use "Sign in again" below, or skip for now.'
+                    : 'We could not save your password. Try again, or skip for now. (ref: ' + ((e && e.code) || 'unknown') + ')';
+                showStatus(msg, 'text-red-500');
+                if (e && e.code === 'auth/requires-recent-login') document.getElementById('resign-box').classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+            }
+            return false;
+        }
+
+        // Never block sign-up on this: phone-code sign-in keeps working without a password.
+        async function skipPassword() {
+            passwordDone = true;
+            stopped = false;
+            document.getElementById('password-box').classList.add('hidden');
+            await complete(currentUser);
+        }
+
         // ---- 2. Verified? Create the profile (server checks the token again) ----
         async function complete(user) {
             if (completing || stopped) return false;
+            if (!passwordDone && !hasPassword(user)) { askForPassword(); return false; }
             completing = true;
             try {
                 // A fresh ID token now carries Firebase's own email_verified claim.

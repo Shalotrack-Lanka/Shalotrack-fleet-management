@@ -312,7 +312,7 @@
                 <a href="#team" class="menu-link rounded-md py-2 text-sm font-medium text-[#B7C6E2] hover:text-white md:py-0">Team</a>
                 <a href="#faq" class="menu-link rounded-md py-2 text-sm font-medium text-[#B7C6E2] hover:text-white md:py-0">Questions</a>
                 <a href="/login" class="rounded-md py-2 text-sm font-medium text-[#B7C6E2] hover:text-white md:py-0">Sign in</a>
-                <a href="/login" class="mt-2 inline-flex items-center justify-center rounded-lg bg-[#FA6908] px-4 py-2 text-sm font-bold text-[#010F25] transition hover:-translate-y-0.5 hover:bg-[#FF7A1F] active:translate-y-0 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FA6908]/60 md:mt-0">Get started</a>
+                <a href="/login?new=1" class="mt-2 inline-flex items-center justify-center rounded-lg bg-[#FA6908] px-4 py-2 text-sm font-bold text-[#010F25] transition hover:-translate-y-0.5 hover:bg-[#FF7A1F] active:translate-y-0 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FA6908]/60 md:mt-0">Get started</a>
             </nav>
         </div>
     </header>
@@ -1006,7 +1006,8 @@
                     svg.setCurrentTime(6);
                     svg.pauseAnimations();
                 } catch (_) {
-                    /* decoration only */ }
+                    /* decoration only */
+                }
             }
 
             // Sample panel: speed wanders, the 20 s update clock counts
