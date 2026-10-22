@@ -42,6 +42,21 @@ class EmailVerificationController extends Controller
     }
 
     /**
+     * GET /email/resign-in
+     * Drop the sign-in (session token AND the remember cookie, or /login would silently restore a
+     * server session that still has no Firebase user in the browser) but keep the typed details.
+     */
+    public function resignIn(\App\Services\RememberLogin $remember)
+    {
+        $remember->forget();
+        foreach (['firebase_token', 'firebase_token_expires_at', 'firebase_uid', 'firebase_phone', 'email_verified', 'pending_verification_email'] as $k) {
+            Session::forget($k);
+        }
+
+        return redirect('/login');
+    }
+
+    /**
      * POST /email/mark-verified
      *
      * SECURITY: this used to set the flag for ANY signed-in session that asked — a user could skip the

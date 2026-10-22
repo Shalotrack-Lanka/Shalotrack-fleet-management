@@ -44,6 +44,11 @@ Route::post('/register', [RegisterController::class, 'store'])->middleware('thro
 Route::get('/email/verify',         [EmailVerificationController::class, 'show'])->name('email.verify');
 Route::post('/email/mark-verified', [EmailVerificationController::class, 'markVerified'])->name('email.mark-verified');
 
+// The browser lost its Firebase sign-in (cleared storage, another browser, link click revoked it) while a
+// registration was waiting for its email check. Ends only the sign-in; the typed details stay in the session,
+// so after one new OTP the customer lands on /register with the form already filled.
+Route::get('/email/resign-in', [EmailVerificationController::class, 'resignIn'])->name('email.resign-in');
+
 Route::get('/logout-and-login', function () {
     app(\App\Services\RememberLogin::class)->forget();
     Session::flush();
