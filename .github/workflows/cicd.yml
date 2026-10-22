@@ -51,14 +51,6 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # Authenticated pulls of the php/node/composer base images. Anonymous pulls from
-      # public.ecr.aws are rate-limited per runner IP (429 "Data limit exceeded").
-      # public ECR tokens are only issued in us-east-1, whatever AWS_REGION is.
-      # continue-on-error: if the IAM permission is missing the build still runs (anonymous, as before).
-      - name: Login to public ECR
-        continue-on-error: true
-        run: aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
-
       # Build always runs, on both PRs and pushes to main — catches a
       # broken Dockerfile before merge.
       - name: Build Docker image
