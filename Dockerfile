@@ -14,11 +14,12 @@
 ARG PHP_VERSION=8.3
 ARG NODE_VERSION=22
 
-# Base images come from AWS's public mirror of the Docker Official Images, not Docker Hub:
-# the same images, but the build no longer depends on Docker Hub's login service (a 504 there
-# failed a deploy) or on Docker Hub's anonymous pull limits, which GitHub's shared runners hit.
-# Override with --build-arg BASE_REGISTRY=docker.io/library to build from Docker Hub instead.
-ARG BASE_REGISTRY=public.ecr.aws/docker/library
+# Base images come from Google's mirror of the Docker Official Images (mirror.gcr.io): the same images,
+# but the build does not depend on Docker Hub's login service (a 504 there once failed a deploy) or on
+# Docker Hub's anonymous pull limits, which GitHub's shared runners hit. It replaced AWS's public mirror
+# (public.ecr.aws/docker/library) after that returned "429 Data limit exceeded" to anonymous pulls.
+# Override with --build-arg BASE_REGISTRY=public.ecr.aws/docker/library (or docker.io/library) to switch back.
+ARG BASE_REGISTRY=mirror.gcr.io/library
 
 # -----------------------------------------------------------------------------
 # Base: PHP-FPM + the extensions this app needs at runtime
