@@ -49,9 +49,21 @@ class LoginPageTest extends TestCase
     {
         $html = $this->get('/login')->assertOk()->getContent();
 
-        $this->assertStringContainsString("auth/error-code:-39", $html);
         $this->assertStringContainsString('TOO_MANY_ATTEMPTS', $html);
+        $this->assertStringContainsString('auth/too-many-requests', $html);
         $this->assertStringContainsString('function startCooldown', $html);
         $this->assertStringContainsString('Too many code requests', $html);
+    }
+
+    public function test_a_send_failure_is_not_reported_as_too_many_requests(): void
+    {
+        // Firebase answered HTTP 503 "Error code: 39" (SMS backend could not send): a different problem from the throttle.
+        $html = $this->get('/login')->assertOk()->getContent();
+
+        $this->assertStringContainsString('function isSendFailure', $html);
+        $this->assertStringContainsString("auth/error-code:-39", $html);
+        $this->assertStringContainsString("We couldn't send a code to this number", $html);
+        // -39 must no longer be part of the throttle test
+        $this->assertDoesNotMatchRegularExpression("/function isThrottleError[^}]*error-code:-39/s", $html);
     }
 }
