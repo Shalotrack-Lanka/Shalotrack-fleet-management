@@ -320,7 +320,8 @@
             } catch (err) {
                 console.error('OTP send error:', err);
                 showError('phone-error', getFriendlyError(err));
-                if (isThrottleError(err)) startCooldown(120);   // Firebase is refusing: stop hammering it
+                if (isThrottleError(err)) startCooldown(120);        // Firebase is refusing: stop hammering it
+                else if (isSendFailure(err)) startCooldown(60);      // each retry on a number that cannot be sent to adds nothing
                 // Reset reCAPTCHA on failure
                 recaptchaVerifier.clear();
                 recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
@@ -526,18 +527,28 @@
         // Takes the caught error. Known codes get a plain-language message; anything else shows a short
         // reference (the code is not a secret) so a user can read it out and support can see the real cause
         // instead of an unexplained "something went wrong".
-        // Firebase's "too many SMS requests" block. This SDK reports it as auth/error-code:-39 (the server
-        // message is TOO_MANY_ATTEMPTS_TRY_LATER); other versions use the two named codes.
+        // Two different Firebase refusals, which must not share one message:
+        //  - THROTTLE: Firebase says this number/network asked too often (auth/too-many-requests, TOO_MANY_ATTEMPTS_TRY_LATER).
+        //    Waiting helps, and every extra tap makes the block longer.
+        //  - SEND FAILURE: Google's SMS backend could not send to this number at all (HTTP 503, body "Error code: 39",
+        //    shown by this SDK as auth/error-code:-39). Not documented by Google; reports tie it to the mobile
+        //    network of the number. Waiting a minute does not fix it and "too many requests" would be untrue.
         function isThrottleError(err) {
             const code = (err && err.code) ? String(err.code) : '';
             return code === 'auth/too-many-requests'
                 || code === 'auth/quota-exceeded'
-                || code === 'auth/error-code:-39'
                 || /TOO_MANY_ATTEMPTS/i.test((err && err.message) ? String(err.message) : '');
+        }
+        function isSendFailure(err) {
+            const code = (err && err.code) ? String(err.code) : '';
+            return code === 'auth/error-code:-39' || /error code:?\s*-?39/i.test((err && err.message) ? String(err.message) : '');
         }
 
         function getFriendlyError(err) {
             const code = (err && err.code) ? String(err.code) : '';
+            if (isSendFailure(err)) {
+                return "We couldn't send a code to this number right now. This can happen with some mobile networks. Please try again in a few minutes, or sign in with your email and password, or contact support. (ref: 39)";
+            }
             if (isThrottleError(err) && code !== 'auth/quota-exceeded') {
                 return 'Too many code requests from this number or network. For security, please wait a while before trying again. If it keeps happening, contact support.';
             }
