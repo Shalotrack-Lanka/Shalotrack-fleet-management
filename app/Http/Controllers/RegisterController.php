@@ -68,11 +68,17 @@ class RegisterController extends Controller
             return redirect('/login');
         }
 
+        // One canonical NIC form (no spaces, upper-case V/X) so the API's uniqueness check cannot be dodged.
+        $request->merge(['nicNumber' => strtoupper(preg_replace('/\s+/', '', (string) $request->input('nicNumber', '')))]);
+
         $validated = $request->validate([
             'fullName'  => 'required|string|max:150',
             'email'     => 'required|email|max:150',
-            'nicNumber' => 'required|string|max:20',
+            // Sri Lankan NIC: 9 digits + V/X (old) or 12 digits (new). Same rule as the API's CreateCustomerDto.
+            'nicNumber' => ['required', 'string', 'max:20', 'regex:/^([0-9]{9}[VX]|[0-9]{12})$/'],
             'address'   => 'nullable|string|max:300',
+        ], [
+            'nicNumber.regex' => 'Enter a valid NIC number, for example 861234567V or 198612345678.',
         ]);
 
         // Keep the details until the email is verified (see class docblock). Session data is server-side
