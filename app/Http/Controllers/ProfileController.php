@@ -37,8 +37,10 @@ class ProfileController extends Controller
     {
         $validated = $request->validate([
             'fullName'    => 'required|string|max:150',
-            'phoneNumber' => 'required|string|max:20',
+            'phoneNumber' => ['required', 'string', 'max:20', 'regex:/^\+?[0-9][0-9\s().-]{6,19}$/'],
             'address'     => 'nullable|string|max:300',
+        ], [
+            'phoneNumber.regex' => 'Enter a valid phone number, for example 077 123 4567.',
         ]);
 
         try {
