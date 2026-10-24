@@ -66,4 +66,14 @@ class LoginPageTest extends TestCase
         // -39 must no longer be part of the throttle test
         $this->assertDoesNotMatchRegularExpression("/function isThrottleError[^}]*error-code:-39/s", $html);
     }
+
+    public function test_recaptcha_is_rebuilt_in_a_fresh_container_after_a_failed_send(): void
+    {
+        // Reusing the same container made every retry fail with "reCAPTCHA has already been rendered in this element".
+        $html = $this->get('/login')->assertOk()->getContent();
+
+        $this->assertStringContainsString('function resetRecaptcha', $html);
+        $this->assertStringContainsString('old.replaceWith(fresh)', $html);
+        $this->assertSame(3, substr_count($html, 'resetRecaptcha'), 'definition + load handler + the send error path');
+    }
 }

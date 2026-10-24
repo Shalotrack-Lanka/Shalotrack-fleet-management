@@ -42,7 +42,7 @@
     /* Sidebar list */
     .place-row {
         padding: 16px 20px;
-        border-bottom: 1px solid var(--g-b,#f3f4f6);
+        border-bottom: 1px solid var(--g-b, #f3f4f6);
         cursor: pointer;
         transition: background 0.15s;
     }
@@ -52,11 +52,11 @@
     }
 
     .place-row:hover {
-        background: var(--g-s2,#fafafa);
+        background: var(--g-s2, #fafafa);
     }
 
     .place-row.active {
-        background: var(--g-orbg,#fff7ed);
+        background: var(--g-orbg, #fff7ed);
         border-left: 3px solid #FA6908;
     }
 
@@ -84,18 +84,18 @@
         align-items: center;
         justify-content: center;
         padding: 8px 16px;
-        border: 1px solid var(--g-b,#e5e7eb);
-        color: var(--g-t1,#374151);
+        border: 1px solid var(--g-b, #e5e7eb);
+        color: var(--g-t1, #374151);
         font-size: 13px;
         font-weight: 500;
         border-radius: 8px;
-        background: var(--g-s1,white);
+        background: var(--g-s1, white);
         cursor: pointer;
         transition: background 0.15s;
     }
 
     .btn-secondary:hover {
-        background: var(--g-s2,#f9fafb);
+        background: var(--g-s2, #f9fafb);
     }
 
     .btn-danger {
@@ -120,7 +120,7 @@
     .input-field {
         width: 100%;
         padding: 8px 12px;
-        border: 1px solid var(--g-b,#e5e7eb);
+        border: 1px solid var(--g-b, #e5e7eb);
         border-radius: 8px;
         font-size: 13px;
         outline: none;
@@ -161,7 +161,7 @@
     }
 
     .modal-card {
-        background: var(--g-s1,white);
+        background: var(--g-s1, white);
         border-radius: 16px;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
         width: 100%;
@@ -176,7 +176,7 @@
         align-items: center;
         gap: 8px;
         padding: 8px 12px;
-        background: var(--g-orbg,#fff7ed);
+        background: var(--g-orbg, #fff7ed);
         border-radius: 8px;
         margin-bottom: 12px;
     }
@@ -308,6 +308,11 @@
 <script>
     'use strict';
 
+    // Place names are typed by customers: never put them into HTML unescaped (stored XSS in the map popup).
+    function escPlace(s) {
+        return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
     const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     const places = @json($places);
 
@@ -376,7 +381,7 @@
             marker.addListener('click', () => {
                 infoWindow.setContent(
                     `<div style="font-family:-apple-system,sans-serif;padding:2px 4px;">
-                    <strong style="font-size:13px;color:var(--g-t1,#1f2937);">${p.name}</strong>
+                    <strong style="font-size:13px;color:var(--g-t1,#1f2937);">${escPlace(p.name)}</strong>
                     <p style="font-size:11px;color:var(--g-t3,#9ca3af);margin:4px 0 0;">${lat.toFixed(5)}, ${lng.toFixed(5)}</p>
                 </div>`
                 );
