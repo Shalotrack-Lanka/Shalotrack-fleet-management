@@ -220,11 +220,19 @@
         let recaptchaVerifier;
         let confirmationResult;
 
-        window.addEventListener('load', () => {
-            recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-                size: 'invisible',
-            });
-        });
+        // Google's reCAPTCHA script refuses to render twice in the same element. After a failed send the verifier
+        // used to be rebuilt in the SAME container, so every retry on that page load died with "reCAPTCHA has
+        // already been rendered in this element" (shown as "ref: client:Error"). A fresh container every time fixes it.
+        function resetRecaptcha() {
+            try { if (recaptchaVerifier) recaptchaVerifier.clear(); } catch (e) { /* already gone */ }
+            const old = document.getElementById('recaptcha-container');
+            const fresh = document.createElement('div');
+            fresh.id = 'recaptcha-container';
+            old.replaceWith(fresh);
+            recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
+        }
+
+        window.addEventListener('load', resetRecaptcha);
 
         // ---- Normalise Sri Lankan phone number to E.164 ----
         // The +94 prefix is shown beside the box, so the user types only the national number.
@@ -323,8 +331,7 @@
                 if (isThrottleError(err)) startCooldown(120);        // Firebase is refusing: stop hammering it
                 else if (isSendFailure(err)) startCooldown(60);      // each retry on a number that cannot be sent to adds nothing
                 // Reset reCAPTCHA on failure
-                recaptchaVerifier.clear();
-                recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
+                resetRecaptcha();
             } finally {
                 if (cooldownUntil <= Date.now()) setLoading('send-otp-btn', false, SEND_LABEL);
             }
@@ -571,7 +578,10 @@
                 case 'auth/cancelled-popup-request':
                 case 'auth/popup-closed-by-user':      return 'The security check was closed before it finished. Please try again.';
                 default: {
-                    const ref = code || (err && err.name ? 'client:' + err.name : 'unknown');
+                    if (/recaptcha/i.test(err && err.message ? String(err.message) : '')) {
+                        return 'The security check needs a fresh start. Please reload the page and try again.';
+                    }
+                    const ref = code || (err && err.name ? 'client:' + err.name + (err.message ? ' ' + String(err.message).slice(0, 60) : '') : 'unknown');
                     return 'Something went wrong. Please try again. (ref: ' + ref + ')';
                 }
             }

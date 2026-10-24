@@ -28,6 +28,13 @@ ARG BASE_REGISTRY=mirror.gcr.io/library
 # -----------------------------------------------------------------------------
 FROM ${BASE_REGISTRY}/php:${PHP_VERSION}-fpm-alpine AS php-base
 
+# Security floor: refuse to build on a PHP older than the PHP2Shell fix (CVE-2026-109618 / CVE-2026-109619,
+# patched in 8.3.36, Oct 2026). The tag above floats so new patch releases keep flowing in; this line makes
+# sure a stale or cached base image can never ship. Raise the number when the next security release lands.
+ARG PHP_MIN_SECURE=8.3.36
+RUN php -r 'exit(version_compare(PHP_VERSION, getenv("PHP_MIN_SECURE"), "<") ? 1 : 0);' \
+ || { echo "PHP $(php -r 'echo PHP_VERSION;') is older than ${PHP_MIN_SECURE} (PHP2Shell fix). Refusing to build." >&2; exit 1; }
+
 RUN apk add --no-cache libpng libjpeg-turbo freetype \
  && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS libpng-dev libjpeg-turbo-dev freetype-dev \
  && docker-php-ext-configure gd --with-jpeg --with-freetype \
