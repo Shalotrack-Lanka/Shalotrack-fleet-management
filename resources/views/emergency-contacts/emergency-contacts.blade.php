@@ -627,6 +627,13 @@ $error = $error ?? null;
         }
     }
 
+    /* SECURITY: values travel in data-* attributes, never inside inline JS. */
+    document.getElementById('ec-list').addEventListener('click', e => {
+        const b = e.target.closest('.ec-del-btn');
+        if (!b) return;
+        confirmDel(b.dataset.id, b.dataset.name);
+    });
+
     /* ── Render ─────────────────────────────────────────────────────────────── */
     function render() {
         const list = document.getElementById('ec-list');
@@ -663,7 +670,7 @@ $error = $error ?? null;
                 <div class="ec-meta">Added ${fmtDate(c.createdAt)}</div>
             </div>
             <button class="ec-del-btn"
-                    onclick="confirmDel('${esc(c.emergencyContactId)}','${esc(c.name)}')"
+                    data-id="${esc(c.emergencyContactId)}" data-name="${esc(c.name)}"
                     title="Remove ${esc(c.name)}">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"

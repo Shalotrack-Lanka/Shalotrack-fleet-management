@@ -129,17 +129,17 @@
                 Edit
             </button>
             @if($vehicle['hasGpsDevice'] ?? false)
-            <button onclick="openUnlinkModal('{{ $vehicle['vehicleId'] }}', '{{ $vehicle['vehicleNumber'] }}')"
+            <button onclick="openUnlinkModal(@js($vehicle['vehicleId']), @js($vehicle['vehicleNumber']))"
                 class="flex-1 text-center py-1.5 text-sm text-gray-600 font-medium hover:text-red-500 transition">
                 Unlink GPS
             </button>
             @else
-            <button onclick="openLinkModal('{{ $vehicle['vehicleId'] }}', '{{ $vehicle['vehicleNumber'] }}')"
+            <button onclick="openLinkModal(@js($vehicle['vehicleId']), @js($vehicle['vehicleNumber']))"
                 class="flex-1 text-center py-1.5 text-sm text-[#FA6908] font-medium hover:text-orange-700 transition">
                 Link GPS
             </button>
             @endif
-            <button onclick="confirmDelete('{{ $vehicle['vehicleId'] }}', '{{ $vehicle['vehicleNumber'] }}')"
+            <button onclick="confirmDelete(@js($vehicle['vehicleId']), @js($vehicle['vehicleNumber']))"
                 class="py-1.5 px-2 text-gray-300 hover:text-red-500 transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
