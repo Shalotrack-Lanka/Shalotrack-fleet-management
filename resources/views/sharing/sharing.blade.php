@@ -988,9 +988,9 @@ $pendingCount = count($pendingInvites);
         </div>
         <div class="sh-card-actions">
             <button class="sh-btn-accept"  id="sh-p-acc-${esc(s.shareId)}"
-                    onclick="acceptShare('${esc(s.shareId)}')">Accept</button>
+                    data-share-id="${esc(s.shareId)}" data-act="accept">Accept</button>
             <button class="sh-btn-decline" id="sh-p-dec-${esc(s.shareId)}"
-                    onclick="declineShare('${esc(s.shareId)}')">Decline</button>
+                    data-share-id="${esc(s.shareId)}" data-act="decline">Decline</button>
         </div>
     </div>`).join('');
     }
@@ -1062,7 +1062,7 @@ $pendingCount = count($pendingInvites);
             const canRevoke = st === 'pending' || st === 'accepted';
             const revokeBtn = canRevoke ?
                 `<button class="sh-btn-revoke" id="sh-m-rev-${esc(s.shareId)}"
-                       onclick="confirmRevoke('${esc(s.shareId)}','${esc(s.otherPartyName)}','${esc(s.vehicleNumber)}')">
+                       data-share-id="${esc(s.shareId)}" data-name="${esc(s.otherPartyName)}" data-plate="${esc(s.vehicleNumber)}">
                    Revoke
                </button>` : '';
             return `
@@ -1083,6 +1083,22 @@ $pendingCount = count($pendingInvites);
         </div>`;
         }).join('');
     }
+
+    /* SECURITY: no user-controlled data inside inline handlers. Values travel in
+       data-* attributes (HTML-escaped by esc()) and are read back via dataset,
+       so the browser never re-parses them as JavaScript. Listeners are delegated
+       and attached once (the lists are re-rendered via innerHTML). */
+    document.getElementById('sh-myshares-list').addEventListener('click', e => {
+        const b = e.target.closest('.sh-btn-revoke');
+        if (!b) return;
+        confirmRevoke(b.dataset.shareId, b.dataset.name, b.dataset.plate);
+    });
+    document.getElementById('sh-pending-list').addEventListener('click', e => {
+        const b = e.target.closest('[data-act]');
+        if (!b) return;
+        if (b.dataset.act === 'accept') acceptShare(b.dataset.shareId);
+        else if (b.dataset.act === 'decline') declineShare(b.dataset.shareId);
+    });
 
     /* ── Empty state helper ─────────────────────────────────────────────────────── */
     function emptyState(title, desc, withCta) {

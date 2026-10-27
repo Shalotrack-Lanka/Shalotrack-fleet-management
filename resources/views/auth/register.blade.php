@@ -94,9 +94,12 @@
             <div class="mt-6 pt-5 border-t border-gray-100 text-center">
                 <p class="text-sm text-gray-500">
                     Already have an account?
-                    <a href="/logout-and-login" class="text-[#FA6908] font-medium hover:underline">
-                        Sign in with a different number
-                    </a>
+                    <form method="POST" action="/logout-and-login" class="inline m-0">
+                        @csrf
+                        <button type="submit" class="text-[#FA6908] font-medium hover:underline bg-transparent border-0 p-0 cursor-pointer">
+                            Sign in with a different number
+                        </button>
+                    </form>
                 </p>
             </div>
 

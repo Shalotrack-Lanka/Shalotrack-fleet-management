@@ -42,7 +42,7 @@ class EmailVerificationController extends Controller
     }
 
     /**
-     * GET /email/resign-in
+     * POST /email/resign-in
      * Drop the sign-in (session token AND the remember cookie, or /login would silently restore a
      * server session that still has no Firebase user in the browser) but keep the typed details.
      */

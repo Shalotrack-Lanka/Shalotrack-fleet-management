@@ -45,10 +45,13 @@
             <p id="status-msg" class="text-sm mb-4 hidden"></p>
 
             <div id="resign-box" class="hidden mb-4">
-                <a href="/email/resign-in"
-                   class="block w-full py-2.5 px-4 bg-[#FA6908] hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition">
-                    Sign in again
-                </a>
+                <form method="POST" action="/email/resign-in" class="m-0">
+                    @csrf
+                    <button type="submit"
+                            class="block w-full py-2.5 px-4 bg-[#FA6908] hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition">
+                        Sign in again
+                    </button>
+                </form>
                 <p class="text-gray-400 text-xs mt-2">We will text you a new code. Your details are kept.</p>
             </div>
 
