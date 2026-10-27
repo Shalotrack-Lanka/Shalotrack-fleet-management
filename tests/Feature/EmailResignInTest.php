@@ -30,7 +30,7 @@ class EmailResignInTest extends TestCase
 
     public function test_resign_in_ends_signin_but_keeps_details(): void
     {
-        $this->withSession($this->state())->get('/email/resign-in')->assertRedirect('/login');
+        $this->withSession($this->state())->post('/email/resign-in')->assertRedirect('/login');
 
         $this->assertNull(session('firebase_token'));
         $this->assertNull(session('firebase_uid'));
@@ -40,7 +40,7 @@ class EmailResignInTest extends TestCase
 
     public function test_login_page_is_shown_after_resign_in_not_bounced_to_dashboard(): void
     {
-        $this->withSession($this->state())->get('/email/resign-in');
+        $this->withSession($this->state())->post('/email/resign-in');
         $this->get('/login')->assertOk();
     }
 
@@ -48,7 +48,7 @@ class EmailResignInTest extends TestCase
     {
         $this->withSession($this->state())->get('/email/verify')
             ->assertOk()
-            ->assertSee('/email/resign-in', false)
+            ->assertSee('action="/email/resign-in"', false)
             ->assertSee('Sign in again');
     }
 
@@ -56,5 +56,19 @@ class EmailResignInTest extends TestCase
     {
         Http::fake(['https://api.test/*' => Http::response(['message' => 'Not found'], 404)]);
         $this->withSession($this->state())->get('/register')->assertOk()->assertSee('a@b.lk', false);
+    }
+
+    public function test_state_changing_routes_reject_get(): void
+    {
+        // A GET (link, <img>, prefetch) must never end a session. CSRF itself is
+        // skipped under phpunit, so the guarantee tested here is POST-only.
+        $this->withSession($this->state())->get('/email/resign-in')->assertStatus(405);
+        $this->get('/logout-and-login')->assertStatus(405);
+    }
+
+    public function test_logout_and_login_posts_to_login(): void
+    {
+        $this->withSession($this->state())->post('/logout-and-login')->assertRedirect('/login');
+        $this->assertNull(session('firebase_token'));
     }
 }
