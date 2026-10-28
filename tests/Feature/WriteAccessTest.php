@@ -168,7 +168,6 @@ class WriteAccessTest extends TestCase
 
             $this->assertSame('FAILED', $res->json('code'));
             $this->assertSame('Failed to delete geofence.', $res->json('message'), "leaked: {$s['message']}");
-            Http::swap(app(\Illuminate\Http\Client\Factory::class));   // fresh fake for the next case
         }
     }
 
