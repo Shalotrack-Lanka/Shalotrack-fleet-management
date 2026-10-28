@@ -50,6 +50,19 @@ def blocked_or_stub(route):
     if "maps.googleapis.com/maps/api/js" in u: return route.fulfill(status=200, content_type="application/javascript", body=STUB)
     return route.abort()
 
+def ev(pg, js, arg=None, default=None):
+    """pg.evaluate that survives the page navigating while we read it (a click may legitimately change page)."""
+    for _ in range(4):
+        try:
+            return pg.evaluate(js, arg) if arg is not None else pg.evaluate(js)
+        except Exception as e:
+            if "context was destroyed" not in str(e) and "navigation" not in str(e).lower():
+                raise
+            try: pg.wait_for_load_state("load", timeout=10000)
+            except Exception: pass
+            pg.wait_for_timeout(300)
+    return default
+
 rows, total_exec = [], 0
 with sync_playwright() as pw:
     b = pw.chromium.launch()
@@ -58,30 +71,33 @@ with sync_playwright() as pw:
         if not path.startswith("/live/"):
             ctx.add_cookies([{"name": "shalotrack_fleet_session", "value": fresh_cookie(), "url": base}])
         ctx.route("**/*", blocked_or_stub)
-        ctx.add_init_script("window.__pwn = 0; window.__errs = []; window.addEventListener('error', e => window.__errs.push(String(e.message)));")
+        hits = []
+        ctx.expose_function("__pwnReport", lambda v: hits.append(v))
+        ctx.add_init_script("""(() => { let v = 0; Object.defineProperty(window, '__pwn', { configurable: true,
+            get() { return v; }, set(x) { v = x; try { window.__pwnReport(x); } catch (e) {} } }); })();""")
         pg = ctx.new_page(); pg.set_default_timeout(8000); pg.set_default_navigation_timeout(15000)
         dialogs = []
         pg.on("dialog", lambda d: (dialogs.append(d.message), d.dismiss()))
         resp = pg.goto(base + path, wait_until="load"); pg.wait_for_timeout(900)
         landed = pg.url.replace(base, "") or "/"
         status = resp.status if resp else None
-        on_load = pg.evaluate("window.__pwn")
+        on_load = len(hits)
         # the payload must actually be on the page, otherwise "nothing ran" proves nothing
-        shown = pg.evaluate("""() => { const h = document.documentElement.innerHTML; return h.includes('__pwn'); }""")
+        shown = ev(pg, """() => { const h = document.documentElement.innerHTML; return h.includes('__pwn'); }""", default=False)
         n = clicked = 0
         for _pass in range(2):   # second pass also reaches elements that the first clicks created (modals, re-rendered lists)
-            r = pg.evaluate("""(sel) => { const els = [...document.querySelectorAll(sel)].slice(0, 400); let ok = 0;
+            r = ev(pg, """(sel) => { const els = [...document.querySelectorAll(sel)].slice(0, 400); let ok = 0;
                 for (const e of els) { try {
                     e.dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true}));
                     if (e.hasAttribute('onkeydown')) e.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter', bubbles: true}));
                     ok++; } catch (err) {} }
-                return [els.length, ok]; }""", SEL)
+                return [els.length, ok]; }""", SEL, default=[0, 0])
             n += r[0]; clicked += r[1]
             pg.wait_for_timeout(250)
         pg.wait_for_timeout(400)
-        after = pg.evaluate("window.__pwn")
-        imgs = pg.evaluate("document.querySelectorAll('img[src=x]').length")
-        scripts = pg.evaluate("[...document.scripts].filter(s => s.textContent.includes('__pwn=(window.__pwn')).length")
+        after = len(hits)
+        imgs = ev(pg, "document.querySelectorAll('img[src=x]').length", default=0)
+        scripts = ev(pg, "[...document.scripts].filter(s => s.textContent.includes('__pwn=(window.__pwn')).length")
         ran = bool(on_load or after or imgs)   # a native confirm() that PRINTS the text is the page working correctly, not an attack
         total_exec += ran
         if dialogs: print(f"[{label}] page's own confirm()/alert() on {path} (text shown, not run): {[d[:60] for d in dialogs[:2]]}")
