@@ -789,8 +789,8 @@ $movingCount = collect($dashVehicles)
     $lastSeen = $vehicle['lastUpdate'] ?? null;
     @endphp
     <div class="vrow gl{{ count($dashVehicles) <= 10 ? ' float' : '' }}" id="vrow-{{ $vid }}" style="--i: {{ $loop->index }}"
-        role="button" tabindex="0" onclick="focusVehicle('{{ $vid }}')"
-        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();focusVehicle('{{ $vid }}');}">
+        role="button" tabindex="0" onclick="focusVehicle(@js($vid))"
+        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();focusVehicle(@js($vid));}">
         <div class="vrow-dot {{ $online ? 'online' : 'offline' }}" id="vdot-{{ $vid }}"></div>
         @if($rowIcon = \App\Support\VehicleIcon::url($vehicle['vehicleType'] ?? $vehicle['type'] ?? null, $online ? 'green' : 'blue'))
         <img src="{{ $rowIcon }}" alt="" width="18" height="32" style="height:32px;width:auto;flex-shrink:0;" loading="lazy" decoding="async">

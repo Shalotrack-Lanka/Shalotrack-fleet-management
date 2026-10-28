@@ -92,7 +92,8 @@
 
             {{-- Login link --}}
             <div class="mt-6 pt-5 border-t border-gray-100 text-center">
-                <p class="text-sm text-gray-500">
+                {{-- <div>, not <p>: a <form> is not allowed inside <p>; the parser would close the <p> early and split the line. --}}
+                <div class="text-sm text-gray-500">
                     Already have an account?
                     <form method="POST" action="/logout-and-login" class="inline m-0">
                         @csrf
@@ -100,7 +101,7 @@
                             Sign in with a different number
                         </button>
                     </form>
-                </p>
+                </div>
             </div>
 
         </div>

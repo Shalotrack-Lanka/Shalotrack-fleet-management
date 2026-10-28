@@ -100,11 +100,11 @@
             @endif
             @if($isOpen)
             <div class="flex items-center gap-4 mt-3">
-                <button onclick="pickSlipFor('{{ $r['renewalRequestId'] }}')"
+                <button onclick="pickSlipFor(@js($r['renewalRequestId']))"
                     class="text-sm font-semibold text-[#FA6908] hover:text-orange-700 transition">
                     {{ $hasSlip ? 'Replace slip' : 'Upload slip' }}
                 </button>
-                <button onclick="confirmCancel('{{ $r['renewalRequestId'] }}', @js($r['vehicleNumber'] ?? 'this vehicle'))"
+                <button onclick="confirmCancel(@js($r['renewalRequestId']), @js($r['vehicleNumber'] ?? 'this vehicle'))"
                     class="text-sm font-medium text-gray-400 hover:text-red-500 transition">
                     Cancel request
                 </button>
