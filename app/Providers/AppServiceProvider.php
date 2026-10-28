@@ -41,6 +41,23 @@ class AppServiceProvider extends ServiceProvider
         // Blanket ceiling for every logged-in route (a page makes several calls).
         RateLimiter::for('portal', fn (Request $r) => Limit::perMinute(240)->by($key($r)));
 
+        // One NAMED limiter per feature. The old `throttle:N,M` form has no name: Laravel gives every such route
+        // the SAME counter per client IP, so a handful of map polls could use up the budget of SOS (3 a minute)
+        // and the very first SOS press answered "too many requests". It also keyed by IP, which behind Cloudflare
+        // can be forged and which one mobile carrier address shares between many customers. Named + keyed by the
+        // signed-in customer fixes both: each feature has its own bucket, and one customer cannot spend another's.
+        RateLimiter::for('sos', fn (Request $r) => Limit::perMinute(3)->by('sos:' . $key($r)));
+        RateLimiter::for('trip-location', fn (Request $r) => Limit::perMinute(60)->by('trip-location:' . $key($r)));
+        RateLimiter::for('geocode', fn (Request $r) => Limit::perMinute(90)->by('geocode:' . $key($r)));
+        RateLimiter::for('report-view', fn (Request $r) => Limit::perMinute(30)->by('report-view:' . $key($r)));
+        RateLimiter::for('report-export', fn (Request $r) => Limit::perMinute(12)->by('report-export:' . $key($r)));   // PDF + CSV, reports and stats
+        RateLimiter::for('renewals', fn (Request $r) => Limit::perMinute(10)->by('renewals:' . $key($r)));
+        RateLimiter::for('places-data', fn (Request $r) => Limit::perMinute(30)->by('places-data:' . $key($r)));
+        // Anonymous endpoints: the IP is the only key there is (it falls back to it automatically).
+        RateLimiter::for('login', fn (Request $r) => Limit::perMinute(20)->by('login:' . $key($r)));
+        RateLimiter::for('register', fn (Request $r) => Limit::perMinute(20)->by('register:' . $key($r)));
+        RateLimiter::for('csp-report', fn (Request $r) => Limit::perMinute(30)->by('csp-report:' . $key($r)));
+
         // Phone-number invites: an enumeration/spam target — slow and capped per day.
         RateLimiter::for('invite', fn (Request $r) => [
             Limit::perMinute(5)->by('invite-m:' . $key($r)),

@@ -59,6 +59,8 @@ class PublicLiveLinkTest extends TestCase
 
     private function fakeApi(array|int $answer): void
     {
+        Http::swap(new \Illuminate\Http\Client\Factory());   // replace, never accumulate (see SignedInFleetUser)
+
         Http::fake(['api.test/api/public/live/*' => is_int($answer)
             ? Http::response(['error' => 'x'], $answer)
             : Http::response($answer, 200)]);

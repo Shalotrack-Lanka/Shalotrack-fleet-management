@@ -33,12 +33,12 @@ Route::pattern('reminderId', '[A-Za-z0-9\-]{1,64}');
 // ---- Public ----
 Route::get('/', fn() => view('landing'))->name('home');
 Route::get('/login',  [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:20,1')->name('login.post');   // OTP itself is rate-limited by Firebase; this stops token-verify spam
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login')->name('login.post');   // OTP itself is rate-limited by Firebase; this stops token-verify spam
 Route::post('/logout',[AuthController::class, 'logout'])->name('logout');
 
 // Registration — accessible only when session exists but no profile yet
 Route::get('/register',  [RegisterController::class, 'show'])->name('register');
-Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:20,1')->name('register.store');
+Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:register')->name('register.store');
 
 // Email verification
 Route::get('/email/verify',         [EmailVerificationController::class, 'show'])->name('email.verify');
@@ -58,7 +58,7 @@ Route::post('/logout-and-login', function () {
 
 // ---- CSP violation reports (browser-sent, no session/CSRF; throttled; logs one line each) ----
 Route::post('/csp-report', [\App\Http\Controllers\CspReportController::class, 'store'])
-    ->middleware('throttle:30,1')
+    ->middleware('throttle:csp-report')
     ->withoutMiddleware([
         \Illuminate\Cookie\Middleware\EncryptCookies::class,
         \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
@@ -109,16 +109,16 @@ Route::middleware([\App\Http\Middleware\FirebaseAuthenticated::class, 'throttle:
     // Trip History
     Route::get('/trips',                              [TripController::class, 'index'])->name('trips');
     Route::get('/trips/{vehicleId}/points',           [TripController::class, 'points']);
-    Route::get('/trips/{vehicleId}/location',         [TripController::class, 'location'])->whereUuid('vehicleId')->middleware('throttle:60,1');
+    Route::get('/trips/{vehicleId}/location',         [TripController::class, 'location'])->whereUuid('vehicleId')->middleware('throttle:trip-location');
     Route::get('/trips/{vehicleId}/summary',          [TripController::class, 'summary']);
-    Route::get('/geocode/reverse', [GeocodeController::class, 'reverse'])->middleware('throttle:90,1')->name('geocode.reverse');
+    Route::get('/geocode/reverse', [GeocodeController::class, 'reverse'])->middleware('throttle:geocode')->name('geocode.reverse');
     Route::get('/trips/{vehicleId}/report',           [TripController::class, 'report']);
 
     // Reports
     Route::get('/reports',      [ReportController::class, 'index'])->name('reports');
-    Route::get('/reports/view',   [ReportController::class, 'view'])->middleware('throttle:30,1');
+    Route::get('/reports/view',   [ReportController::class, 'view'])->middleware('throttle:report-view');
     // PDF / CSV — rendered server-side from API data; throttled because each call hits the API
-    Route::get('/reports/export', [ReportExportController::class, 'report'])->middleware('throttle:12,1');
+    Route::get('/reports/export', [ReportExportController::class, 'report'])->middleware('throttle:report-export');
 
     // The web Alerts inbox was removed (alerts are delivered to the mobile app). Old bookmarks land on the dashboard.
     Route::redirect('/alerts', '/dashboard');
@@ -146,14 +146,14 @@ Route::middleware([\App\Http\Middleware\FirebaseAuthenticated::class, 'throttle:
     // Renewals — web parity with the Android RenewalActivity.
     // Write routes are throttled: slips are file uploads proxied to the API.
     Route::get('/renewals',                   [RenewalController::class, 'index'])->name('renewals');
-    Route::post('/renewals',                  [RenewalController::class, 'store'])->middleware('throttle:10,1');
-    Route::post('/renewals/{id}/slip',        [RenewalController::class, 'uploadSlip'])->middleware('throttle:10,1');
-    Route::post('/renewals/{id}/cancel',      [RenewalController::class, 'cancel'])->middleware('throttle:10,1');
+    Route::post('/renewals',                  [RenewalController::class, 'store'])->middleware('throttle:renewals');
+    Route::post('/renewals/{id}/slip',        [RenewalController::class, 'uploadSlip'])->middleware('throttle:renewals');
+    Route::post('/renewals/{id}/cancel',      [RenewalController::class, 'cancel'])->middleware('throttle:renewals');
 
     // SOS — hold-to-confirm in the UI; throttled so it can't be spammed.
     Route::post('/sos/{vehicleId}', [SosController::class, 'trigger'])
         ->whereUuid('vehicleId')
-        ->middleware('throttle:3,1');
+        ->middleware('throttle:sos');
 
     // Account deletion: the page a customer lands on while deletion is scheduled (cancel from here).
     Route::get('/account/deletion', [\App\Http\Controllers\AccountController::class, 'deletionPage'])->name('account.deletion');
@@ -180,11 +180,11 @@ Route::middleware([\App\Http\Middleware\FirebaseAuthenticated::class, 'throttle:
 
     // Frequent places — where a vehicle usually ends its trips (read-only, from trip summaries).
     Route::get('/places',                      [\App\Http\Controllers\FrequentPlacesController::class, 'index'])->name('places');
-    Route::get('/places/{vehicleId}/data',     [\App\Http\Controllers\FrequentPlacesController::class, 'data'])->middleware('throttle:30,1');
+    Route::get('/places/{vehicleId}/data',     [\App\Http\Controllers\FrequentPlacesController::class, 'data'])->middleware('throttle:places-data');
     Route::get('/stats/{vehicleId}/data',  [StatsController::class, 'data']);
     // GET ?period=&format=pdf|csv — rendered server-side (no browser-supplied numbers/images)
     Route::match(['get', 'post'], '/stats/{vehicleId}/export', [ReportExportController::class, 'stats'])
         ->whereUuid('vehicleId')
-        ->middleware('throttle:12,1')
+        ->middleware('throttle:report-export')
         ->name('stats.export');
 });

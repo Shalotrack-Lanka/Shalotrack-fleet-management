@@ -46,6 +46,10 @@ trait SignedInFleetUser
     /** Fake the API: ['path-fragment' => Http::response(...)]. First matching pattern wins. */
     protected function fakeApi(array $routes): void
     {
+        // A brand-new HTTP client each time: Http::fake() on the same instance KEEPS the first answer, so a test
+        // that tried several API answers in a row would silently keep using the first one.
+        Http::swap(new \Illuminate\Http\Client\Factory());
+
         Http::fake(collect($routes)->mapWithKeys(fn ($v, $k) => ['api.test/api/' . ltrim($k, '/') => $v])->all());
     }
 
