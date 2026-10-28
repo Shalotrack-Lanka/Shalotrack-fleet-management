@@ -252,13 +252,13 @@
             @foreach($places as $place)
             <div class="place-row"
                 id="place-{{ $place['placeId'] }}"
-                onclick="focusPlace({{ $place['latitude'] }}, {{ $place['longitude'] }}, '{{ $place['placeId'] }}')">
+                onclick="focusPlace(@js((float) $place['latitude']), @js((float) $place['longitude']), @js($place['placeId']))">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
                     <div style="display:flex;align-items:center;gap:8px;">
                         <div style="width:8px;height:8px;border-radius:50%;background:#FA6908;flex-shrink:0;"></div>
                         <p class="font-semibold text-gray-800" style="font-size:13px;">{{ $place['name'] }}</p>
                     </div>
-                    <button onclick="event.stopPropagation(); confirmDeletePlace('{{ $place['placeId'] }}', '{{ addslashes($place['name']) }}')"
+                    <button onclick="event.stopPropagation(); confirmDeletePlace(@js($place['placeId']), @js($place['name']))"
                         style="padding:4px;color:var(--g-t3,#d1d5db);background:none;border:none;cursor:pointer;border-radius:4px;transition:color 0.15s;"
                         onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#d1d5db'"
                         title="Delete place">

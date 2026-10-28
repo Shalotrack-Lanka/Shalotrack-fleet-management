@@ -699,7 +699,7 @@
                 @else
                 @foreach($geofences as $gf)
                 <div class="gf-card" data-name="{{ strtolower($gf['name']) }}">
-                    <div class="gf-card-header" onclick="focusGeofence('{{ $gf['geofenceId'] }}')">
+                    <div class="gf-card-header" onclick="focusGeofence(@js($gf['geofenceId']))">
                         <span class="gf-card-dot {{ ($gf['isActive'] ?? true) ? 'gf-dot-on' : 'gf-dot-off' }}"></span>
                         <span class="gf-card-name">{{ $gf['name'] }}</span>
                     </div>

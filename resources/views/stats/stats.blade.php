@@ -717,7 +717,7 @@
                 data-id="{{ $vid }}"
                 data-plate="{{ strtolower($plate) }}"
                 data-name="{{ strtolower($name) }}"
-                onclick="selectVehicle('{{ $vid }}', '{{ addslashes($plate) }}', '{{ addslashes($name) }}', {{ $demo ? 'true' : 'false' }})">
+                onclick="selectVehicle(@js($vid), @js($plate), @js($name), @js((bool) $demo))">
                 @php $typeIcon = \App\Support\VehicleIcon::url($v['vehicleType'] ?? null); @endphp
                 <div class="vehicle-icon {{ $demo ? 'demo' : '' }} {{ $typeIcon ? 'has-photo' : '' }}">
                     @if($typeIcon)
