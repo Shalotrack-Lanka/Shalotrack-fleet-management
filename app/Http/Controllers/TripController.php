@@ -68,16 +68,30 @@ class TripController extends Controller
     }
 
     /**
+     * from / to must be dates and `to` must be later than `from`. Written by hand rather than with the
+     * `after:from` rule: when `from` was an array (from[]=x) that rule crashed with a 500 instead of a 422.
+     */
+    private function validateRange(Request $request): void
+    {
+        $request->validate([
+            'from' => 'required|string|date',
+            'to'   => ['required', 'string', 'date', function (string $attribute, mixed $value, \Closure $fail) use ($request) {
+                $from = $request->input('from');
+                if (is_string($from) && ($f = strtotime($from)) !== false && ($t = strtotime($value)) !== false && $t <= $f) {
+                    $fail('The to must be a date after from.');
+                }
+            }],
+        ]);
+    }
+
+    /**
      * GET /trips/{vehicleId}/points?from=&to=
      * Returns raw GPS points for route playback on map.
      * Called via AJAX from the trip history tab.
      */
     public function points(Request $request, string $vehicleId)
     {
-        $request->validate([
-            'from' => 'required|date',
-            'to'   => 'required|date|after:from',
-        ]);
+        $this->validateRange($request);
 
         // The API reads these as UTC. The browser sends either a UTC ISO string
         // ("…Z") or a bare Colombo wall-clock time; LocalTime resolves both to UTC.
@@ -108,10 +122,7 @@ class TripController extends Controller
      */
     public function summary(Request $request, string $vehicleId)
     {
-        $request->validate([
-            'from' => 'required|date',
-            'to'   => 'required|date|after:from',
-        ]);
+        $this->validateRange($request);
 
         // The API reads these as UTC. The browser sends either a UTC ISO string
         // ("…Z") or a bare Colombo wall-clock time; LocalTime resolves both to UTC.
