@@ -1260,6 +1260,9 @@
         {{-- Vehicle selector --}}
         <div class="sb-vehicle-row">
             <label>Vehicle</label>
+            @if($error)
+            <div class="sb-error" role="alert">⚠ {{ $error }}</div>
+            @endif
             <select id="vehicle-select" class="vehicle-select" onchange="onVehicleChange()">
                 @foreach($vehicles as $v)
                 @php
