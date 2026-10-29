@@ -21,10 +21,17 @@ trait FirebaseTestTokens
     protected static function pair(string $name = 'good'): array
     {
         if (!isset(self::$pairs[$name])) {
-            $key = openssl_pkey_new(['private_key_bits' => 2048, 'private_key_type' => OPENSSL_KEYTYPE_RSA]);
-            $csr = openssl_csr_new(['commonName' => "test-$name"], $key);
-            $crt = openssl_csr_sign($csr, null, $key, 1);
+            // Windows PHP often ships without an openssl.cnf, which makes key/CSR creation fail.
+            // A tiny config file of our own makes this work the same on every machine.
+            $cnf = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'st-test-openssl-' . getmypid() . '.cnf';
+            file_put_contents($cnf, "[req]\ndistinguished_name=dn\nprompt=no\n[dn]\nCN=test\n");
+            $opts = ['config' => $cnf, 'digest_alg' => 'sha256'];
+
+            $key = openssl_pkey_new($opts + ['private_key_bits' => 2048, 'private_key_type' => OPENSSL_KEYTYPE_RSA]);
+            $csr = openssl_csr_new(['commonName' => "test-$name"], $key, $opts);
+            $crt = openssl_csr_sign($csr, null, $key, 1, $opts);
             openssl_x509_export($crt, $pem);
+            @unlink($cnf);
             self::$pairs[$name] = ['key' => $key, 'cert' => $pem];
         }
 

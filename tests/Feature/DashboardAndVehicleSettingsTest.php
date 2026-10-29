@@ -85,7 +85,7 @@ class DashboardAndVehicleSettingsTest extends TestCase
 
         $res = $this->asCustomer()->postJson('/api/vehicles/' . self::UUID . '/live-links', ['durationHours' => 2])->assertStatus(201);
 
-        $this->assertSame('http://localhost/live/' . self::TOKEN, $res->json('link.url'));
+        $this->assertSame(url('/live/' . self::TOKEN), $res->json('link.url'));
         $this->assertSame(['linkId', 'createdAt', 'expiresAt', 'url'], array_keys($res->json('link')));   // no token field, no extras
         $this->assertStringContainsString('no-store', $res->headers->get('Cache-Control'));
         $this->assertSentBody('POST', '/api/LiveShare/vehicle/' . self::UUID, ['durationHours' => 2]);

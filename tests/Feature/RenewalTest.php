@@ -224,14 +224,25 @@ class RenewalTest extends TestCase
         $this->assertStringNotContainsString('evil', json_encode($req->data(), JSON_INVALID_UTF8_SUBSTITUTE));
     }
 
-    public function test_a_file_dressed_up_as_an_image_is_refused_by_what_it_contains(): void
+    public static function disguisedFiles(): array
+    {
+        return [
+            // not starting with the PHP tag at byte 0: on some Windows machines antivirus removes such a temp file mid-test
+            'php code'        => ["  <?php echo 1; ?>"],
+            'gif with code'   => ['GIF89a<?php echo 1;'],
+            'plain letters'   => [str_repeat('A', 200)],
+            'windows program' => ["MZ\x90\x00\x03"],
+        ];
+    }
+
+    /** One upload per test (not a loop): Windows holds on to a fake upload's temp file until the test ends. */
+    #[\PHPUnit\Framework\Attributes\DataProvider('disguisedFiles')]
+    public function test_a_file_dressed_up_as_an_image_is_refused_by_what_it_contains(string $payload): void
     {
         Http::fake();
 
-        foreach (["<?php system(\$_GET['c']); ?>", "GIF89a<?php echo 1;", str_repeat('A', 200), "MZ\x90\x00\x03"] as $payload) {
-            $file = UploadedFile::fake()->createWithContent('slip.jpg', $payload);
-            $this->asCustomer()->post('/renewals/' . self::UUID . '/slip', ['file' => $file], ['Accept' => 'application/json'])->assertStatus(422);
-        }
+        $file = UploadedFile::fake()->createWithContent('slip.jpg', $payload);
+        $this->asCustomer()->post('/renewals/' . self::UUID . '/slip', ['file' => $file], ['Accept' => 'application/json'])->assertStatus(422);
 
         Http::assertNothingSent();
     }
