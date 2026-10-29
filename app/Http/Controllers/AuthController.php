@@ -170,37 +170,6 @@ class AuthController extends Controller
     }
 
     // -------------------------------------------------------------------------
-    // API methods
-    // -------------------------------------------------------------------------
-
-    /**
-     * GET /api/auth/me
-     */
-    public function me()
-    {
-        $token     = Session::get('firebase_token');
-        $expiresAt = Session::get('firebase_token_expires_at');
-
-        if (!$token) {
-            return response()->json(['authenticated' => false], 401);
-        }
-
-        if ($expiresAt && now()->timestamp >= $expiresAt) {
-            Session::flush();
-            return response()->json([
-                'authenticated' => false,
-                'code'          => 'TOKEN_EXPIRED',
-            ], 401);
-        }
-
-        return response()->json([
-            'authenticated' => true,
-            'uid'           => Session::get('firebase_uid'),
-            'phone'         => Session::get('firebase_phone'),
-        ]);
-    }
-
-    // -------------------------------------------------------------------------
     // Firebase JWT verification (no external SDK)
     // -------------------------------------------------------------------------
 }
