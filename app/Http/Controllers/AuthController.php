@@ -105,8 +105,8 @@ class AuthController extends Controller
         }
 
         Log::info('FirebaseAuth: Login successful', [
-            'uid'   => $payload['sub'] ?? null,
-            'phone' => $payload['phone_number'] ?? null,
+            'user'  => \App\Support\Pii::id($payload['sub'] ?? null),
+            'phone' => \App\Support\Pii::phone($payload['phone_number'] ?? null),
         ]);
 
         // Check if this Firebase account has a customer profile yet.
