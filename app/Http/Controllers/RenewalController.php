@@ -208,7 +208,7 @@ class RenewalController extends Controller
             return response()->json(['success' => false, 'code' => 'TOKEN_EXPIRED', 'message' => 'Session expired.'], 401);
         }
 
-        Log::error("RenewalController: {$action} failed", ['code' => $code, 'message' => $e->getMessage()]);
+        Log::error("RenewalController: {$action} failed", ['code' => $code, 'message' => \App\Support\ErrorLogger::scrub($e->getMessage())]);
 
         if ($code === 403) {
             return response()->json(['success' => false, 'message' => 'You can only renew vehicles you own.'], 403);
@@ -218,7 +218,7 @@ class RenewalController extends Controller
         }
         if (in_array($code, [400, 409, 413, 415, 422], true)) {
             $msg = $e->getMessage();
-            $msg = ($msg !== '' && $msg !== 'REQUEST_FAILED') ? $msg : $fallback;
+            $msg = \App\Support\ApiErrors::isPlainMessage($msg) ? $msg : $fallback;
             return response()->json(['success' => false, 'message' => $msg], 422);
         }
 

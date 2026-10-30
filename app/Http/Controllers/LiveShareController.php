@@ -93,10 +93,10 @@ class LiveShareController extends Controller
 
         $status = in_array($code, [400, 402, 404, 409, 429], true) ? $code : 502;
         $text   = match ($status) {
-            400     => ($e->getMessage() && $e->getMessage() !== 'REQUEST_FAILED') ? $e->getMessage() : 'That request is not valid.',
+            400     => \App\Support\ApiErrors::isPlainMessage($e->getMessage()) ? $e->getMessage() : 'That request is not valid.',
             402     => 'Renew your subscription to share this vehicle.',
             404     => 'Vehicle or link not found.',
-            409     => ($e->getMessage() && $e->getMessage() !== 'REQUEST_FAILED') ? $e->getMessage() : 'You already have the maximum number of active links. Stop one first.',
+            409     => \App\Support\ApiErrors::isPlainMessage($e->getMessage()) ? $e->getMessage() : 'You already have the maximum number of active links. Stop one first.',
             429     => 'Too many requests. Please wait a moment.',
             default => $message,
         };
