@@ -17,13 +17,13 @@ use Illuminate\Support\Facades\Session;
  * 3. If 404 (no profile) → redirect to /register
  * 4. Customer fills name, email, NIC, address → POST /register
  *    The details are only KEPT in the session here — nothing is sent to the API yet.
- * 5. /email/verify sends Firebase's verification link to that email and waits for the click
- * 6. POST /email/mark-verified gets a fresh Firebase token (email_verified = true) and only THEN
- *    calls POST /api/Customers → profile created → /dashboard
+ * 5. /register/password lets the customer attach an email + password to the Firebase account (optional)
+ * 6. POST /register/complete gets a fresh Firebase token and calls POST /api/Customers → profile created
+ *    → /dashboard
  *
- * Why not create the profile first: the API refuses to create a profile unless the caller's token
- * already says email_verified = true (CustomerService.CreateAsync, since 7 Sep). Creating first
- * always ended in 403 and "Failed to create your profile".
+ * There is NO email verification (owner decision, 2 Nov 2026): the phone OTP is the only identity check and
+ * the email is a plain contact field / login name. The password is attached BEFORE the profile is created so
+ * the fresh token already carries the email.
  */
 class RegisterController extends Controller
 {
@@ -59,8 +59,8 @@ class RegisterController extends Controller
 
     /**
      * POST /register
-     * Keep the entered details and send the customer to email verification. The profile itself is
-     * created by EmailVerificationController::markVerified once the email is verified.
+     * Keep the entered details and send the customer to the password step. The profile itself is
+     * created by RegistrationCompleteController::complete.
      */
     public function store(Request $request)
     {
@@ -81,7 +81,7 @@ class RegisterController extends Controller
             'nicNumber.regex' => 'Enter a valid NIC number, for example 861234567V or 198612345678.',
         ]);
 
-        // Keep the details until the email is verified (see class docblock). Session data is server-side
+        // Keep the details until the password step is done (see class docblock). Session data is server-side
         // and encrypted; nothing personal goes into the URL or a cookie.
         Session::put('pending_profile', [
             'fullName'  => trim($validated['fullName']),
@@ -89,9 +89,7 @@ class RegisterController extends Controller
             'nicNumber' => trim($validated['nicNumber']),
             'address'   => isset($validated['address']) ? trim((string) $validated['address']) : null,
         ]);
-        Session::put('pending_verification_email', trim($validated['email']));
-        Session::put('email_verified', false);
 
-        return redirect('/email/verify');
+        return redirect('/register/password');
     }
 }

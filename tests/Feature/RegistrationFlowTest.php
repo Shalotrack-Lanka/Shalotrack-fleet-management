@@ -8,11 +8,9 @@ use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 /**
- * Regression: "Failed to create your profile" on every web sign-up.
- * The API refuses POST /api/Customers unless the bearer token already says email_verified = true, but the
- * web flow created the profile FIRST and verified the email afterwards, so it could never succeed.
- * Now: /register only keeps the details; the profile is created after the email is verified,
- * using the fresh token.
+ * Web sign-up: /register only keeps the details; /register/password lets the browser attach an optional
+ * email + password; POST /register/complete creates the profile with the FRESH token.
+ * There is no email verification (owner decision, 2 Nov 2026): the phone OTP is the only identity check.
  */
 class RegistrationFlowTest extends TestCase
 {
@@ -40,7 +38,7 @@ class RegistrationFlowTest extends TestCase
         return ['pending_profile' => $over + [
             'fullName' => 'Charith Silva', 'email' => 'Charith@Example.com',
             'nicNumber' => '198648697512', 'address' => 'Haldaduwana',
-        ], 'pending_verification_email' => 'Charith@Example.com', 'email_verified' => false];
+        ]];
     }
 
     private function verifierReturns(array $payload): void
@@ -50,7 +48,7 @@ class RegistrationFlowTest extends TestCase
 
     private function goodPayload(array $over = []): array
     {
-        return $over + ['sub' => 'u1', 'email_verified' => true, 'email' => 'charith@example.com', 'exp' => time() + 3000];
+        return $over + ['sub' => 'u1', 'email' => 'charith@example.com', 'exp' => time() + 3000];
     }
 
     public function test_register_only_keeps_the_details_and_does_not_call_the_api(): void
@@ -60,59 +58,60 @@ class RegistrationFlowTest extends TestCase
         $this->signedIn()->post('/register', [
             'fullName' => 'Charith Silva', 'email' => 'charith@example.com',
             'nicNumber' => '198648697512', 'address' => 'Haldaduwana',
-        ])->assertRedirect('/email/verify')
+        ])->assertRedirect('/register/password')
           ->assertSessionHas('pending_profile.email', 'charith@example.com')
-          ->assertSessionHas('email_verified', false);
+          ->assertSessionMissing('pending_verification_email');
 
         Http::assertNothingSent();
     }
 
-    public function test_verify_page_without_details_goes_back_to_the_form(): void
+    public function test_password_page_without_details_goes_back_to_the_form(): void
     {
-        $this->signedIn()->get('/email/verify')->assertRedirect('/register');
+        $this->signedIn()->get('/register/password')->assertRedirect('/register');
     }
 
-    public function test_verify_page_shows_the_email_being_verified(): void
+    public function test_password_page_shows_the_email_for_the_login(): void
     {
-        $this->signedIn($this->pending())->get('/email/verify')->assertOk()->assertSee('Charith@Example.com');
+        $this->signedIn($this->pending())->get('/register/password')->assertOk()->assertSee('Charith@Example.com');
     }
 
-    public function test_verify_page_needs_a_session(): void
+    public function test_password_page_needs_a_session(): void
     {
-        $this->get('/email/verify')->assertRedirect('/login');
+        $this->get('/register/password')->assertRedirect('/login');
     }
 
-    public function test_profile_is_created_after_verification_with_the_fresh_token(): void
+    public function test_profile_is_created_with_the_fresh_token(): void
     {
         $this->verifierReturns($this->goodPayload());
         Http::fake([self::API . '/api/Customers' => Http::response(['success' => true, 'data' => ['customerId' => 'c1']], 200)]);
 
         $this->signedIn($this->pending())
-            ->postJson('/email/mark-verified', ['idToken' => 'fresh-verified-token'])
+            ->postJson('/register/complete', ['idToken' => 'fresh-token'])
             ->assertOk()->assertJson(['success' => true, 'redirect' => '/dashboard'])
-            ->assertSessionHas('email_verified', true)
-            ->assertSessionHas('firebase_token', 'fresh-verified-token')
+            ->assertSessionHas('firebase_token', 'fresh-token')
             ->assertSessionMissing('pending_profile');
 
         Http::assertSent(function (Request $r) {
             return $r->method() === 'POST' && $r->url() === self::API . '/api/Customers'
-                && $r->hasHeader('Authorization', 'Bearer fresh-verified-token')   // not the phone-login token
+                && $r->hasHeader('Authorization', 'Bearer fresh-token')   // not the phone-login token
                 && $r['Email'] === 'Charith@Example.com' && $r['FullName'] === 'Charith Silva'
                 && $r['PhoneNumber'] === '+94714915401' && $r['NicNumber'] === '198648697512';
         });
     }
 
-    public function test_unverified_token_is_refused_and_nothing_is_created(): void
+    public function test_email_is_not_verified_and_a_token_without_the_claim_still_works(): void
     {
-        $this->verifierReturns($this->goodPayload(['email_verified' => false]));
-        Http::fake();
+        // Owner decision (2 Nov 2026): no email verification. A token with email_verified=false, or with no
+        // email at all (customer skipped the password), must still create the profile.
+        $this->verifierReturns(['sub' => 'u1', 'email_verified' => false, 'exp' => time() + 3000]);
+        Http::fake([self::API . '/api/Customers' => Http::response(['success' => true, 'data' => ['customerId' => 'c1']], 200)]);
 
         $this->signedIn($this->pending())
-            ->postJson('/email/mark-verified', ['idToken' => 't'])
-            ->assertStatus(422)->assertJson(['success' => false])
-            ->assertSessionHas('email_verified', false);
+            ->postJson('/register/complete', ['idToken' => 't'])
+            ->assertOk()->assertJson(['success' => true, 'redirect' => '/dashboard'])
+            ->assertSessionMissing('pending_profile');
 
-        Http::assertNothingSent();
+        Http::assertSentCount(1);
     }
 
     public function test_token_of_another_account_is_refused(): void
@@ -120,16 +119,16 @@ class RegistrationFlowTest extends TestCase
         $this->verifierReturns($this->goodPayload(['sub' => 'someone-else']));
         Http::fake();
 
-        $this->signedIn($this->pending())->postJson('/email/mark-verified', ['idToken' => 't'])->assertStatus(422);
+        $this->signedIn($this->pending())->postJson('/register/complete', ['idToken' => 't'])->assertStatus(422);
         Http::assertNothingSent();
     }
 
-    public function test_a_verified_email_that_is_not_the_typed_one_is_refused(): void
+    public function test_an_account_email_that_is_not_the_typed_one_is_refused(): void
     {
         $this->verifierReturns($this->goodPayload(['email' => 'other@example.com']));
         Http::fake();
 
-        $this->signedIn($this->pending())->postJson('/email/mark-verified', ['idToken' => 't'])
+        $this->signedIn($this->pending())->postJson('/register/complete', ['idToken' => 't'])
             ->assertStatus(422)->assertJson(['restart' => true]);
         Http::assertNothingSent();
     }
@@ -139,7 +138,7 @@ class RegistrationFlowTest extends TestCase
         $this->verifierReturns($this->goodPayload());
         Http::fake([self::API . '/api/Customers' => Http::response(['message' => 'Profile already exists.', 'errors' => ['This account already has a customer profile.']], 409)]);
 
-        $this->signedIn($this->pending())->postJson('/email/mark-verified', ['idToken' => 't'])
+        $this->signedIn($this->pending())->postJson('/register/complete', ['idToken' => 't'])
             ->assertOk()->assertJson(['success' => true]);
     }
 
@@ -148,7 +147,7 @@ class RegistrationFlowTest extends TestCase
         $this->verifierReturns($this->goodPayload());
         Http::fake([self::API . '/api/Customers' => Http::response(['message' => 'NIC already exists.', 'errors' => ['A customer with this NIC already exists.']], 409)]);
 
-        $this->signedIn($this->pending())->postJson('/email/mark-verified', ['idToken' => 't'])
+        $this->signedIn($this->pending())->postJson('/register/complete', ['idToken' => 't'])
             ->assertStatus(422)
             ->assertJson(['success' => false, 'restart' => true])
             ->assertJsonPath('message', 'An account with this NIC number already exists. Check the NIC, or sign in with the phone number you used before.');
@@ -159,14 +158,14 @@ class RegistrationFlowTest extends TestCase
         $this->verifierReturns($this->goodPayload());
         Http::fake([self::API . '/api/Customers' => Http::response('boom', 500)]);
 
-        $this->signedIn($this->pending())->postJson('/email/mark-verified', ['idToken' => 't'])
+        $this->signedIn($this->pending())->postJson('/register/complete', ['idToken' => 't'])
             ->assertStatus(422)->assertJsonStructure(['message', 'reference'])
             ->assertSessionHas('pending_profile');   // still there: the page retries on its own
     }
 
     public function test_mark_verified_needs_a_session(): void
     {
-        $this->postJson('/email/mark-verified', ['idToken' => 't'])->assertStatus(401);
+        $this->postJson('/register/complete', ['idToken' => 't'])->assertStatus(401);
     }
 
     public function test_register_form_is_prefilled_when_the_customer_comes_back_to_fix_a_detail(): void

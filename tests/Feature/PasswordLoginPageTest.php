@@ -42,8 +42,8 @@ class PasswordLoginPageTest extends TestCase
     {
         $html = $this->get('/login')->getContent();
         $this->assertSame(1, substr_count($html, "fetch('/login'"));   // one shared postLogin()
-        $this->assertStringContainsString('postLogin(cred.user)', $html);
-        $this->assertStringContainsString('postLogin(result.user)', $html);
+        // Both sign-in paths (phone code via verifyOtp, email + password via emailSignIn) end in that one function.
+        $this->assertSame(2, substr_count($html, 'await postLogin(cred.user)'));
     }
 
     public function test_signup_asks_for_a_password_before_the_profile_is_created(): void
@@ -52,7 +52,7 @@ class PasswordLoginPageTest extends TestCase
             'firebase_token' => 't', 'firebase_uid' => 'u1', 'firebase_phone' => '+94714915401',
             'firebase_token_expires_at' => time() + 3000,
             'pending_profile' => ['fullName' => 'A B', 'email' => 'a@b.lk', 'nicNumber' => '199012345678', 'address' => 'Colombo'],
-        ])->get('/email/verify')->assertOk()
+        ])->get('/register/password')->assertOk()
             ->assertSee('id="password-box"', false)
             ->assertSee('linkWithCredential', false)
             ->assertSee('skipPassword', false);   // never blocks sign-up
