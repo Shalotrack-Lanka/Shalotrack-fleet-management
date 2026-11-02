@@ -26,6 +26,15 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Email domain check (registration)
+    |--------------------------------------------------------------------------
+    | The email is NOT verified (owner decision, 2 Nov 2026), so at least require that its domain can
+    | receive mail (MX or A record). Needs DNS from the container; off under tests (no network there).
+    */
+    'email_dns_check' => env('EMAIL_DNS_CHECK', env('APP_ENV') !== 'testing'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Connect Timeout
     |--------------------------------------------------------------------------
     | Seconds to wait for the API to ACCEPT the connection. When the API host is down or unreachable,

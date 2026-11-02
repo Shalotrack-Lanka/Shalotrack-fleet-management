@@ -62,6 +62,17 @@
                     @error('email')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
+                    <input type="hidden" name="keepEmail" value="" />
+                    @if (session('email_suggestion'))
+                        <div class="mt-2 flex gap-2 text-xs">
+                            <button type="button" id="use-suggestion"
+                                    onclick="const f=this.form; f.elements.email.value=@js(session('email_suggestion')); f.elements.keepEmail.value=''; f.requestSubmit();"
+                                    class="px-3 py-1.5 bg-[#FA6908] text-white font-semibold rounded-lg">Use {{ session('email_suggestion') }}</button>
+                            <button type="button" id="keep-email"
+                                    onclick="const f=this.form; f.elements.keepEmail.value='1'; f.requestSubmit();"
+                                    class="px-3 py-1.5 border border-gray-300 text-gray-600 rounded-lg">Keep what I typed</button>
+                        </div>
+                    @endif
                 </div>
 
                 <div>
@@ -92,7 +103,8 @@
 
             {{-- Login link --}}
             <div class="mt-6 pt-5 border-t border-gray-100 text-center">
-                <p class="text-sm text-gray-500">
+                {{-- <div>, not <p>: a <form> is not allowed inside <p>; the parser would close the <p> early and split the line. --}}
+                <div class="text-sm text-gray-500">
                     Already have an account?
                     <form method="POST" action="/logout-and-login" class="inline m-0">
                         @csrf
@@ -100,7 +112,7 @@
                             Sign in with a different number
                         </button>
                     </form>
-                </p>
+                </div>
             </div>
 
         </div>

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Services\ShalotrackApiService;
+use App\Support\EmailDomainCheck;
+use App\Support\EmailTypoGuard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 
@@ -73,13 +75,27 @@ class RegisterController extends Controller
 
         $validated = $request->validate([
             'fullName'  => 'required|string|max:150',
-            'email'     => 'required|email|max:150',
+            // rfc = proper address syntax; then the domain must be able to receive mail (dead and made-up domains).
+            // Our own check, not Laravel's `dns` rule: it fails open if DNS itself is down (see EmailDomainCheck).
+            'email'     => ['required', 'email:rfc', 'max:150', function ($attribute, $value, $fail) {
+                if (config('shalotrack.email_dns_check') && !EmailDomainCheck::canReceiveMail((string) $value)) {
+                    $fail('That email domain cannot receive mail. Check the address after the @.');
+                }
+            }],
             // Sri Lankan NIC: 9 digits + V/X (old) or 12 digits (new). Same rule as the API's CreateCustomerDto.
             'nicNumber' => ['required', 'string', 'max:20', 'regex:/^([0-9]{9}[VX]|[0-9]{12})$/'],
             'address'   => 'nullable|string|max:300',
         ], [
             'nicNumber.regex' => 'Enter a valid NIC number, for example 861234567V or 198612345678.',
         ]);
+
+        // A likely domain typo (gamil.com): ask once. "Keep what I typed" sends keepEmail=1 and goes through.
+        $suggestion = EmailTypoGuard::suggest($validated['email']);
+        if ($suggestion !== null && !$request->boolean('keepEmail')) {
+            return back()->withInput()
+                ->withErrors(['email' => 'Did you mean ' . $suggestion . '?'])
+                ->with('email_suggestion', $suggestion);
+        }
 
         // Keep the details until the password step is done (see class docblock). Session data is server-side
         // and encrypted; nothing personal goes into the URL or a cookie.
