@@ -179,11 +179,11 @@ class StatsAndPlacesTest extends TestCase
     public function test_repeat_destinations_become_a_place_and_a_saved_place_names_it(): void
     {
         $this->fakeApi([
-            'GpsTracking/trips*' => $this->ok(['data' => [
+            'GpsTracking/trips*' => $this->ok(['data' => ['trips' => [
                 $this->trip(6.9271, 79.8612, '2026-10-20T10:00:00Z', 20),
                 $this->trip(6.9272, 79.8613, '2026-10-22T10:00:00Z', 30),    // ~15 m away: same place
                 $this->trip(7.2906, 80.6337, '2026-10-21T10:00:00Z', 10),    // visited once: dropped
-            ]]),
+            ]]]),
             'SavedPlaces'        => $this->ok(['data' => [['name' => 'Office', 'latitude' => 6.9271, 'longitude' => 79.8612]]]),
         ]);
 
@@ -206,7 +206,7 @@ class StatsAndPlacesTest extends TestCase
     #[\PHPUnit\Framework\Attributes\DataProvider('placePeriods')]
     public function test_only_thirty_or_ninety_days_can_be_asked_for(string $asked, int $days): void
     {
-        $this->fakeApi(['GpsTracking/trips*' => $this->ok(['data' => []]), 'SavedPlaces' => $this->ok(['data' => []])]);
+        $this->fakeApi(['GpsTracking/trips*' => $this->ok(['data' => ['trips' => []]]), 'SavedPlaces' => $this->ok(['data' => []])]);
 
         $res = $this->asCustomer()->getJson('/places/' . self::UUID . '/data?period=' . urlencode($asked))->assertOk();
 
@@ -218,7 +218,7 @@ class StatsAndPlacesTest extends TestCase
 
     public function test_a_saved_places_outage_never_breaks_the_list(): void
     {
-        $this->fakeApi(['GpsTracking/trips*' => $this->ok(['data' => [$this->trip(6.9, 79.8), $this->trip(6.9, 79.8, '2026-10-21T10:00:00Z')]]), 'SavedPlaces' => Http::response([], 500)]);
+        $this->fakeApi(['GpsTracking/trips*' => $this->ok(['data' => ['trips' => [$this->trip(6.9, 79.8), $this->trip(6.9, 79.8, '2026-10-21T10:00:00Z')]]]), 'SavedPlaces' => Http::response([], 500)]);
 
         $res = $this->asCustomer()->getJson('/places/' . self::UUID . '/data')->assertOk();
 
