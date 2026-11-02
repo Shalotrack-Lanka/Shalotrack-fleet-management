@@ -60,8 +60,10 @@ class FrequentPlacesController extends Controller
         $period = (string) $request->query('period', '30');
         $days   = self::PERIOD_DAYS[$period] ?? 30;
 
+        // The API refuses ranges over 90 days. "N days back, from midnight" is N days plus part of a
+        // day, which is why the 90-day view failed: count today as day 1 so the range stays inside the cap.
         $to   = LocalTime::now();
-        $from = $to->copy()->subDays($days)->startOfDay();
+        $from = $to->copy()->subDays($days - 1)->startOfDay();
 
         try {
             $res   = $this->api->getTripSummary(
@@ -69,8 +71,9 @@ class FrequentPlacesController extends Controller
                 LocalTime::toApiUtc($from->format('Y-m-d\TH:i')),
                 LocalTime::toApiUtc($to->format('Y-m-d\TH:i'))
             );
-            $trips = $res['data'] ?? $res;
-            $trips = is_array($trips) ? array_values($trips) : [];
+            // The API returns a report object; the trips are in its "trips" list.
+            $report = $res['data'] ?? $res;
+            $trips  = is_array($report['trips'] ?? null) ? array_values($report['trips']) : [];
 
             // Saved places only add a label; if they cannot be loaded the list still works.
             $saved = [];
@@ -97,7 +100,12 @@ class FrequentPlacesController extends Controller
             if ($code === 402) {
                 return response()->json(['success' => false, 'message' => 'Subscription expired. Renew to see this vehicle.'], 402);
             }
-            Log::error('FrequentPlacesController: data failed', ['error' => $e->getMessage()]);
+            Log::error('FrequentPlacesController: data failed', [
+                'status' => $code, 'type' => class_basename($e), 'error' => $e->getMessage(),
+            ]);
+            if ($e instanceof \Illuminate\Http\Client\ConnectionException) {
+                return response()->json(['success' => false, 'message' => 'Loading took too long. Try the 30-day view, or try again in a moment.'], 422);
+            }
             return response()->json(['success' => false, 'message' => 'Could not load trips. Please try again.'], 422);
         }
     }
