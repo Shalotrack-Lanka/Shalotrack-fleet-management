@@ -64,22 +64,6 @@ class FirebaseAuthenticated
             return redirect('/account/deletion');
         }
 
-        // Email verification check
-        // Skip for the verification page itself and the mark-verified endpoint
-        $path = $request->path();
-        $skipVerification = in_array($path, ['email/verify', 'email/mark-verified', 'logout']);
-
-        if (!$skipVerification && !Session::get('email_verified', true)) {
-            // email_verified is null/not set for existing users (pre-verification feature)
-            // Only enforce for users who have pending_verification_email set
-            if (Session::has('pending_verification_email')) {
-                if ($this->wantsJson($request)) {
-                    return response()->json(['success' => false, 'code' => 'EMAIL_UNVERIFIED'], 403);
-                }
-                return redirect('/email/verify');
-            }
-        }
-
         return $next($request);
     }
 

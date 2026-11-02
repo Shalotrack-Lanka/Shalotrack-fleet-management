@@ -278,7 +278,8 @@
             try {
                 sessionStorage.setItem('otp_cooldown_until', String(cooldownUntil));
             } catch (e) {
-                /* storage blocked: the in-memory timer still works */ }
+                /* storage blocked: the in-memory timer still works */
+            }
             runCooldown();
         }
 
@@ -309,7 +310,8 @@
                     runCooldown();
                 }
             } catch (e) {
-                /* storage blocked */ }
+                /* storage blocked */
+            }
         });
 
         // ---- API call helper ----
@@ -357,8 +359,7 @@
             const apiMsg = (r.body && typeof r.body.message === 'string' && r.body.message.length < 200) ? r.body.message : '';
             if (r.status === 0) {
                 return {
-                    msg: r.aborted ? 'The request took too long. Check your connection and try again.' :
-                        'Could not reach the server. Check your internet connection and try again.',
+                    msg: r.aborted ? 'The request took too long. Check your connection and try again.' : 'Could not reach the server. Check your internet connection and try again.',
                     kind: 'error',
                     ref: r.aborted ? 'timeout' : 'network'
                 };
@@ -494,7 +495,8 @@
                     try {
                         await auth.signOut();
                     } catch (e) {
-                        /* already signed out */ }
+                        /* already signed out */
+                    }
                     return;
                 }
                 afterLogin(cred.user, data.redirect, true);
@@ -580,7 +582,8 @@
             try {
                 localStorage.setItem('login_method', m);
             } catch (e) {
-                /* storage blocked */ }
+                /* storage blocked */
+            }
         }
 
         function showForgot() {
@@ -701,7 +704,7 @@
             try {
                 dismissed = localStorage.getItem('pw_prompt_dismissed') === user.uid;
             } catch (e) {}
-            const eligible = offerPassword && redirect === '/dashboard' && user.email && user.emailVerified && !hasPassword(user) && !dismissed;
+            const eligible = offerPassword && redirect === '/dashboard' && user.email && !hasPassword(user) && !dismissed;
             if (!eligible) {
                 window.location.href = redirect;
                 return;

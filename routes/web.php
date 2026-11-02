@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RegisterController;
-use App\Http\Controllers\EmailVerificationController;
+use App\Http\Controllers\RegistrationCompleteController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\TripController;
@@ -40,15 +40,15 @@ Route::post('/logout',[AuthController::class, 'logout'])->name('logout');
 Route::get('/register',  [RegisterController::class, 'show'])->name('register');
 Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:register')->name('register.store');
 
-// Email verification
-Route::get('/email/verify',         [EmailVerificationController::class, 'show'])->name('email.verify');
-Route::post('/email/mark-verified', [EmailVerificationController::class, 'markVerified'])->name('email.mark-verified');
+// Registration step 2: optional password, then the profile is created (no email verification: owner decision 2 Nov 2026)
+Route::get('/register/password',  [RegistrationCompleteController::class, 'show'])->name('register.password');
+Route::post('/register/complete', [RegistrationCompleteController::class, 'complete'])->name('register.complete');
 
-// The browser lost its Firebase sign-in (cleared storage, another browser, link click revoked it) while a
-// registration was waiting for its email check. Ends only the sign-in; the typed details stay in the session,
+// The browser lost its Firebase sign-in (cleared storage, another browser) while a registration was waiting
+// for its password step. Ends only the sign-in; the typed details stay in the session,
 // so after one new OTP the customer lands on /register with the form already filled.
-// POST + CSRF: these change session state, so a GET (image tag, link, prefetch) must never trigger them.
-Route::post('/email/resign-in', [EmailVerificationController::class, 'resignIn'])->name('email.resign-in');
+// POST + CSRF: this changes session state, so a GET (image tag, link, prefetch) must never trigger it.
+Route::post('/register/resign-in', [RegistrationCompleteController::class, 'resignIn'])->name('register.resign-in');
 
 Route::post('/logout-and-login', function () {
     app(\App\Services\RememberLogin::class)->forget();

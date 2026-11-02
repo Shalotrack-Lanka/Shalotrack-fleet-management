@@ -52,7 +52,7 @@ class PasswordLoginPageTest extends TestCase
             'firebase_token' => 't', 'firebase_uid' => 'u1', 'firebase_phone' => '+94714915401',
             'firebase_token_expires_at' => time() + 3000,
             'pending_profile' => ['fullName' => 'A B', 'email' => 'a@b.lk', 'nicNumber' => '199012345678', 'address' => 'Colombo'],
-        ])->get('/email/verify')->assertOk()
+        ])->get('/register/password')->assertOk()
             ->assertSee('id="password-box"', false)
             ->assertSee('linkWithCredential', false)
             ->assertSee('skipPassword', false);   // never blocks sign-up

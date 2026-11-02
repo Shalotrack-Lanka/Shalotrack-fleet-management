@@ -42,13 +42,13 @@ class InputFormatValidationTest extends TestCase
     public function test_new_and_old_nic_formats_are_accepted(): void
     {
         Http::fake();
-        $this->register('198648697512')->assertRedirect('/email/verify')->assertSessionHas('pending_profile.nicNumber', '198648697512');
+        $this->register('198648697512')->assertRedirect('/register/password')->assertSessionHas('pending_profile.nicNumber', '198648697512');
     }
 
     public function test_old_nic_is_stored_upper_case_without_spaces(): void
     {
         Http::fake();
-        $this->register(' 861234567v ')->assertRedirect('/email/verify')->assertSessionHas('pending_profile.nicNumber', '861234567V');
+        $this->register(' 861234567v ')->assertRedirect('/register/password')->assertSessionHas('pending_profile.nicNumber', '861234567V');
     }
 
     #[DataProvider('badNics')]

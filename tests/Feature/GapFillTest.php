@@ -11,7 +11,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Feature\Concerns\SignedInFleetUser;
 use Tests\TestCase;
 
-/** F7: the last untested branches: address lookup edge cases, the Reports page, e-mail check refusals, register page, time helpers. */
+/** F7: the last untested branches: address lookup edge cases, the Reports page, registration completion refusals, register page, time helpers. */
 class GapFillTest extends TestCase
 {
     use SignedInFleetUser;
@@ -159,13 +159,13 @@ class GapFillTest extends TestCase
         $this->assertNull(session('firebase_token'));
     }
 
-    // ---- e-mail check refusals + register page -------------------------------------------------------------
+    // ---- registration completion refusals + register page -------------------------------------------------------------
 
-    public function test_the_email_check_needs_a_signed_in_session(): void
+    public function test_registration_completion_needs_a_signed_in_session(): void
     {
         Http::fake();
 
-        $this->postJson('/email/mark-verified', ['idToken' => 'x'])->assertStatus(401)->assertJson(['success' => false, 'expired' => true]);
+        $this->postJson('/register/complete', ['idToken' => 'x'])->assertStatus(401)->assertJson(['success' => false, 'expired' => true]);
 
         Http::assertNothingSent();
     }
@@ -180,7 +180,7 @@ class GapFillTest extends TestCase
     {
         Http::fake();
 
-        $this->asCustomer()->postJson('/email/mark-verified', $token === null ? [] : ['idToken' => $token])
+        $this->asCustomer()->postJson('/register/complete', $token === null ? [] : ['idToken' => $token])
             ->assertStatus(422)->assertJsonPath('success', false);
 
         Http::assertNothingSent();
