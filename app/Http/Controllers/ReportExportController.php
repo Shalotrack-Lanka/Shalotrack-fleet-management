@@ -312,7 +312,9 @@ class ReportExportController extends Controller
             return response()->json(['success' => false, 'message' => 'That vehicle is not available to your account.'], 404);
         }
         if ($code === 400 || $code === 422) {
-            return response()->json(['success' => false, 'message' => $e->getMessage() ?: 'Invalid report request.'], 422);
+            // Only plain customer-facing words from the API; never a machine code such as REQUEST_FAILED.
+            $message = \App\Support\ApiErrors::isPlainMessage($e->getMessage()) ? $e->getMessage() : 'Invalid report request.';
+            return response()->json(['success' => false, 'message' => $message], 422);
         }
         return response()->json(['success' => false, 'message' => 'Could not generate the file. Please try again.'], 502);
     }

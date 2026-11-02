@@ -105,8 +105,8 @@ class AuthController extends Controller
         }
 
         Log::info('FirebaseAuth: Login successful', [
-            'uid'   => $payload['sub'] ?? null,
-            'phone' => $payload['phone_number'] ?? null,
+            'user'  => \App\Support\Pii::id($payload['sub'] ?? null),
+            'phone' => \App\Support\Pii::phone($payload['phone_number'] ?? null),
         ]);
 
         // Check if this Firebase account has a customer profile yet.
@@ -167,37 +167,6 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/login');
-    }
-
-    // -------------------------------------------------------------------------
-    // API methods
-    // -------------------------------------------------------------------------
-
-    /**
-     * GET /api/auth/me
-     */
-    public function me()
-    {
-        $token     = Session::get('firebase_token');
-        $expiresAt = Session::get('firebase_token_expires_at');
-
-        if (!$token) {
-            return response()->json(['authenticated' => false], 401);
-        }
-
-        if ($expiresAt && now()->timestamp >= $expiresAt) {
-            Session::flush();
-            return response()->json([
-                'authenticated' => false,
-                'code'          => 'TOKEN_EXPIRED',
-            ], 401);
-        }
-
-        return response()->json([
-            'authenticated' => true,
-            'uid'           => Session::get('firebase_uid'),
-            'phone'         => Session::get('firebase_phone'),
-        ]);
     }
 
     // -------------------------------------------------------------------------

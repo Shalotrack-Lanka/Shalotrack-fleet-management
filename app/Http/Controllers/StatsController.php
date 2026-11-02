@@ -14,7 +14,7 @@ class StatsController extends Controller
     /**
      * GET /stats
      */
-    public function index(): \Illuminate\View\View
+    public function index(): \Illuminate\View\View|\Illuminate\Http\RedirectResponse
     {
         try {
             $profile    = $this->api->getMyProfile();

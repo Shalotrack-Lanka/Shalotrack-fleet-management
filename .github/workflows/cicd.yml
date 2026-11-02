@@ -36,7 +36,26 @@ jobs:
         run: |
           find app bootstrap config routes -name '*.php' -print0 | xargs -0 -n1 -P4 php -l > /tmp/lint.txt 2>&1 || { grep -v '^No syntax errors' /tmp/lint.txt; exit 1; }
 
-      # 3. Dependency advisories — visible in the log, not blocking (a transitive
+      # 3. Automated tests (phpunit). Fleet has no database and every test fakes the C# API, so this
+      #    needs no secrets and touches nothing real. It runs BEFORE the AWS credentials are configured,
+      #    so a failing test stops the pipeline before anything is built or pushed.
+      #    Uses the PHP that ships on ubuntu-latest; the check below fails loudly if that ever drifts
+      #    away from the 8.3 that production runs.
+      - name: Gate - runner PHP is 8.3 like production
+        run: |
+          php -v
+          case "$(php -r 'echo PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION;')" in
+            8.3) ;;
+            *) echo "::error::Runner PHP is not 8.3 (production runs 8.3). Pin the PHP version before trusting test results."; exit 1 ;;
+          esac
+
+      - name: Install PHP dependencies (with dev tools for the tests)
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Gate - automated tests
+        run: php vendor/bin/phpunit --no-coverage
+
+      # 4. Dependency advisories — visible in the log, not blocking (a transitive
       #    advisory must never stop a security fix from shipping).
       - name: Report - npm audit (production deps)
         continue-on-error: true

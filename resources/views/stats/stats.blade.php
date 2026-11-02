@@ -717,7 +717,7 @@
                 data-id="{{ $vid }}"
                 data-plate="{{ strtolower($plate) }}"
                 data-name="{{ strtolower($name) }}"
-                onclick="selectVehicle('{{ $vid }}', '{{ addslashes($plate) }}', '{{ addslashes($name) }}', {{ $demo ? 'true' : 'false' }})">
+                onclick="selectVehicle(@js($vid), @js($plate), @js($name), @js((bool) $demo))">
                 @php $typeIcon = \App\Support\VehicleIcon::url($v['vehicleType'] ?? null); @endphp
                 <div class="vehicle-icon {{ $demo ? 'demo' : '' }} {{ $typeIcon ? 'has-photo' : '' }}">
                     @if($typeIcon)
@@ -741,9 +741,16 @@
                 </div>
             </div>
             @empty
+            @if($error)
+            {{-- An API outage is not "you have no vehicles": say what happened instead of sending them to link a device. --}}
+            <div role="alert" style="padding:32px 16px; text-align:center; color:#b91c1c; font-size:13px; line-height:1.6;">
+                {{ $error }}
+            </div>
+            @else
             <div style="padding:32px 16px; text-align:center; color:var(--g-t3,#94a3b8); font-size:13px; line-height:1.6;">
                 No GPS-enabled vehicles found.<br>Assign a GPS device to a vehicle first.
             </div>
+            @endif
             @endforelse
         </div>
     </div>

@@ -71,6 +71,7 @@ final class ApiErrors
             && mb_strlen($m) <= 200
             && ! str_contains($m, '_')
             && ! str_contains($m, '/')
+            && ! preg_match('/[<>]/', $m)
             && ! preg_match('/\b(exception|stack|sql|http[s]?:)/i', $m);
     }
 
