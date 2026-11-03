@@ -28,6 +28,9 @@
         {{-- Card --}}
         <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
 
+            {{-- Shown only if the Firebase scripts could not be loaded (blocked / offline) --}}
+            <div id="boot-error" role="alert" class="hidden mb-6"></div>
+
             {{-- Session expired banner --}}
             @if($expired)
             <div class="mb-6 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-700 text-sm text-center">
@@ -56,8 +59,8 @@
 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                        <div class="flex rounded-lg border border-gray-300 overflow-hidden focus-within:ring-2 focus-within:ring-[#FA6908] focus-within:border-transparent transition">
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="phone-input">Phone Number</label>
+                        <div id="phone-field" class="flex rounded-lg border border-gray-300 overflow-hidden focus-within:ring-2 focus-within:ring-[#FA6908] focus-within:border-transparent transition">
                             <span class="px-3 py-2.5 bg-gray-50 text-gray-500 text-sm border-r border-gray-300">
                                 🇱🇰 +94
                             </span>
@@ -65,6 +68,7 @@
                                 type="tel"
                                 id="phone-input"
                                 placeholder="71 234 5678" inputmode="numeric" autocomplete="tel-national"
+                                aria-describedby="phone-error"
                                 class="flex-1 min-w-0 px-3 py-2.5 text-base sm:text-sm outline-none bg-white"
                                 autofocus />
                         </div>
@@ -92,12 +96,15 @@
 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">6-digit Code</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="otp-input">6-digit Code</label>
                         <input
                             type="text"
                             id="otp-input"
                             inputmode="numeric"
+                            autocomplete="one-time-code"
+                            pattern="[0-9]*"
                             maxlength="6"
+                            aria-describedby="otp-error"
                             placeholder="______"
                             class="w-full px-4 py-2.5 text-center text-2xl tracking-[0.5em] border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition" />
                     </div>
@@ -129,12 +136,16 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1" for="email-input">Email</label>
                         <input type="email" id="email-input" autocomplete="username" inputmode="email"
+                            maxlength="254" autocapitalize="none" autocorrect="off" spellcheck="false"
                             class="w-full px-3 py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition" />
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1" for="password-input">Password</label>
-                        <input type="password" id="password-input" autocomplete="current-password"
-                            class="w-full px-3 py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition" />
+                        <div class="relative">
+                            <input type="password" id="password-input" autocomplete="current-password" maxlength="4096"
+                                class="w-full pl-3 pr-11 py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition" />
+                            @include('auth._password-toggle', ['target' => 'password-input'])
+                        </div>
                     </div>
                     <div id="email-error" role="alert" aria-live="assertive" class="hidden"></div>
                     <button type="submit" id="email-signin-btn"
@@ -152,6 +163,7 @@
                 <p class="text-gray-500 text-sm mb-6">Enter your email and we will send you a reset link.</p>
                 <div class="space-y-4">
                     <input type="email" id="forgot-input" autocomplete="email" inputmode="email" placeholder="you@example.com"
+                        maxlength="254" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="Email address"
                         class="w-full px-3 py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition" />
                     <p id="forgot-msg" class="text-sm hidden"></p>
                     <button type="button" id="forgot-btn" onclick="sendReset()"
@@ -171,14 +183,20 @@
                     <input type="email" id="setpw-user" autocomplete="username" class="hidden" tabindex="-1" aria-hidden="true" />
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1" for="setpw-1">New password</label>
-                        <input type="password" id="setpw-1" autocomplete="new-password"
-                            class="w-full px-3 py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition" />
-                        <p class="text-xs text-gray-400 mt-1">At least 8 characters, with a letter and a number.</p>
+                        <div class="relative">
+                            <input type="password" id="setpw-1" autocomplete="new-password" maxlength="128"
+                                class="w-full pl-3 pr-11 py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition" />
+                            @include('auth._password-toggle', ['target' => 'setpw-1'])
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">8 to 128 characters, with a letter and a number.</p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1" for="setpw-2">Confirm password</label>
-                        <input type="password" id="setpw-2" autocomplete="new-password"
-                            class="w-full px-3 py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition" />
+                        <div class="relative">
+                            <input type="password" id="setpw-2" autocomplete="new-password" maxlength="128"
+                                class="w-full pl-3 pr-11 py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition" />
+                            @include('auth._password-toggle', ['target' => 'setpw-2'])
+                        </div>
                     </div>
                     <div id="setpw-error" role="alert" aria-live="assertive" class="hidden"></div>
                     <button type="submit" id="setpw-btn"
@@ -207,8 +225,14 @@
             appId: "{{ config('services.firebase.app_id') }}",
         };
 
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
+        // If the Firebase scripts were blocked (ad-blocker, VPN, offline) `firebase` does not exist. Do not let that
+        // kill the whole page: the tabs and the field checks still work, and the user is told what is wrong.
+        const FIREBASE_DOWN_MSG = 'Sign-in could not load. Check your internet connection, turn off any ad-blocker or VPN for this site, then reload the page.';
+        let auth = null;
+        if (typeof firebase !== 'undefined') {
+            firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+        }
 
         // ---- Phone sign-in via ShaloTrack API (Text.lk SMS) ----
         // The API sends the SMS and, on a correct code, returns a Firebase CUSTOM token. We exchange it with
@@ -218,14 +242,145 @@
         const API_BASE = @json(rtrim((string) config('shalotrack.api_base_url'), '/'));
         let otpPhone = null; // E.164 number the current code was sent to
 
-        // ---- Normalise Sri Lankan phone number to E.164 ----
-        // The +94 prefix is shown beside the box, so the user types only the national number.
+        // ---- Input rules (browser side) ----
+        // These only make mistakes easy to see and fix. The API and Firebase check everything again.
+
+        // Phone: the +94 prefix is shown beside the box, so the user types only the national number.
         // All of these give the same result: 712345678 · 0712345678 · 94712345678 · +94 (0)71 234 5678
-        function normalisePhone(raw) {
-            let d = raw.replace(/\D/g, '');
-            if (d.startsWith('94')) d = d.slice(2); // pasted with country code
+        // Anything that is not a digit (letters, symbols, emoji) is dropped as it is typed or pasted.
+        function phoneStrip(raw) { // digits without the country code / trunk 0 (not yet length-capped)
+            let d = String(raw || '').normalize('NFKC').replace(/\D/g, ''); // NFKC turns full-width digits into 0-9
+            if (d.startsWith('0094')) d = d.slice(4);
+            else if (d.startsWith('94') && d.length > 9) d = d.slice(2); // pasted with country code
             if (d.startsWith('0')) d = d.slice(1); // local trunk "0" is dropped in E.164
+            return d;
+        }
+
+        function phoneDigits(raw) {
+            return phoneStrip(raw).slice(0, 9);
+        }
+
+        function formatPhone(d) { // 71 234 5678
+            return [d.slice(0, 2), d.slice(2, 5), d.slice(5, 9)].filter(Boolean).join(' ');
+        }
+
+        function normalisePhone(raw) {
+            const d = phoneDigits(raw);
             return /^7\d{8}$/.test(d) ? `+94${d}` : null; // Sri Lankan mobiles: 7X XXX XXXX
+        }
+
+        function phoneProblem(raw) {
+            const d = phoneDigits(raw);
+            if (!d) return 'Enter your mobile number.';
+            if (d[0] !== '7') return 'Sri Lankan mobile numbers start with 7 (for example 71 234 5678).';
+            if (d.length < 9) return 'A mobile number has 9 digits after +94 (for example 71 234 5678).';
+            return '';
+        }
+
+        // Email: practical format check, no spaces, one @, sensible lengths, no ".." or edge dots.
+        const EMAIL_RE = /^[A-Za-z0-9!#$%&'*+\/=?^_`{|}~.-]+@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$/;
+
+        function cleanEmail(raw) {
+            return String(raw || '').normalize('NFKC').replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+        }
+
+        function emailProblem(email) {
+            if (!email) return 'Enter your email address.';
+            const local = email.split('@')[0];
+            if (email.length > 254 || local.length > 64 || !EMAIL_RE.test(email) ||
+                email.includes('..') || local.startsWith('.') || local.endsWith('.')) {
+                return 'Enter a valid email address, like name@example.com.';
+            }
+            return '';
+        }
+
+        // New password (account creation): 8-128 characters, a letter and a number, not the email, not a top guess.
+        // Sign-in only needs "not empty": older passwords must keep working.
+        const COMMON_PASSWORDS = ['password', 'password1', 'passw0rd', '12345678', '123456789', '1234567890',
+            'qwerty123', 'qwertyuiop', 'abc12345', 'iloveyou1', 'welcome1', 'admin123', 'letmein1', 'shalotrack1'];
+
+        function passwordProblem(pw, email) {
+            if (pw.length < 8) return 'Use at least 8 characters.';
+            if (pw.length > 128) return 'Use 128 characters or fewer.';
+            if (!/[A-Za-z]/.test(pw) || !/\d/.test(pw)) return 'Include at least one letter and one number.';
+            const lower = pw.toLowerCase();
+            if (COMMON_PASSWORDS.includes(lower)) return 'That password is too common. Choose something harder to guess.';
+            const e = String(email || '').toLowerCase();
+            const local = e.split('@')[0];
+            if (e && (lower === e || (local.length >= 4 && lower === local))) return "Your password can't be your email address.";
+            return '';
+        }
+
+        // Red border + aria-invalid on a field that failed its check (and back to normal when it is fixed).
+        function markInvalid(el, bad) {
+            if (!el) return;
+            el.classList.toggle('border-gray-300', !bad);
+            el.classList.toggle('border-red-500', bad);
+            if (bad) el.setAttribute('aria-invalid', 'true');
+            else el.removeAttribute('aria-invalid');
+        }
+
+        function clearInvalid(ids) {
+            ids.forEach(id => markInvalid(document.getElementById(id), false));
+        }
+
+        // Show a message under a form, mark the field, and put the cursor there.
+        function failField(errId, fieldId, msg) {
+            showError(errId, msg);
+            const el = document.getElementById(fieldId);
+            markInvalid(el, true);
+            if (el) el.focus();
+        }
+
+        // Keep only digits in a box (used for the SMS code); `max` limits the length.
+        function digitsOnly(el, max) {
+            const clean = el.value.normalize('NFKC').replace(/\D/g, '').slice(0, max);
+            if (el.value !== clean) el.value = clean;
+        }
+
+        // Phone box: drop non-digits and a pasted +94 / leading 0, show "71 234 5678", keep the cursor in place.
+        function formatPhoneBox(el) {
+            const caret = el.selectionStart == null ? el.value.length : el.selectionStart;
+            const digitsBeforeCaret = el.value.slice(0, caret).normalize('NFKC').replace(/\D/g, '').length;
+            const rawTotal = el.value.normalize('NFKC').replace(/\D/g, '').length;
+            const stripped = phoneStrip(el.value);
+            const d = stripped.slice(0, 9);
+            const next = formatPhone(d);
+            if (el.value === next) return;
+            const prefixRemoved = rawTotal - stripped.length; // digits dropped from the front (country code / 0)
+            const keep = Math.max(0, Math.min(d.length, digitsBeforeCaret - prefixRemoved));
+            let pos = 0;
+            for (let seen = 0; pos < next.length && seen < keep; pos++) if (/\d/.test(next[pos])) seen++;
+            el.value = next;
+            try { el.setSelectionRange(pos, pos); } catch (e) { /* not supported for this input type */ }
+        }
+
+        // Eye button inside a password field: switch between dots and plain text.
+        function togglePassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const show = input.type === 'password';
+            const start = input.selectionStart, end = input.selectionEnd;
+            input.type = show ? 'text' : 'password';
+            setEye(btn, show);
+            input.focus();
+            try { input.setSelectionRange(start, end); } catch (e) { /* not supported while hidden on some browsers */ }
+        }
+
+        function setEye(btn, visible) {
+            btn.querySelector('[data-eye="on"]').classList.toggle('hidden', visible);
+            btn.querySelector('[data-eye="off"]').classList.toggle('hidden', !visible);
+            btn.setAttribute('aria-pressed', visible ? 'true' : 'false');
+            btn.setAttribute('aria-label', visible ? 'Hide password' : 'Show password');
+        }
+
+        // Passwords never stay on screen when the user moves to another step.
+        function maskAllPasswords() {
+            ['password-input', 'setpw-1', 'setpw-2'].forEach(id => {
+                const input = document.getElementById(id);
+                if (input.type !== 'password') input.type = 'password';
+                const btn = input.parentElement.querySelector('button[aria-controls]');
+                if (btn) setEye(btn, false);
+            });
         }
 
         // ---- Error cards ----
@@ -403,13 +558,17 @@
 
         // ---- Step 1: Send OTP ----
         async function sendOtp() {
-            if (cooldownUntil > Date.now()) return;
+            const sendBtn = document.getElementById('send-otp-btn');
+            if (sendBtn.disabled || cooldownUntil > Date.now()) return; // already sending, or waiting out the cooldown
             hideError('phone-error');
+            clearInvalid(['phone-field', 'phone-input']);
             const raw = document.getElementById('phone-input').value.trim();
             const e164 = normalisePhone(raw);
 
             if (!e164) {
-                showError('phone-error', 'Enter a valid Sri Lankan mobile number (e.g. 71 234 5678).');
+                showError('phone-error', phoneProblem(raw));
+                markInvalid(document.getElementById('phone-field'), true);
+                document.getElementById('phone-input').focus();
                 return;
             }
 
@@ -422,7 +581,7 @@
                 otpPhone = e164;
                 startCooldown(60); // a code is on its way: no second one for a minute
                 showPanel('step-otp');
-                document.getElementById('otp-subtitle').textContent = `We sent a 6-digit code to ${raw}.`;
+                document.getElementById('otp-subtitle').textContent = `We sent a 6-digit code to +94 ${formatPhone(phoneDigits(raw))}.`;
                 document.getElementById('otp-input').focus();
                 return;
             }
@@ -438,11 +597,18 @@
 
         // ---- Step 2: Verify OTP ----
         async function verifyOtp() {
+            const verifyBtn = document.getElementById('verify-otp-btn');
+            if (verifyBtn.disabled) return; // a check is already running
             hideError('otp-error');
+            clearInvalid(['otp-input']);
             const code = document.getElementById('otp-input').value.trim();
 
             if (!/^\d{6}$/.test(code)) {
-                showError('otp-error', 'Enter the 6-digit code sent to your phone.');
+                failField('otp-error', 'otp-input', code ? 'The code has 6 digits. Check the SMS and try again.' : 'Enter the 6-digit code sent to your phone.');
+                return;
+            }
+            if (!auth) {
+                showError('otp-error', FIREBASE_DOWN_MSG, { ref: 'firebase-blocked' });
                 return;
             }
             if (!otpPhone) {
@@ -568,6 +734,7 @@
         const PANELS = ['step-phone', 'step-otp', 'step-email', 'step-forgot', 'step-setpw'];
 
         function showPanel(id) {
+            maskAllPasswords();
             PANELS.forEach(p => document.getElementById(p).classList.toggle('hidden', p !== id));
             document.getElementById('login-tabs').classList.toggle('hidden', id === 'step-setpw' || id === 'step-otp');
         }
@@ -603,15 +770,31 @@
         });
 
         // ---- Email + password sign-in ----
+        let emailBusy = false;
         async function emailSignIn(ev) {
             if (ev) ev.preventDefault();
+            if (emailBusy) return false; // Enter pressed twice / double click
             hideError('email-error');
-            const email = document.getElementById('email-input').value.trim();
+            clearInvalid(['email-input', 'password-input']);
+            const emailEl = document.getElementById('email-input');
+            const email = cleanEmail(emailEl.value);
             const password = document.getElementById('password-input').value;
-            if (!/^\S+@\S+\.\S+$/.test(email) || !password) {
-                showError('email-error', 'Enter your email and password.');
+            if (emailEl.value !== email) emailEl.value = email;
+
+            const bad = emailProblem(email);
+            if (bad) {
+                failField('email-error', 'email-input', bad);
                 return false;
             }
+            if (!password) {
+                failField('email-error', 'password-input', 'Enter your password.');
+                return false;
+            }
+            if (!auth) {
+                showError('email-error', FIREBASE_DOWN_MSG, { ref: 'firebase-blocked' });
+                return false;
+            }
+            emailBusy = true;
             setLoading('email-signin-btn', true, 'Sign In');
             try {
                 const cred = await auth.signInWithEmailAndPassword(email, password);
@@ -631,6 +814,7 @@
                     kind: (err && err.code === 'auth/too-many-requests') ? 'warn' : 'error'
                 });
             } finally {
+                emailBusy = false;
                 setLoading('email-signin-btn', false, 'Sign In');
             }
             return false;
@@ -664,13 +848,29 @@
         let resetCooldownUntil = 0;
         async function sendReset() {
             const msg = document.getElementById('forgot-msg');
-            const email = document.getElementById('forgot-input').value.trim();
-            if (!/^\S+@\S+\.\S+$/.test(email)) {
-                msg.textContent = 'Enter a valid email address.';
+            const forgotEl = document.getElementById('forgot-input');
+            if (document.getElementById('forgot-btn').disabled) return; // already sending
+            const email = cleanEmail(forgotEl.value);
+            if (forgotEl.value !== email) forgotEl.value = email;
+            clearInvalid(['forgot-input']);
+            const bad = emailProblem(email);
+            if (bad) {
+                msg.textContent = bad;
+                msg.className = 'text-sm text-red-600';
+                markInvalid(forgotEl, true);
+                forgotEl.focus();
+                return;
+            }
+            if (!auth) {
+                msg.textContent = FIREBASE_DOWN_MSG;
                 msg.className = 'text-sm text-red-600';
                 return;
             }
-            if (Date.now() < resetCooldownUntil) return;
+            if (Date.now() < resetCooldownUntil) {
+                msg.textContent = 'A reset link was just sent. Please wait a minute before asking again.';
+                msg.className = 'text-sm text-amber-600';
+                return;
+            }
             setLoading('forgot-btn', true, 'Send reset link');
             try {
                 await auth.sendPasswordResetEmail(email, {
@@ -721,30 +921,29 @@
             window.location.href = pendingRedirect;
         }
 
-        function passwordProblem(pw) {
-            if (pw.length < 8) return 'Use at least 8 characters.';
-            if (!/[A-Za-z]/.test(pw) || !/\d/.test(pw)) return 'Include at least one letter and one number.';
-            return '';
-        }
+        let setpwBusy = false;
         async function savePassword(ev) {
             if (ev) ev.preventDefault();
+            if (setpwBusy) return false;
             hideError('setpw-error');
-            const user = auth.currentUser;
+            clearInvalid(['setpw-1', 'setpw-2']);
+            const user = auth && auth.currentUser;
             const a = document.getElementById('setpw-1').value,
                 b = document.getElementById('setpw-2').value;
-            const bad = passwordProblem(a);
+            const bad = passwordProblem(a, document.getElementById('setpw-user').value);
             if (bad) {
-                showError('setpw-error', bad);
+                failField('setpw-error', 'setpw-1', bad);
                 return false;
             }
             if (a !== b) {
-                showError('setpw-error', 'The two passwords do not match.');
+                failField('setpw-error', 'setpw-2', 'The two passwords do not match.');
                 return false;
             }
             if (!user) {
                 window.location.href = pendingRedirect;
                 return false;
             }
+            setpwBusy = true;
             setLoading('setpw-btn', true, 'Save password');
             try {
                 try {
@@ -763,6 +962,8 @@
                     'For your security, please sign in with a phone code again, then set your password.' :
                     'We could not save your password. You can try again later from the sign-in page. (ref: ' + ((err && err.code) || 'unknown') + ')');
                 setLoading('setpw-btn', false, 'Save password');
+            } finally {
+                setpwBusy = false;
             }
             return false;
         }
@@ -793,6 +994,65 @@
                 default:
                     return 'Something went wrong. Please try again.';
             }
+        }
+
+        // ---- Wire the fields (kept here, not inline, so the markup stays plain) ----
+        (function wireInputs() {
+            const $ = id => document.getElementById(id);
+            const onEnter = (id, fn) => $(id).addEventListener('keydown', e => {
+                if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); fn(); }
+            });
+
+            // Phone: digits only, shown as 71 234 5678; an error clears as soon as the user edits.
+            $('phone-input').addEventListener('input', e => {
+                if (!e.isComposing) formatPhoneBox(e.target);
+                hideError('phone-error');
+                clearInvalid(['phone-field', 'phone-input']);
+            });
+            $('phone-input').addEventListener('blur', e => {
+                const v = e.target.value.trim();
+                if (v && phoneProblem(v)) {
+                    showError('phone-error', phoneProblem(v));
+                    markInvalid($('phone-field'), true);
+                }
+            });
+            onEnter('phone-input', sendOtp);
+
+            // SMS code: digits only (typed, pasted or auto-filled).
+            $('otp-input').addEventListener('input', e => {
+                if (!e.isComposing) digitsOnly(e.target, 6);
+                hideError('otp-error');
+                clearInvalid(['otp-input']);
+            });
+            onEnter('otp-input', verifyOtp);
+
+            // Email + password: stray spaces are removed from the email; errors clear on edit.
+            $('email-input').addEventListener('input', () => { hideError('email-error'); clearInvalid(['email-input']); });
+            $('email-input').addEventListener('blur', e => {
+                const v = cleanEmail(e.target.value);
+                if (e.target.value !== v) e.target.value = v;
+                if (v && emailProblem(v)) failFieldQuiet('email-error', 'email-input', emailProblem(v));
+            });
+            $('password-input').addEventListener('input', () => { hideError('email-error'); clearInvalid(['password-input']); });
+
+            // Forgot password
+            $('forgot-input').addEventListener('input', () => { $('forgot-msg').className = 'text-sm hidden'; clearInvalid(['forgot-input']); });
+            onEnter('forgot-input', sendReset);
+
+            // New password
+            $('setpw-1').addEventListener('input', () => { hideError('setpw-error'); clearInvalid(['setpw-1']); });
+            $('setpw-2').addEventListener('input', () => { hideError('setpw-error'); clearInvalid(['setpw-2']); });
+
+            if (!auth) {
+                showError('boot-error', FIREBASE_DOWN_MSG, { kind: 'warn', ref: 'firebase-blocked' });
+                $('boot-error').classList.add('mb-6');
+            }
+        })();
+
+        // Same as failField but without stealing the cursor (used when a field is left, not when the form is sent).
+        function failFieldQuiet(errId, fieldId, msg) {
+            showError(errId, msg);
+            markInvalid(document.getElementById(fieldId), true);
         }
     </script>
 
