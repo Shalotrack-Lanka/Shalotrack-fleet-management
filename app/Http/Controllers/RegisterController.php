@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\Address;
 use App\Support\PersonName;
 use App\Services\ShalotrackApiService;
 use App\Support\EmailDomainCheck;
@@ -75,6 +76,9 @@ class RegisterController extends Controller
         $request->merge(['nicNumber' => strtoupper(preg_replace('/\s+/', '', (string) $request->input('nicNumber', '')))]);
 
         $request->merge(['fullName' => is_string($request->input('fullName')) ? PersonName::clean($request->input('fullName')) : $request->input('fullName')]);
+        if (is_string($request->input('address'))) {
+            $request->merge(['address' => Address::clean($request->input('address'))]);
+        }
 
         $validated = $request->validate([
             'fullName'  => ['required', 'string', 'max:150', 'regex:' . PersonName::REGEX],
@@ -87,9 +91,10 @@ class RegisterController extends Controller
             }],
             // Sri Lankan NIC: 9 digits + V/X (old) or 12 digits (new). Same rule as the API's CreateCustomerDto.
             'nicNumber' => ['required', 'string', 'max:20', 'regex:/^([0-9]{9}[VX]|[0-9]{12})$/'],
-            'address'   => 'nullable|string|max:300',
+            'address'   => ['nullable', 'string', 'max:300', 'regex:' . Address::REGEX],
         ], [
             'fullName.regex'  => PersonName::MESSAGE,
+            'address.regex'   => Address::MESSAGE,
             'nicNumber.regex' => 'Enter a valid NIC number, for example 861234567V or 198612345678.',
         ]);
 

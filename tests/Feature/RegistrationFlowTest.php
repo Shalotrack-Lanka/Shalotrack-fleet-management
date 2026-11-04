@@ -91,6 +91,32 @@ class RegistrationFlowTest extends TestCase
         ])->assertRedirect('/register/password')->assertSessionHas('pending_profile.fullName', 'නුවන් අකලංක');
     }
 
+    public static function badRegistrationAddresses(): array
+    {
+        return [['No. 5, Main Street'], ['5-A Main Street'], ['Main @ Street'], ['<b>Colombo</b>'], ['12345'], ['Colombo 😀']];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('badRegistrationAddresses')]
+    public function test_registration_refuses_an_address_with_other_characters(string $address): void
+    {
+        Http::fake();
+
+        $this->signedIn()->post('/register', [
+            'fullName' => 'Charith Silva', 'email' => 'charith@example.com', 'nicNumber' => '198648697512', 'address' => $address,
+        ])->assertSessionHasErrors('address')->assertSessionMissing('pending_profile');
+
+        Http::assertNothingSent();
+    }
+
+    public function test_registration_accepts_and_tidies_a_normal_address(): void
+    {
+        Http::fake();
+
+        $this->signedIn()->post('/register', [
+            'fullName' => 'Charith Silva', 'email' => 'charith@example.com', 'nicNumber' => '198648697512', 'address' => "123/A,\n Main Street,  Colombo 07",
+        ])->assertRedirect('/register/password')->assertSessionHas('pending_profile.address', '123/A, Main Street, Colombo 07');
+    }
+
     public function test_password_page_without_details_goes_back_to_the_form(): void
     {
         $this->signedIn()->get('/register/password')->assertRedirect('/register');
