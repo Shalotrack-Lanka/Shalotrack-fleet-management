@@ -145,7 +145,7 @@ $completeness = (int) round(($filled / count($fields)) * 100);
                     </div>
                     {{-- Edit mode --}}
                     <div id="edit-fullName" class="hidden">
-                        <input type="text" id="input-fullName"
+                        <input type="text" id="input-fullName" maxlength="150" autocomplete="name" data-person-name
                             value="{{ e($p['fullName'] ?? '') }}"
                             class="w-full px-3 py-1.5 border border-[#FA6908] rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#FA6908]/30 font-semibold" />
                         <p id="err-fullName" class="text-red-500 text-xs mt-1 hidden"></p>
@@ -465,6 +465,30 @@ $completeness = (int) round(($filled / count($fields)) * 100);
         }, 3000);
     }
 
+    // ── Full name: letters (any language), spaces, . ' - only. The server checks the same rules. ──
+    const NAME_BAD = /[^\p{L}\p{M}‍ .'’\-]/gu;
+    function personNameProblem(v) {
+        const n = String(v || '').normalize('NFC').replace(/\s+/g, ' ').trim();
+        if (!n) return 'Name cannot be empty.';
+        if (n.length > 150) return 'Name is too long (150 characters at most).';
+        if (/\p{N}/u.test(n)) return 'Names cannot contain numbers.';
+        if (NAME_BAD.test(n)) { NAME_BAD.lastIndex = 0; return "Use letters only (spaces, . ' and - are fine)."; }
+        NAME_BAD.lastIndex = 0;
+        if (!/^\p{L}/u.test(n)) return 'A name must start with a letter.';
+        if ((n.match(/\p{L}/gu) || []).length < 2) return 'Enter your full name (at least 2 letters).';
+        return '';
+    }
+    document.addEventListener('input', (e) => {
+        const el = e.target;
+        if (!el || !el.matches || !el.matches('[data-person-name]') || e.isComposing) return;
+        const clean = el.value.replace(NAME_BAD, '');
+        if (clean !== el.value) {
+            const pos = el.selectionStart - (el.value.length - clean.length);
+            el.value = clean;
+            try { el.setSelectionRange(Math.max(0, pos), Math.max(0, pos)); } catch { /* not supported */ }
+        }
+    });
+
     // ── Inline edit helpers ──────────────────────────────────────────────────
     function startEdit(field) {
         origVal[field] = document.getElementById(`input-${field}`).value;
@@ -520,9 +544,9 @@ $completeness = (int) round(($filled / count($fields)) * 100);
         const val = input?.value.trim() ?? '';
 
         // Validation
-        if (field === 'fullName' && !val) {
-            showFieldErr(field, 'Name cannot be empty.');
-            return;
+        if (field === 'fullName') {
+            const nameErr = personNameProblem(val);
+            if (nameErr) { showFieldErr(field, nameErr); return; }
         }
 
         // Build payload with the current values of the editable fields (the phone number has its own verified flow)

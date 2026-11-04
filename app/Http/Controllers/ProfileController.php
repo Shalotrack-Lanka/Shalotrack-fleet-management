@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Support\ApiErrors;
+use App\Support\PersonName;
 use App\Support\SriLankanPhone;
 use App\Services\ShalotrackApiService;
 use Illuminate\Http\Request;
@@ -36,10 +37,12 @@ class ProfileController extends Controller
 
     public function update(Request $request)
     {
+        $request->merge(['fullName' => is_string($request->input('fullName')) ? PersonName::clean($request->input('fullName')) : $request->input('fullName')]);
+
         $validated = $request->validate([
-            'fullName'    => 'required|string|max:150',
+            'fullName'    => ['required', 'string', 'max:150', 'regex:' . PersonName::REGEX],
             'address'     => 'nullable|string|max:300',
-        ]);
+        ], ['fullName.regex' => PersonName::MESSAGE]);
         // The phone number is the sign-in identity, so it is NOT editable here: it changes only through the
         // verified flow below (code to the new number). Anything the browser sends as phoneNumber is ignored.
 
