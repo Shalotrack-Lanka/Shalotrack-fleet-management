@@ -31,6 +31,15 @@ jobs:
             exit 1
           fi
 
+      # PHP 8.3 first, so the syntax check and the tests both run on the version production runs.
+      - name: Set up PHP 8.3 (same as production)
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, intl, gd, zip, bcmath, xml, curl, fileinfo
+          coverage: none          # no Xdebug: the tests need no coverage and run faster without it
+          tools: composer:v2
+
       # 2. Every PHP file parses (catches a bad merge before the image is built).
       - name: Gate - PHP syntax
         run: |
@@ -39,8 +48,8 @@ jobs:
       # 3. Automated tests (phpunit). Fleet has no database and every test fakes the C# API, so this
       #    needs no secrets and touches nothing real. It runs BEFORE the AWS credentials are configured,
       #    so a failing test stops the pipeline before anything is built or pushed.
-      #    Uses the PHP that ships on ubuntu-latest; the check below fails loudly if that ever drifts
-      #    away from the 8.3 that production runs.
+      #    PHP is pinned to 8.3 by the 'Set up PHP 8.3' step above (ubuntu-latest's own PHP moves on its own:
+      #    it became 8.5 in Oct 2026). The check below stays as a safety net: if the pin ever breaks, stop here.
       - name: Gate - runner PHP is 8.3 like production
         run: |
           php -v
