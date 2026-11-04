@@ -41,7 +41,7 @@ class SupportClassesTest extends TestCase
         $this->assertSame('Online', $this->item($h, 'connection')['value']);
         $this->assertSame('80%', $this->item($h, 'battery')['value']);
         $this->assertSame('On', $this->item($h, 'ignition')['value']);
-        $this->assertSame('Stopped', $this->item($h, 'movement')['value']);
+        $this->assertNull(collect($h['items'])->firstWhere('key', 'movement'));   // no speed from the tracker: no claim
         $this->assertSame('2 min ago', $h['lastContactAgo']);
     }
 
@@ -56,7 +56,7 @@ class SupportClassesTest extends TestCase
     public static function batteryLevels(): array
     {
         return [[100, 'ok', 'All systems normal'], [21, 'ok', 'All systems normal'], [20, 'warn', 'Tracker battery is low'], [11, 'warn', 'Tracker battery is low'],
-            [10, 'bad', 'Tracker battery is critically low'], [0, 'bad', 'Tracker battery is critically low']];
+            [10, 'bad', 'Tracker battery is critically low'], [1, 'bad', 'Tracker battery is critically low']];
     }
 
     #[DataProvider('batteryLevels')]
@@ -67,10 +67,23 @@ class SupportClassesTest extends TestCase
         $this->assertSame([$level, $headline], [$h['level'], $h['headline']]);
     }
 
-    public function test_a_battery_reading_outside_0_to_100_is_clamped_for_display(): void
+    public function test_a_battery_reading_above_100_is_clamped_for_display(): void
     {
         $this->assertSame('100%', $this->item(DeviceHealth::summarize($this->rec(['batteryLevel' => 250]), $this->now()), 'battery')['value']);
-        $this->assertSame('0%', $this->item(DeviceHealth::summarize($this->rec(['batteryLevel' => -5]), $this->now()), 'battery')['value']);
+    }
+
+    public static function notReportedBatteries(): array
+    {
+        return [[0], [-5]];
+    }
+
+    #[DataProvider('notReportedBatteries')]
+    public function test_a_zero_battery_means_not_reported_so_no_row_and_no_warning(int $v): void
+    {
+        $h = DeviceHealth::summarize($this->rec(['batteryLevel' => $v]), $this->now());
+
+        $this->assertNull(collect($h['items'])->firstWhere('key', 'battery'));
+        $this->assertSame(['ok', 'All systems normal'], [$h['level'], $h['headline']]);
     }
 
     public function test_no_battery_reading_means_no_battery_row(): void
@@ -97,12 +110,20 @@ class SupportClassesTest extends TestCase
         }
     }
 
-    public function test_no_gps_fix_is_a_warning_and_a_fix_is_good(): void
+    public function test_mobile_signal_none_and_weak_warn_and_a_good_signal_is_fine(): void
     {
         $none = DeviceHealth::summarize($this->rec(['gpsSignal' => 0]), $this->now());
-        $this->assertSame(['warn', 'Waiting for a GPS fix', 'No fix'], [$none['level'], $none['headline'], $this->item($none, 'gps')['value']]);
+        $this->assertSame(['warn', 'No mobile signal', 'No signal'], [$none['level'], $none['headline'], $this->item($none, 'signal')['value']]);
+        $this->assertSame('Mobile signal', $this->item($none, 'signal')['label']);
 
-        $this->assertSame('Good', $this->item(DeviceHealth::summarize($this->rec(['gpsSignal' => 1]), $this->now()), 'gps')['value']);
+        foreach ([1, 2] as $weak) {
+            $w = DeviceHealth::summarize($this->rec(['gpsSignal' => $weak]), $this->now());
+            $this->assertSame(['warn', 'Weak mobile signal', 'Weak'], [$w['level'], $w['headline'], $this->item($w, 'signal')['value']]);
+        }
+        foreach ([3, 4, 5] as $good) {
+            $g = DeviceHealth::summarize($this->rec(['gpsSignal' => $good]), $this->now());
+            $this->assertSame(['ok', 'Good'], [$g['level'], $this->item($g, 'signal')['value']]);
+        }
     }
 
     public function test_offline_beats_every_other_problem(): void
