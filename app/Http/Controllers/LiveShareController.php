@@ -46,7 +46,10 @@ class LiveShareController extends Controller
             }
 
             $link        = $this->shape($data);
-            $link['url'] = $request->getSchemeAndHttpHost() . '/live/' . $token;
+            // url() applies the production https rule. getSchemeAndHttpHost() does not: behind Cloudflare the
+            // request reaches PHP as plain http, so the link used to be handed out as http://... and the token
+            // travelled in clear text on the first visit.
+            $link['url'] = url('/live/' . $token);
 
             return $this->json(['success' => true, 'link' => $link], 201);
         } catch (\Exception $e) {
