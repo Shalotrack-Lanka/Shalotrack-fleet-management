@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\Address;
 use App\Support\ApiErrors;
 use App\Support\PersonName;
 use App\Support\SriLankanPhone;
@@ -37,12 +38,22 @@ class ProfileController extends Controller
 
     public function update(Request $request)
     {
-        $request->merge(['fullName' => is_string($request->input('fullName')) ? PersonName::clean($request->input('fullName')) : $request->input('fullName')]);
+        // The page sends only the field being edited, so an old value that would not pass today's rules
+        // (a name saved with digits years ago) cannot block editing a different field.
+        foreach (['fullName' => PersonName::class, 'address' => Address::class] as $field => $cleaner) {
+            if (is_string($request->input($field))) {
+                $request->merge([$field => $cleaner::clean($request->input($field))]);
+            }
+        }
+
+        if (!$request->exists('fullName') && !$request->exists('address')) {
+            return response()->json(['success' => false, 'message' => 'Nothing to update.'], 422);
+        }
 
         $validated = $request->validate([
-            'fullName'    => ['required', 'string', 'max:150', 'regex:' . PersonName::REGEX],
-            'address'     => 'nullable|string|max:300',
-        ], ['fullName.regex' => PersonName::MESSAGE]);
+            'fullName'    => ['sometimes', 'required', 'string', 'max:150', 'regex:' . PersonName::REGEX],
+            'address'     => ['sometimes', 'nullable', 'string', 'max:300', 'regex:' . Address::REGEX],
+        ], ['fullName.regex' => PersonName::MESSAGE, 'address.regex' => Address::MESSAGE]);
         // The phone number is the sign-in identity, so it is NOT editable here: it changes only through the
         // verified flow below (code to the new number). Anything the browser sends as phoneNumber is ignored.
 
@@ -55,14 +66,16 @@ class ProfileController extends Controller
             }
 
             $response = $this->api->updateProfile($customerId, [
-                'FullName'    => $validated['fullName'],
+                'FullName'    => $validated['fullName'] ?? ($profile['data']['fullName'] ?? ''),          // untouched field = the saved one
                 'PhoneNumber' => $profile['data']['phoneNumber'] ?? null,   // always the saved one, never the browser's
-                'Address'     => $validated['address'] ?? null,
+                'Address'     => array_key_exists('address', $validated) ? $validated['address'] : ($profile['data']['address'] ?? null),
             ]);
 
             // Keep the session in sync so the header name stays correct on
             // subsequent page navigations without requiring a fresh login.
-            Session::put('customer_name', $validated['fullName']);
+            if (isset($validated['fullName'])) {
+                Session::put('customer_name', $validated['fullName']);
+            }
 
             return response()->json([
                 'success' => true,

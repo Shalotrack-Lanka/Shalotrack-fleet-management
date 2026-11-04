@@ -95,7 +95,8 @@ class ProfileTest extends TestCase
         $this->asCustomer()->putJson('/profile', ['fullName' => 'New Name'])->assertOk();
 
         $this->assertSame('New Name', session('customer_name'));
-        $this->assertSame(['FullName' => 'New Name', 'PhoneNumber' => '0771234567', 'Address' => null], $this->sentTo('PUT', '/api/Customers/' . self::UUID)->data());
+        // the address was not touched, so the saved one is kept (it used to be wiped to null)
+        $this->assertSame(['FullName' => 'New Name', 'PhoneNumber' => '0771234567', 'Address' => 'Colombo'], $this->sentTo('PUT', '/api/Customers/' . self::UUID)->data());
     }
 
     public static function goodNames(): array
@@ -131,6 +132,62 @@ class ProfileTest extends TestCase
         $this->assertStringContainsString('no numbers', $res->json('errors.fullName.0'));
     }
 
+    public static function goodAddresses(): array
+    {
+        return [['123/A, Main Street, Colombo 07'], ['No 12 Galle Road Kandy'], ['දන්කොටුව, කොළඹ'], ['கொழும்பு, 12/3'], ['Dankotuwa']];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('goodAddresses')]
+    public function test_addresses_with_letters_numbers_commas_and_slashes_are_accepted(string $address): void
+    {
+        $this->fakeApi(['Customers/me' => $this->ok($this->profile()), 'Customers/*' => $this->ok($this->profile())]);
+
+        $this->asCustomer()->putJson('/profile', ['address' => $address])->assertOk();
+
+        $this->assertSame($address, $this->sentTo('PUT', '/api/Customers/' . self::UUID)->data()['Address']);
+    }
+
+    public function test_line_breaks_in_an_address_become_single_spaces(): void
+    {
+        $this->fakeApi(['Customers/me' => $this->ok($this->profile()), 'Customers/*' => $this->ok($this->profile())]);
+
+        $this->asCustomer()->putJson('/profile', ['address' => "No 5,\n  Main Street,\r\nColombo"])->assertOk();
+
+        $this->assertSame('No 5, Main Street, Colombo', $this->sentTo('PUT', '/api/Customers/' . self::UUID)->data()['Address']);
+    }
+
+    public function test_an_address_can_be_cleared(): void
+    {
+        $this->fakeApi(['Customers/me' => $this->ok($this->profile()), 'Customers/*' => $this->ok($this->profile())]);
+
+        $this->asCustomer()->putJson('/profile', ['address' => ''])->assertOk();
+
+        $this->assertNull($this->sentTo('PUT', '/api/Customers/' . self::UUID)->data()['Address']);
+    }
+
+    public function test_editing_one_field_keeps_the_other_as_saved_even_if_it_would_not_pass_todays_rules(): void
+    {
+        // An old profile: a name with digits and an address with a dot, saved before these rules existed.
+        $old = $this->profile(['fullName' => 'Nuwan 2', 'address' => 'No. 5, Main St']);
+        $this->fakeApi(['Customers/me' => $this->ok($old), 'Customers/*' => $this->ok($old)]);
+
+        $this->asCustomer()->putJson('/profile', ['fullName' => 'Nuwan Akalanka'])->assertOk();
+        $this->assertSame('No. 5, Main St', $this->sentTo('PUT', '/api/Customers/' . self::UUID)->data()['Address']);
+
+        $this->fakeApi(['Customers/me' => $this->ok($old), 'Customers/*' => $this->ok($old)]);
+        $this->asCustomer()->putJson('/profile', ['address' => '5/A, Main Street'])->assertOk();
+        $this->assertSame('Nuwan 2', $this->sentTo('PUT', '/api/Customers/' . self::UUID)->data()['FullName']);
+    }
+
+    public function test_an_update_with_no_editable_field_is_refused(): void
+    {
+        Http::fake();
+
+        $this->asCustomer()->putJson('/profile', ['phoneNumber' => '0779999999'])->assertStatus(422);
+
+        Http::assertNothingSent();
+    }
+
     public function test_a_missing_profile_is_a_clean_404_and_nothing_is_written(): void
     {
         $this->fakeApi(['Customers/me' => $this->ok(['data' => []])]);
@@ -153,6 +210,13 @@ class ProfileTest extends TestCase
             'name one letter'  => [['fullName' => 'A'], 'fullName'],
             'name with emoji'  => [['fullName' => 'Nuwan 😀'], 'fullName'],
             'address too long' => [['address' => str_repeat('a', 301)], 'address'],
+            'address symbols'  => [['address' => 'No 5 @ Main #2'], 'address'],
+            'address dot'      => [['address' => 'No. 5, Main Street'], 'address'],
+            'address hyphen'   => [['address' => '5-A Main Street'], 'address'],
+            'address html'     => [['address' => '<b>Main Street</b>'], 'address'],
+            'address only num' => [['address' => '12345'], 'address'],
+            'address emoji'    => [['address' => 'Colombo 😀'], 'address'],
+            'address semicolon'=> [['address' => 'Colombo; DROP TABLE'], 'address'],
             'address is array' => [['address' => ['x']], 'address'],
         ];
     }

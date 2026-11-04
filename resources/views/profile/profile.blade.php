@@ -251,7 +251,7 @@ $completeness = (int) round(($filled / count($fields)) * 100);
                         <p class="text-sm font-semibold text-gray-800 leading-relaxed" id="text-address">{{ $p['address'] ?? '—' }}</p>
                     </div>
                     <div id="edit-address" class="hidden">
-                        <textarea id="input-address" rows="2"
+                        <textarea id="input-address" rows="2" maxlength="300" autocomplete="street-address" data-address
                             class="w-full px-3 py-1.5 border border-[#FA6908] rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#FA6908]/30 font-semibold resize-none">{{ e($p['address'] ?? '') }}</textarea>
                         <p id="err-address" class="text-red-500 text-xs mt-1 hidden"></p>
                     </div>
@@ -489,6 +489,28 @@ $completeness = (int) round(($filled / count($fields)) * 100);
         }
     });
 
+    // ── Address: letters (any language), numbers, spaces, comma and slash only. The server checks the same. ──
+    const ADDR_BAD = /[^\p{L}\p{M}‍0-9 ,\/]/gu;
+    function addressProblem(v) {
+        const a = String(v || '').normalize('NFC').replace(/\s+/g, ' ').trim();
+        if (!a) return '';                                   // an empty address is allowed (it clears it)
+        if (a.length > 300) return 'Address is too long (300 characters at most).';
+        if (ADDR_BAD.test(a)) { ADDR_BAD.lastIndex = 0; return 'Use letters, numbers, spaces, commas (,) and slashes (/) only.'; }
+        ADDR_BAD.lastIndex = 0;
+        if (!/\p{L}/u.test(a)) return 'An address needs some letters, not only numbers.';
+        return '';
+    }
+    document.addEventListener('input', (e) => {
+        const el = e.target;
+        if (!el || !el.matches || !el.matches('[data-address]') || e.isComposing) return;
+        const clean = el.value.replace(/[\r\n\t]+/g, ' ').replace(ADDR_BAD, '');
+        if (clean !== el.value) {
+            const pos = el.selectionStart - (el.value.length - clean.length);
+            el.value = clean;
+            try { el.setSelectionRange(Math.max(0, pos), Math.max(0, pos)); } catch { /* not supported */ }
+        }
+    });
+
     // ── Inline edit helpers ──────────────────────────────────────────────────
     function startEdit(field) {
         origVal[field] = document.getElementById(`input-${field}`).value;
@@ -548,10 +570,13 @@ $completeness = (int) round(($filled / count($fields)) * 100);
             const nameErr = personNameProblem(val);
             if (nameErr) { showFieldErr(field, nameErr); return; }
         }
+        if (field === 'address') {
+            const addrErr = addressProblem(val);
+            if (addrErr) { showFieldErr(field, addrErr); return; }
+        }
 
-        // Build payload with the current values of the editable fields (the phone number has its own verified flow)
-        const fullName = field === 'fullName' ? val : (document.getElementById('text-fullName')?.textContent.trim() || origVal['fullName'] || '');
-        const address = field === 'address' ? (val || null) : (document.getElementById('text-address')?.textContent.trim() || null);
+        // Send only the field being edited; the server keeps the others as they are saved.
+        const payload = field === 'fullName' ? { fullName: val } : { address: val || null };
 
         // Disable save btn
         const saveBtn = document.getElementById(`save-${field}`);
@@ -569,10 +594,7 @@ $completeness = (int) round(($filled / count($fields)) * 100);
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': CSRF,
                 },
-                body: JSON.stringify({
-                    fullName,
-                    address
-                }),
+                body: JSON.stringify(payload),
             });
 
             if (res.status === 401) {

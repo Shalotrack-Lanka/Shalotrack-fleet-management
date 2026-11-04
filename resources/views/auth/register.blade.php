@@ -88,8 +88,8 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                    <textarea name="address" rows="2"
-                              placeholder="No. 123, Main Street, Colombo"
+                    <textarea name="address" rows="2" maxlength="300" autocomplete="street-address" data-address
+                              placeholder="123/A, Main Street, Colombo"
                               class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-base sm:text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition resize-none">{{ old('address', $pending['address'] ?? '') }}</textarea>
                 </div>
 
@@ -130,6 +130,18 @@
             const el = e.target;
             if (!el || !el.matches || !el.matches('[data-person-name]') || e.isComposing) return;
             const clean = el.value.replace(BAD, '');
+            if (clean !== el.value) {
+                const pos = el.selectionStart - (el.value.length - clean.length);
+                el.value = clean;
+                try { el.setSelectionRange(Math.max(0, pos), Math.max(0, pos)); } catch (err) { /* not supported */ }
+            }
+        });
+        // Address: letters, numbers, spaces, comma and slash only.
+        const ADDR_BAD = /[^\p{L}\p{M}\u200D0-9 ,\/]/gu;
+        document.addEventListener('input', function (e) {
+            const el = e.target;
+            if (!el || !el.matches || !el.matches('[data-address]') || e.isComposing) return;
+            const clean = el.value.replace(/[\r\n\t]+/g, ' ').replace(ADDR_BAD, '');
             if (clean !== el.value) {
                 const pos = el.selectionStart - (el.value.length - clean.length);
                 el.value = clean;
