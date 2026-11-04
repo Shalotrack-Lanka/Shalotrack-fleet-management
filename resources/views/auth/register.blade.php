@@ -136,8 +136,8 @@
                 try { el.setSelectionRange(Math.max(0, pos), Math.max(0, pos)); } catch (err) { /* not supported */ }
             }
         });
-        // Address: letters, numbers, spaces, comma and slash only.
-        const ADDR_BAD = /[^\p{L}\p{M}\u200D0-9 ,\/]/gu;
+        // Address: letters, numbers, spaces, comma, slash, full stop and hyphen only.
+        const ADDR_BAD = /[^\p{L}\p{M}\u200D0-9 ,.\/-]/gu;
         document.addEventListener('input', function (e) {
             const el = e.target;
             if (!el || !el.matches || !el.matches('[data-address]') || e.isComposing) return;

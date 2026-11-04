@@ -55,6 +55,7 @@
             @php $isNew = request()->query('new') === '1'; /* the landing page's "Get started" button */ @endphp
             <div id="step-phone">
                 <h2 class="text-xl font-semibold text-gray-800 mb-1">{{ $isNew ? 'Create your account' : 'Welcome back' }}</h2>
+                <p id="reset-note" class="hidden text-sm text-orange-800 bg-orange-50 border border-orange-200 rounded-lg px-3 py-2 mb-4">Password reset: confirm your phone number with a code, then you can choose a new password.</p>
                 <p class="text-gray-500 text-sm mb-6">{{ $isNew ? "Enter your phone number. We'll verify it by SMS, then set up your account." : 'Enter your phone number to continue.' }}</p>
 
                 <div class="space-y-4">
@@ -160,7 +161,12 @@
             {{-- Forgot password --}}
             <div id="step-forgot" class="hidden">
                 <h2 class="text-xl font-semibold text-gray-800 mb-1">Reset your password</h2>
-                <p class="text-gray-500 text-sm mb-6">Enter your email and we will send you a reset link.</p>
+                <p class="text-gray-500 text-sm mb-4">The quickest way is a code sent to the phone number on your account. After you enter it, you choose a new password.</p>
+                <button type="button" id="phone-reset-btn" onclick="startPhoneReset()"
+                    class="w-full py-2.5 px-4 mb-5 bg-[#FA6908] hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition">
+                    Reset with a phone code
+                </button>
+                <p class="text-gray-500 text-sm mb-3">Or have a reset link emailed to you:</p>
                 <div class="space-y-4">
                     <input type="email" id="forgot-input" autocomplete="email" inputmode="email" placeholder="you@example.com"
                         maxlength="254" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="Email address"
@@ -177,8 +183,8 @@
 
             {{-- After a phone-code sign-in: offer a password so the next sign-in needs no SMS --}}
             <div id="step-setpw" class="hidden">
-                <h2 class="text-xl font-semibold text-gray-800 mb-1">Create a password</h2>
-                <p class="text-gray-500 text-sm mb-6">Next time, sign in with your email and this password. No SMS code needed.</p>
+                <h2 id="setpw-title" class="text-xl font-semibold text-gray-800 mb-1">Create a password</h2>
+                <p id="setpw-lead" class="text-gray-500 text-sm mb-6">Next time, sign in with your email and this password. No SMS code needed.</p>
                 <form class="space-y-4" onsubmit="return savePassword(event)" novalidate>
                     <input type="email" id="setpw-user" autocomplete="username" class="hidden" tabindex="-1" aria-hidden="true" />
                     <div>
@@ -739,7 +745,15 @@
             document.getElementById('login-tabs').classList.toggle('hidden', id === 'step-setpw' || id === 'step-otp');
         }
 
-        function showMethod(m) {
+        // Password reset by phone code: the customer proves the phone with the normal OTP sign-in,
+        // then must choose a new password (see afterLogin). Any other navigation cancels it.
+        let resetMode = false;
+
+        function showMethod(m, keepReset) {
+            if (!keepReset) {
+                resetMode = false;
+                document.getElementById('reset-note').classList.add('hidden');
+            }
             showPanel(m === 'email' ? 'step-email' : 'step-phone');
             const on = 'bg-white text-gray-900 shadow-sm',
                 off = 'text-gray-500 hover:text-gray-700';
@@ -751,6 +765,12 @@
             } catch (e) {
                 /* storage blocked */
             }
+        }
+
+        function startPhoneReset() {
+            showMethod('phone', true);
+            resetMode = true;
+            document.getElementById('reset-note').classList.remove('hidden');
         }
 
         function showForgot() {
@@ -904,11 +924,17 @@
             try {
                 dismissed = localStorage.getItem('pw_prompt_dismissed') === user.uid;
             } catch (e) {}
-            const eligible = offerPassword && redirect === '/dashboard' && user.email && !hasPassword(user) && !dismissed;
+            // A reset always asks for the new password (even if one exists, even if "Not now" was chosen before).
+            const eligible = offerPassword && redirect === '/dashboard' && user.email &&
+                (resetMode || (!hasPassword(user) && !dismissed));
             if (!eligible) {
                 window.location.href = redirect;
                 return;
             }
+            document.getElementById('setpw-title').textContent = resetMode ? 'Choose a new password' : 'Create a password';
+            document.getElementById('setpw-lead').textContent = resetMode ?
+                'Your phone is confirmed. Pick a new password for signing in with your email.' :
+                'Next time, sign in with your email and this password. No SMS code needed.';
             document.getElementById('setpw-user').value = user.email;
             showPanel('step-setpw');
         }
@@ -916,7 +942,7 @@
         function skipPassword() {
             try {
                 const u = auth.currentUser;
-                if (u) localStorage.setItem('pw_prompt_dismissed', u.uid);
+                if (u && !resetMode) localStorage.setItem('pw_prompt_dismissed', u.uid);
             } catch (e) {}
             window.location.href = pendingRedirect;
         }
@@ -955,6 +981,11 @@
                         throw e;
                     }
                 }
+                if (resetMode) {
+                    // Changing the password renews the Firebase refresh token; give the server the new one so
+                    // "keep me signed in" keeps working instead of failing on the old, now void, token.
+                    try { await postLogin(user); } catch (e) { /* the session is already open; worst case: sign in again later */ }
+                }
                 window.location.href = pendingRedirect;
             } catch (err) {
                 console.error('Set password error:', err);
@@ -970,7 +1001,7 @@
 
         // ---- Go back to phone step ----
         function goBack() {
-            showMethod('phone');
+            showMethod('phone', resetMode); // "use a different number" must not cancel a password reset
             document.getElementById('otp-input').value = '';
             hideError('otp-error');
             otpPhone = null;

@@ -489,13 +489,13 @@ $completeness = (int) round(($filled / count($fields)) * 100);
         }
     });
 
-    // ── Address: letters (any language), numbers, spaces, comma and slash only. The server checks the same. ──
-    const ADDR_BAD = /[^\p{L}\p{M}‍0-9 ,\/]/gu;
+    // ── Address: letters (any language), numbers, spaces, comma, slash, full stop and hyphen only. The server checks the same. ──
+    const ADDR_BAD = /[^\p{L}\p{M}‍0-9 ,.\/-]/gu;
     function addressProblem(v) {
         const a = String(v || '').normalize('NFC').replace(/\s+/g, ' ').trim();
         if (!a) return '';                                   // an empty address is allowed (it clears it)
         if (a.length > 300) return 'Address is too long (300 characters at most).';
-        if (ADDR_BAD.test(a)) { ADDR_BAD.lastIndex = 0; return 'Use letters, numbers, spaces, commas (,) and slashes (/) only.'; }
+        if (ADDR_BAD.test(a)) { ADDR_BAD.lastIndex = 0; return 'Use letters, numbers, spaces, commas (,), slashes (/), full stops (.) and hyphens (-) only.'; }
         ADDR_BAD.lastIndex = 0;
         if (!/\p{L}/u.test(a)) return 'An address needs some letters, not only numbers.';
         return '';

@@ -134,11 +134,11 @@ class ProfileTest extends TestCase
 
     public static function goodAddresses(): array
     {
-        return [['123/A, Main Street, Colombo 07'], ['No 12 Galle Road Kandy'], ['දන්කොටුව, කොළඹ'], ['கொழும்பு, 12/3'], ['Dankotuwa']];
+        return [['123/A, Main Street, Colombo 07'], ['No 12 Galle Road Kandy'], ['දන්කොටුව, කොළඹ'], ['கொழும்பு, 12/3'], ['Dankotuwa'], ['No. 12, Galle Rd., Kandy'], ['Kandy-Colombo Road']];
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('goodAddresses')]
-    public function test_addresses_with_letters_numbers_commas_and_slashes_are_accepted(string $address): void
+    public function test_addresses_with_letters_numbers_commas_slashes_dots_and_hyphens_are_accepted(string $address): void
     {
         $this->fakeApi(['Customers/me' => $this->ok($this->profile()), 'Customers/*' => $this->ok($this->profile())]);
 
@@ -211,8 +211,8 @@ class ProfileTest extends TestCase
             'name with emoji'  => [['fullName' => 'Nuwan 😀'], 'fullName'],
             'address too long' => [['address' => str_repeat('a', 301)], 'address'],
             'address symbols'  => [['address' => 'No 5 @ Main #2'], 'address'],
-            'address dot'      => [['address' => 'No. 5, Main Street'], 'address'],
-            'address hyphen'   => [['address' => '5-A Main Street'], 'address'],
+            'address underscore' => [['address' => 'Main_Street 5'], 'address'],
+            'address semicolon'  => [['address' => 'Main; Street 5'], 'address'],
             'address html'     => [['address' => '<b>Main Street</b>'], 'address'],
             'address only num' => [['address' => '12345'], 'address'],
             'address emoji'    => [['address' => 'Colombo 😀'], 'address'],
