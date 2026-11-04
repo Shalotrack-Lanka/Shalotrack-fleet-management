@@ -191,34 +191,48 @@ $completeness = (int) round(($filled / count($fields)) * 100);
                     <div id="view-phoneNumber">
                         <p class="text-sm font-semibold text-gray-800" id="text-phoneNumber">{{ $p['phoneNumber'] ?? '—' }}</p>
                     </div>
-                    <div id="edit-phoneNumber" class="hidden">
-                        <input type="tel" id="input-phoneNumber"
-                            value="{{ e($p['phoneNumber'] ?? '') }}"
-                            class="w-full px-3 py-1.5 border border-[#FA6908] rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#FA6908]/30 font-semibold" />
-                        <p id="err-phoneNumber" class="text-red-500 text-xs mt-1 hidden"></p>
-                    </div>
+                    <p class="text-xs text-gray-400 mt-0.5">Your sign-in number. Changing it needs a code sent to the new number.</p>
                 </div>
             </div>
             <div class="flex gap-1.5 flex-shrink-0 ml-3">
-                <button id="pen-phoneNumber" onclick="startEdit('phoneNumber')"
-                    class="opacity-0 group-hover:opacity-100 transition w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-[#FA6908]">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
-                </button>
-                <button id="save-phoneNumber" onclick="saveField('phoneNumber')"
-                    class="hidden w-7 h-7 flex items-center justify-center rounded-lg bg-green-50 hover:bg-green-100 text-green-600" title="Save">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                </button>
-                <button id="cancel-phoneNumber" onclick="cancelEdit('phoneNumber')"
-                    class="hidden w-7 h-7 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-500" title="Cancel">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+                <button type="button" id="phone-change-open"
+                    class="opacity-0 group-hover:opacity-100 focus:opacity-100 transition px-2.5 h-7 flex items-center justify-center rounded-lg text-xs font-semibold text-gray-500 hover:bg-gray-100 hover:text-[#FA6908]"
+                    aria-controls="phone-change-panel" aria-expanded="false">Change</button>
             </div>
+        </div>
+
+        {{-- Change phone number: new number -> code -> done. The API checks everything again; this is the friendly front. --}}
+        <div id="phone-change-panel" class="hidden px-4 sm:px-6 py-4 border-b border-gray-50 bg-orange-50/40">
+            <div id="pc-step-number">
+                <label for="pc-phone" class="block text-xs font-semibold text-gray-600 mb-1">New mobile number</label>
+                <div class="flex items-stretch gap-2">
+                    <div class="flex items-center px-3 text-sm font-semibold text-gray-600 bg-white border border-gray-300 rounded-lg select-none">+94</div>
+                    <input type="tel" id="pc-phone" inputmode="numeric" autocomplete="off" placeholder="71 234 5678"
+                        aria-describedby="pc-error"
+                        class="flex-1 min-w-0 px-3 py-2 text-base sm:text-sm border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[#FA6908]/30 focus:border-[#FA6908] font-semibold" />
+                </div>
+                <div class="flex items-center gap-2 mt-3">
+                    <button type="button" id="pc-send" class="px-4 py-2 text-sm font-semibold text-white bg-[#FA6908] hover:bg-[#e05d07] rounded-lg transition disabled:opacity-50">Send code</button>
+                    <button type="button" id="pc-cancel" class="px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">Cancel</button>
+                </div>
+            </div>
+            <div id="pc-step-code" class="hidden">
+                <p id="pc-code-hint" class="text-sm text-gray-600 mb-2"></p>
+                <label for="pc-code" class="block text-xs font-semibold text-gray-600 mb-1">6-digit code</label>
+                <input type="text" id="pc-code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="6" placeholder="------"
+                    aria-describedby="pc-error"
+                    class="w-40 px-3 py-2 text-lg tracking-[0.4em] text-center border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[#FA6908]/30 focus:border-[#FA6908] font-semibold" />
+                <div class="flex flex-wrap items-center gap-2 mt-3">
+                    <button type="button" id="pc-verify" class="px-4 py-2 text-sm font-semibold text-white bg-[#FA6908] hover:bg-[#e05d07] rounded-lg transition disabled:opacity-50">Verify and change</button>
+                    <button type="button" id="pc-resend" class="px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 disabled:opacity-50" disabled>Resend code</button>
+                    <button type="button" id="pc-back" class="px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">Use a different number</button>
+                </div>
+            </div>
+            <p id="pc-error" role="alert" class="text-red-600 text-xs mt-2 hidden"></p>
+            <form id="pc-reauth" method="POST" action="/logout" class="hidden mt-2">
+                @csrf
+                <button type="submit" class="px-3 py-1.5 rounded-lg bg-[#021F4A] text-white text-xs font-semibold">Sign out and sign in again</button>
+            </form>
         </div>
 
         {{-- Address --}}
@@ -510,14 +524,9 @@ $completeness = (int) round(($filled / count($fields)) * 100);
             showFieldErr(field, 'Name cannot be empty.');
             return;
         }
-        if (field === 'phoneNumber' && !val) {
-            showFieldErr(field, 'Phone cannot be empty.');
-            return;
-        }
 
-        // Build payload with current values of all 3 editable fields
+        // Build payload with the current values of the editable fields (the phone number has its own verified flow)
         const fullName = field === 'fullName' ? val : (document.getElementById('text-fullName')?.textContent.trim() || origVal['fullName'] || '');
-        const phoneNumber = field === 'phoneNumber' ? val : (document.getElementById('text-phoneNumber')?.textContent.trim() || origVal['phoneNumber'] || '');
         const address = field === 'address' ? (val || null) : (document.getElementById('text-address')?.textContent.trim() || null);
 
         // Disable save btn
@@ -538,7 +547,6 @@ $completeness = (int) round(($filled / count($fields)) * 100);
                 },
                 body: JSON.stringify({
                     fullName,
-                    phoneNumber,
                     address
                 }),
             });
@@ -595,6 +603,117 @@ $completeness = (int) round(($filled / count($fields)) * 100);
             }
         }
     }
+
+    // ── Change phone number (code to the new number, then verify) ───────────────
+    (function initPhoneChange() {
+        const $ = (id) => document.getElementById(id);
+        const panel = $('phone-change-panel');
+        if (!panel) return;
+        const openBtn = $('phone-change-open'), phone = $('pc-phone'), code = $('pc-code');
+        const send = $('pc-send'), verify = $('pc-verify'), resend = $('pc-resend');
+        const stepNumber = $('pc-step-number'), stepCode = $('pc-step-code'), err = $('pc-error'), reauth = $('pc-reauth');
+        let pending = null;      // the number a code was sent to (normalised by the server)
+        let busy = false;
+        let resendTimer = null;
+
+        // Digits only, Sri Lankan style: drop +94 / 0094 / 94 and the trunk 0, keep 9 digits, show 71 234 5678.
+        function digits(raw) {
+            let d = String(raw || '').normalize('NFKC').replace(/[^0-9]/g, '');
+            if (d.startsWith('0094')) d = d.slice(4);
+            else if (d.startsWith('94') && d.length > 9) d = d.slice(2);
+            if (d.startsWith('0')) d = d.slice(1);
+            return d.slice(0, 9);
+        }
+        function pretty(d) {
+            return [d.slice(0, 2), d.slice(2, 5), d.slice(5, 9)].filter(Boolean).join(' ');
+        }
+        function showErr(msg) { err.textContent = msg || ''; err.classList.toggle('hidden', !msg); phone.setAttribute('aria-invalid', msg ? 'true' : 'false'); }
+        function setBusy(b) { busy = b; send.disabled = b; verify.disabled = b; }
+        function reset() {
+            pending = null; phone.value = ''; code.value = ''; showErr('');
+            reauth.classList.add('hidden');
+            clearInterval(resendTimer); resend.disabled = true; resend.textContent = 'Resend code';
+            stepCode.classList.add('hidden'); stepNumber.classList.remove('hidden');
+        }
+        function open() { reset(); panel.classList.remove('hidden'); openBtn.setAttribute('aria-expanded', 'true'); phone.focus(); }
+        function close() { reset(); panel.classList.add('hidden'); openBtn.setAttribute('aria-expanded', 'false'); openBtn.focus(); }
+
+        function startResendTimer(seconds) {
+            clearInterval(resendTimer);
+            let left = seconds;
+            resend.disabled = true;
+            const tick = () => {
+                if (left <= 0) { clearInterval(resendTimer); resend.disabled = false; resend.textContent = 'Resend code'; return; }
+                resend.textContent = 'Resend code (' + left + 's)'; left--;
+            };
+            tick(); resendTimer = setInterval(tick, 1000);
+        }
+
+        async function post(url, body) {
+            const res = await fetch(url, {
+                method: 'POST', credentials: 'include',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF },
+                body: JSON.stringify(body),
+            });
+            if (res.status === 401) { window.location.href = '/login?expired=1'; return null; }
+            const data = await res.json().catch(() => ({}));
+            return { ok: res.ok && data.success === true, data };
+        }
+        function fail(r) {
+            showErr((r && r.data && r.data.message) || 'Something went wrong. Please try again.');
+            if (r && r.data && r.data.code === 'REAUTH_REQUIRED') reauth.classList.remove('hidden');
+        }
+
+        async function requestCode(isResend) {
+            if (busy) return;
+            const d = digits(isResend ? pending : phone.value);
+            if (!d) { showErr('Enter your new mobile number.'); phone.focus(); return; }
+            if (!/^7/.test(d)) { showErr('A Sri Lankan mobile number starts with 7, for example 71 234 5678.'); phone.focus(); return; }
+            if (d.length !== 9) { showErr('Enter all 9 digits, for example 71 234 5678.'); phone.focus(); return; }
+            showErr(''); reauth.classList.add('hidden'); setBusy(true);
+            try {
+                const r = await post('/profile/phone/request', { phoneNumber: '+94' + d });
+                if (!r) return;
+                if (!r.ok) { fail(r); return; }
+                pending = r.data.phoneNumber || ('+94' + d);
+                $('pc-code-hint').textContent = r.data.message || 'We sent a 6-digit code.';
+                stepNumber.classList.add('hidden'); stepCode.classList.remove('hidden');
+                code.value = ''; code.focus();
+                startResendTimer(Number(r.data.resendAfterSeconds) || 60);
+            } catch { showErr('Network problem. Please try again.'); }
+            finally { setBusy(false); }
+        }
+
+        async function verifyCode() {
+            if (busy || !pending) return;
+            const c = code.value.replace(/\D/g, '');
+            if (c.length !== 6) { showErr('Enter the 6-digit code.'); code.focus(); return; }
+            showErr(''); setBusy(true);
+            try {
+                const r = await post('/profile/phone/verify', { phoneNumber: pending, code: c });
+                if (!r) return;
+                if (!r.ok) { fail(r); code.select(); return; }
+                const shown = r.data.phoneNumber || pending;
+                const el = $('text-phoneNumber'); if (el) el.textContent = shown;
+                close();
+                showToast('Your phone number was changed.');
+            } catch { showErr('Network problem. Please try again.'); }
+            finally { setBusy(false); }
+        }
+
+        openBtn.addEventListener('click', () => (panel.classList.contains('hidden') ? open() : close()));
+        $('pc-cancel').addEventListener('click', close);
+        $('pc-back').addEventListener('click', () => { const keep = pending; reset(); phone.value = pretty(digits(keep)); phone.focus(); });
+        send.addEventListener('click', () => requestCode(false));
+        resend.addEventListener('click', () => requestCode(true));
+        verify.addEventListener('click', verifyCode);
+
+        phone.addEventListener('input', () => { phone.value = pretty(digits(phone.value)); showErr(''); });
+        code.addEventListener('input', () => { code.value = code.value.replace(/\D/g, '').slice(0, 6); showErr(''); });
+        phone.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); requestCode(false); } });
+        code.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); verifyCode(); } });
+        panel.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    })();
 
     // ── Copy Customer ID ─────────────────────────────────────────────────────
     async function copyCustomerId() {

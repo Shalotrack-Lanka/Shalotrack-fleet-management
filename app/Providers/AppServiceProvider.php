@@ -87,6 +87,17 @@ class AppServiceProvider extends ServiceProvider
         // Delete / cancel account: rare and serious, 5 an hour per user.
         RateLimiter::for('account-delete', fn (Request $r) => Limit::perHour(5)->by('account-delete:' . $key($r)));
 
+        // Phone-number change: every code is an SMS that costs money and can be used to harass a stranger, and the
+        // code is only 6 digits, so both steps are tight and keyed per signed-in customer.
+        RateLimiter::for('phone-change-request', fn (Request $r) => [
+            Limit::perMinute(2)->by('phone-change-request-m:' . $key($r)),
+            Limit::perHour(5)->by('phone-change-request-h:' . $key($r)),
+        ]);
+        RateLimiter::for('phone-change-verify', fn (Request $r) => [
+            Limit::perMinute(5)->by('phone-change-verify-m:' . $key($r)),
+            Limit::perHour(10)->by('phone-change-verify-h:' . $key($r)),
+        ]);
+
         // Alert-settings saves: human-speed edits — a low cap stops scripted spam.
         RateLimiter::for('alert-settings', fn (Request $r) => Limit::perMinute(20)->by('alert-settings:' . $key($r)));
 
