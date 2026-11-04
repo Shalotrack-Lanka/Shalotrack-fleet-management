@@ -202,7 +202,7 @@ $completeness = (int) round(($filled / count($fields)) * 100);
         </div>
 
         {{-- Change phone number: new number -> code -> done. The API checks everything again; this is the friendly front. --}}
-        <div id="phone-change-panel" class="hidden px-4 sm:px-6 py-4 border-b border-gray-50 bg-orange-50/40">
+        <div id="phone-change-panel" class="hidden px-4 sm:px-6 py-4 border-b border-gray-50 bg-orange-50/30">
             <div id="pc-step-number">
                 <label for="pc-phone" class="block text-xs font-semibold text-gray-600 mb-1">New mobile number</label>
                 <div class="flex items-stretch gap-2">
