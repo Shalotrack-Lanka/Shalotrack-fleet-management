@@ -15,19 +15,19 @@ class AddressTest extends TestCase
 
     public static function good(): array
     {
-        return [['123/A, Main Street, Colombo 07'], ['Dankotuwa'], ['දන්කොටුව, කොළඹ'], ['கொழும்பு 12/3'], ['No 5 Galle Road'], ['12 A, Café Street']];
+        return [['123/A, Main Street, Colombo 07'], ['Dankotuwa'], ['දන්කොටුව, කොළඹ'], ['கொழும்பு 12/3'], ['No 5 Galle Road'], ['12 A, Café Street'], ['No. 12, Galle Rd., Kandy'], ['Kandy-Colombo Road'], ['45/B, St. Annes']];
     }
 
     #[DataProvider('good')]
-    public function test_letters_numbers_commas_and_slashes_are_fine(string $a): void
+    public function test_letters_numbers_commas_slashes_dots_and_hyphens_are_fine(string $a): void
     {
         $this->assertTrue(self::ok($a), $a);
     }
 
     public static function bad(): array
     {
-        $out = ['only digits' => ['12345'], 'only punctuation' => [', / ,'], 'empty' => ['']];
-        foreach (str_split("@#\$%^&*()_+=[]{}|\\:;\"<>?~`!.-'") as $c) {
+        $out = ['only digits' => ['12345'], 'only punctuation' => [', / , . -'], 'empty' => ['']];
+        foreach (str_split("@#\$%^&*()_+=[]{}|\\:;\"<>?~`!'") as $c) {
             $out["symbol $c"] = ["Main {$c} Street 5"];
         }
         $out['emoji'] = ['Colombo 😀'];

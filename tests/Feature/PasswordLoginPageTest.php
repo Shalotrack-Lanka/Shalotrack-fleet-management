@@ -28,6 +28,30 @@ class PasswordLoginPageTest extends TestCase
             ->assertSee('sendPasswordResetEmail', false);
     }
 
+    public function test_forgot_password_offers_a_phone_code_reset_first_and_the_email_link_second(): void
+    {
+        $html = $this->get('/login')->getContent();
+
+        $this->assertStringContainsString('Reset with a phone code', $html);
+        $this->assertStringContainsString('startPhoneReset()', $html);
+        $this->assertStringContainsString('id="reset-note"', $html);
+        $this->assertLessThan(strpos($html, 'id="forgot-input"'), strpos($html, 'id="phone-reset-btn"'), 'phone reset comes before the email box');
+        $this->assertStringContainsString('sendPasswordResetEmail', $html);   // the email link is still available
+    }
+
+    public function test_a_phone_reset_always_asks_for_the_new_password_and_keeps_the_session_login_fresh(): void
+    {
+        $html = $this->get('/login')->getContent();
+
+        // the new-password step is shown in reset mode even when a password exists or "Not now" was chosen before
+        $this->assertStringContainsString('(resetMode || (!hasPassword(user) && !dismissed))', $html);
+        // "Not now" in reset mode is not remembered; changing number does not cancel the reset
+        $this->assertStringContainsString('if (u && !resetMode) localStorage.setItem', $html);
+        $this->assertStringContainsString("showMethod('phone', resetMode)", $html);
+        // after the password changes, the server gets the renewed refresh token
+        $this->assertMatchesRegularExpression('/if \(resetMode\) \{[^}]*postLogin\(user\)/s', $html);
+    }
+
     public function test_password_login_never_reveals_whether_an_email_exists(): void
     {
         $html = $this->get('/login')->getContent();

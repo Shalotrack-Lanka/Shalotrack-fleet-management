@@ -93,7 +93,7 @@ class RegistrationFlowTest extends TestCase
 
     public static function badRegistrationAddresses(): array
     {
-        return [['No. 5, Main Street'], ['5-A Main Street'], ['Main @ Street'], ['<b>Colombo</b>'], ['12345'], ['Colombo 😀']];
+        return [['Main @ Street'], ['Main_Street 5'], ['Main; Street'], ['<b>Colombo</b>'], ['12345'], ['Colombo 😀']];
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('badRegistrationAddresses')]
