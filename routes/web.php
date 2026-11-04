@@ -161,6 +161,9 @@ Route::middleware([\App\Http\Middleware\FirebaseAuthenticated::class, 'throttle:
     // Profile
     Route::get('/profile',  [ProfileController::class, 'index'])->name('profile');
     Route::put('/profile',  [ProfileController::class, 'update']);
+    // Change the sign-in phone number: code to the NEW number, then verify (the number never changes through PUT /profile).
+    Route::post('/profile/phone/request', [ProfileController::class, 'phoneRequest'])->middleware('throttle:phone-change-request')->name('profile.phone.request');
+    Route::post('/profile/phone/verify',  [ProfileController::class, 'phoneVerify'])->middleware('throttle:phone-change-verify')->name('profile.phone.verify');
 
     // Emergency Contacts
     Route::get('/emergency-contacts',         [EmergencyContactController::class, 'index'])->name('emergency-contacts');

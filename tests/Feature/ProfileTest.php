@@ -24,7 +24,7 @@ class ProfileTest extends TestCase
 
     private function valid(array $over = []): array
     {
-        return $over + ['fullName' => 'Ridmi Perera', 'phoneNumber' => '077 123 4567', 'address' => 'No 1, Galle Road'];
+        return $over + ['fullName' => 'Ridmi Perera', 'address' => 'No 1, Galle Road'];
     }
 
     public function test_the_page_shows_the_profile_from_the_api(): void
@@ -68,14 +68,14 @@ class ProfileTest extends TestCase
 
     // ---- update --------------------------------------------------------------------------------------------
 
-    public function test_an_update_sends_only_the_three_allowed_fields_in_the_api_format(): void
+    public function test_an_update_sends_only_the_allowed_fields_in_the_api_format(): void
     {
         $this->fakeApi(['Customers/me' => $this->ok($this->profile()), 'Customers/' . self::UUID => $this->ok($this->profile(['fullName' => 'Ridmi Perera']))]);
 
         $this->asCustomer()->putJson('/profile', $this->valid(['customerId' => self::UUID2, 'role' => 'Admin', 'email' => 'x@y.z']))
             ->assertOk()->assertJson(['success' => true, 'message' => 'Profile updated successfully.']);
 
-        $this->assertSentBody('PUT', '/api/Customers/' . self::UUID, ['FullName' => 'Ridmi Perera', 'PhoneNumber' => '077 123 4567', 'Address' => 'No 1, Galle Road']);
+        $this->assertSentBody('PUT', '/api/Customers/' . self::UUID, ['FullName' => 'Ridmi Perera', 'PhoneNumber' => '0771234567', 'Address' => 'No 1, Galle Road']);
     }
 
     public function test_the_customer_id_comes_from_the_api_never_from_the_browser(): void
@@ -92,7 +92,7 @@ class ProfileTest extends TestCase
     {
         $this->fakeApi(['Customers/me' => $this->ok($this->profile()), 'Customers/*' => $this->ok($this->profile())]);
 
-        $this->asCustomer()->putJson('/profile', ['fullName' => 'New Name', 'phoneNumber' => '0771234567'])->assertOk();
+        $this->asCustomer()->putJson('/profile', ['fullName' => 'New Name'])->assertOk();
 
         $this->assertSame('New Name', session('customer_name'));
         $this->assertSame(['FullName' => 'New Name', 'PhoneNumber' => '0771234567', 'Address' => null], $this->sentTo('PUT', '/api/Customers/' . self::UUID)->data());
@@ -113,13 +113,6 @@ class ProfileTest extends TestCase
             'no name'          => [['fullName' => ''], 'fullName'],
             'name too long'    => [['fullName' => str_repeat('a', 151)], 'fullName'],
             'name is array'    => [['fullName' => ['x']], 'fullName'],
-            'no phone'         => [['phoneNumber' => ''], 'phoneNumber'],
-            'phone letters'    => [['phoneNumber' => '07712abcde'], 'phoneNumber'],
-            'phone too short'  => [['phoneNumber' => '12345'], 'phoneNumber'],
-            'phone too long'   => [['phoneNumber' => str_repeat('1', 21)], 'phoneNumber'],
-            'phone with html'  => [['phoneNumber' => '<b>0771234567</b>'], 'phoneNumber'],
-            'phone starts +-'  => [['phoneNumber' => '-0771234567'], 'phoneNumber'],
-            'phone starts ('   => [['phoneNumber' => '(011) 234-5678'], 'phoneNumber'],   // known strictness: must start with a digit or +
             'address too long' => [['address' => str_repeat('a', 301)], 'address'],
             'address is array' => [['address' => ['x']], 'address'],
         ];
@@ -135,26 +128,20 @@ class ProfileTest extends TestCase
         Http::assertNothingSent();
     }
 
-    public function test_the_phone_message_gives_an_example(): void
+    public static function triedPhones(): array
     {
-        Http::fake();
-
-        $res = $this->asCustomer()->putJson('/profile', $this->valid(['phoneNumber' => 'abc']))->assertStatus(422);
-
-        $this->assertStringContainsString('077 123 4567', $res->json('errors.phoneNumber.0'));
+        return [['0779999999'], ['+94779999999'], ['abc'], [''], ['<b>1</b>']];
     }
 
-    public static function goodPhones(): array
-    {
-        return [['0771234567'], ['+94771234567'], ['077 123 4567'], ['011.234.5678'], ['1234567']];
-    }
-
-    #[\PHPUnit\Framework\Attributes\DataProvider('goodPhones')]
-    public function test_common_phone_formats_are_accepted(string $phone): void
+    /** The phone number is the sign-in identity: PUT /profile can never change it, whatever the browser sends. */
+    #[\PHPUnit\Framework\Attributes\DataProvider('triedPhones')]
+    public function test_the_profile_update_can_never_change_the_phone_number(string $tried): void
     {
         $this->fakeApi(['Customers/me' => $this->ok($this->profile()), 'Customers/*' => $this->ok($this->profile())]);
 
-        $this->asCustomer()->putJson('/profile', $this->valid(['phoneNumber' => $phone]))->assertOk();
+        $this->asCustomer()->putJson('/profile', $this->valid(['phoneNumber' => $tried]))->assertOk();
+
+        $this->assertSame('0771234567', $this->sentTo('PUT', '/api/Customers/' . self::UUID)->data()['PhoneNumber']);
     }
 
     public function test_an_api_refusal_is_a_clear_message_and_the_session_name_is_not_changed(): void

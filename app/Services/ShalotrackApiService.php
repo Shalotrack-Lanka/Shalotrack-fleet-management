@@ -71,6 +71,23 @@ class ShalotrackApiService
         return $result;
     }
 
+    /**
+     * Change of the sign-in phone number, in two steps. The API texts a 6-digit code to the NEW number and only
+     * saves it once that code is verified (it also re-checks that the sign-in is recent and that the number is free).
+     */
+    public function requestPhoneChange(string $newPhoneE164): array
+    {
+        return $this->post('/api/Customers/me/phone-change/request', ['PhoneNumber' => $newPhoneE164]);
+    }
+
+    public function verifyPhoneChange(string $newPhoneE164, string $code): array
+    {
+        $result = $this->post('/api/Customers/me/phone-change/verify', ['PhoneNumber' => $newPhoneE164, 'Code' => $code]);
+        $this->forgetCached('/api/Customers/me');
+
+        return $result;
+    }
+
     // -------------------------------------------------------------------------
     // Dashboard
     // -------------------------------------------------------------------------

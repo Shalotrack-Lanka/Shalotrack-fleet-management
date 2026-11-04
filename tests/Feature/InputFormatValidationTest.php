@@ -71,12 +71,12 @@ class InputFormatValidationTest extends TestCase
         ];
     }
 
-    public function test_profile_rejects_a_phone_number_that_is_not_a_phone_number(): void
+    public function test_changing_the_phone_number_rejects_something_that_is_not_a_phone_number(): void
     {
+        // The number is no longer edited through PUT /profile; the verified change flow is where it is checked.
         Http::fake();
-        $this->signedIn()->putJson('/profile', [
-            'fullName' => 'Charith Silva', 'phoneNumber' => 'call me maybe', 'address' => 'Colombo',
-        ])->assertStatus(422)->assertJsonValidationErrors('phoneNumber');
+        $this->signedIn()->postJson('/profile/phone/request', ['phoneNumber' => 'call me maybe'])
+            ->assertStatus(422)->assertJson(['code' => 'INVALID_PHONE']);
         Http::assertNothingSent();
     }
 }
