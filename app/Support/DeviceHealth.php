@@ -42,11 +42,17 @@ final class DeviceHealth
         $stale   = !$contact || $contact->diffInMinutes($now, true) > self::STALE_MINUTES;
         $online  = (bool) ($s['isOnline'] ?? false) && !$stale;
 
+        // The API turns the tracker's raw 0-6 battery level into a percentage; 0 (or less) means the tracker has
+        // not reported one (a GPS103 never does), which is "unknown", not "empty": no row, no warning.
         $battery  = self::intOrNull($s['batteryLevel'] ?? null);
+        if ($battery !== null && $battery <= 0) {
+            $battery = null;
+        }
+        // "gpsSignal" really holds the tracker's MOBILE-NETWORK (GSM) strength, 0-4 (0 none, 1-2 weak, 3-4 good).
+        // The tracker does not tell us about GPS satellites, so the card must not claim a GPS fix either way.
         $gps      = self::intOrNull($s['gpsSignal'] ?? null);
         $unplugged = self::isDisconnected($s['powerStatus'] ?? null);
         $ignition = (bool) ($s['ignitionStatus'] ?? false);
-        $moving   = (bool) ($s['movementStatus'] ?? false);
 
         $items = [];
         $level = 'ok';
@@ -85,16 +91,16 @@ final class DeviceHealth
             $raise($bState);
         }
 
-        // GPS fix. The gateway's signal scale is not fixed, so only "none vs some" is claimed.
+        // Mobile signal (how well the tracker can reach the network, 0-4).
         if ($gps !== null) {
-            $gState = $gps <= 0 ? 'warn' : 'ok';
-            $items[] = ['key' => 'gps', 'label' => 'GPS signal', 'value' => $gps <= 0 ? 'No fix' : 'Good', 'state' => $gState];
+            $gState = $gps >= 3 ? 'ok' : 'warn';
+            $items[] = ['key' => 'signal', 'label' => 'Mobile signal', 'value' => $gps <= 0 ? 'No signal' : ($gps <= 2 ? 'Weak' : 'Good'), 'state' => $gState];
             $raise($gState);
         }
 
-        // Engine / movement are facts, not faults.
+        // Ignition is a fact, not a fault. (There is no "movement" row: the tracker's status packet carries no speed,
+        // and the gateway copies the ignition into that field, so it would only repeat the ignition, wrongly.)
         $items[] = ['key' => 'ignition', 'label' => 'Ignition', 'value' => $ignition ? 'On' : 'Off', 'state' => 'info'];
-        $items[] = ['key' => 'movement', 'label' => 'Movement', 'value' => $moving ? 'Moving' : 'Stopped', 'state' => 'info'];
 
         return [
             'available'    => true,
@@ -129,7 +135,10 @@ final class DeviceHealth
             return 'Tracker battery is low';
         }
         if ($gps !== null && $gps <= 0) {
-            return 'Waiting for a GPS fix';
+            return 'No mobile signal';
+        }
+        if ($gps !== null && $gps <= 2) {
+            return 'Weak mobile signal';
         }
         return 'All systems normal';
     }
