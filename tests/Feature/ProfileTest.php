@@ -98,6 +98,39 @@ class ProfileTest extends TestCase
         $this->assertSame(['FullName' => 'New Name', 'PhoneNumber' => '0771234567', 'Address' => null], $this->sentTo('PUT', '/api/Customers/' . self::UUID)->data());
     }
 
+    public static function goodNames(): array
+    {
+        return [['Nuwan Akalanka'], ["Conan O'Brien"], ['Anne-Marie Silva'], ['නුවන් අකලංක'], ['நுவன் அகலங்க'], ['José Núñez']];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('goodNames')]
+    public function test_real_names_in_any_language_are_accepted(string $name): void
+    {
+        $this->fakeApi(['Customers/me' => $this->ok($this->profile()), 'Customers/*' => $this->ok($this->profile())]);
+
+        $this->asCustomer()->putJson('/profile', $this->valid(['fullName' => $name]))->assertOk();
+
+        $this->assertSame($name, $this->sentTo('PUT', '/api/Customers/' . self::UUID)->data()['FullName']);
+    }
+
+    public function test_extra_spaces_in_a_name_are_tidied_before_saving(): void
+    {
+        $this->fakeApi(['Customers/me' => $this->ok($this->profile()), 'Customers/*' => $this->ok($this->profile())]);
+
+        $this->asCustomer()->putJson('/profile', $this->valid(['fullName' => '  Nuwan    Akalanka ']))->assertOk();
+
+        $this->assertSame('Nuwan Akalanka', $this->sentTo('PUT', '/api/Customers/' . self::UUID)->data()['FullName']);
+    }
+
+    public function test_the_name_error_message_is_plain_and_helpful(): void
+    {
+        Http::fake();
+
+        $res = $this->asCustomer()->putJson('/profile', $this->valid(['fullName' => 'Nuwan123']))->assertStatus(422);
+
+        $this->assertStringContainsString('no numbers', $res->json('errors.fullName.0'));
+    }
+
     public function test_a_missing_profile_is_a_clean_404_and_nothing_is_written(): void
     {
         $this->fakeApi(['Customers/me' => $this->ok(['data' => []])]);
@@ -113,6 +146,12 @@ class ProfileTest extends TestCase
             'no name'          => [['fullName' => ''], 'fullName'],
             'name too long'    => [['fullName' => str_repeat('a', 151)], 'fullName'],
             'name is array'    => [['fullName' => ['x']], 'fullName'],
+            'name with digits' => [['fullName' => 'Nuwan123'], 'fullName'],
+            'name only digits' => [['fullName' => '12345'], 'fullName'],
+            'name with symbols'=> [['fullName' => 'Nuwan@Perera'], 'fullName'],
+            'name with html'   => [['fullName' => '<b>Nuwan</b>'], 'fullName'],
+            'name one letter'  => [['fullName' => 'A'], 'fullName'],
+            'name with emoji'  => [['fullName' => 'Nuwan 😀'], 'fullName'],
             'address too long' => [['address' => str_repeat('a', 301)], 'address'],
             'address is array' => [['address' => ['x']], 'address'],
         ];

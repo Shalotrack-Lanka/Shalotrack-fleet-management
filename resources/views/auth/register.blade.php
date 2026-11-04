@@ -45,7 +45,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
                     <input type="text" name="fullName" value="{{ old('fullName', $pending['fullName'] ?? '') }}"
-                           placeholder="John Silva"
+                           placeholder="John Silva" maxlength="150" autocomplete="name" data-person-name
                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-base sm:text-sm outline-none focus:ring-2 focus:ring-[#FA6908] focus:border-transparent transition @error('fullName') border-red-400 @enderror"
                            required autofocus />
                     @error('fullName')
@@ -122,5 +122,21 @@
         </p>
     </div>
 
+<script>
+    // Full name: letters (any language), spaces, . ' - only, as you type. The server checks the same rules.
+    (function () {
+        const BAD = /[^\p{L}\p{M}\u200D .'’\-]/gu;
+        document.addEventListener('input', function (e) {
+            const el = e.target;
+            if (!el || !el.matches || !el.matches('[data-person-name]') || e.isComposing) return;
+            const clean = el.value.replace(BAD, '');
+            if (clean !== el.value) {
+                const pos = el.selectionStart - (el.value.length - clean.length);
+                el.value = clean;
+                try { el.setSelectionRange(Math.max(0, pos), Math.max(0, pos)); } catch (err) { /* not supported */ }
+            }
+        });
+    })();
+</script>
 </body>
 </html>

@@ -65,6 +65,32 @@ class RegistrationFlowTest extends TestCase
         Http::assertNothingSent();
     }
 
+    public static function badRegistrationNames(): array
+    {
+        return [['Charith123'], ['12345'], ['<b>Charith</b>'], ['Charith@Silva'], ['C'], ['Charith 😀']];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('badRegistrationNames')]
+    public function test_registration_refuses_a_name_with_numbers_or_symbols(string $name): void
+    {
+        Http::fake();
+
+        $this->signedIn()->post('/register', [
+            'fullName' => $name, 'email' => 'charith@example.com', 'nicNumber' => '198648697512', 'address' => 'Haldaduwana',
+        ])->assertSessionHasErrors('fullName')->assertSessionMissing('pending_profile');
+
+        Http::assertNothingSent();
+    }
+
+    public function test_registration_accepts_a_sinhala_name_and_tidies_spaces(): void
+    {
+        Http::fake();
+
+        $this->signedIn()->post('/register', [
+            'fullName' => '  නුවන්   අකලංක ', 'email' => 'charith@example.com', 'nicNumber' => '198648697512', 'address' => 'Haldaduwana',
+        ])->assertRedirect('/register/password')->assertSessionHas('pending_profile.fullName', 'නුවන් අකලංක');
+    }
+
     public function test_password_page_without_details_goes_back_to_the_form(): void
     {
         $this->signedIn()->get('/register/password')->assertRedirect('/register');

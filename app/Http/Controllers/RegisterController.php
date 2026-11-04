@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\PersonName;
 use App\Services\ShalotrackApiService;
 use App\Support\EmailDomainCheck;
 use App\Support\EmailTypoGuard;
@@ -73,8 +74,10 @@ class RegisterController extends Controller
         // One canonical NIC form (no spaces, upper-case V/X) so the API's uniqueness check cannot be dodged.
         $request->merge(['nicNumber' => strtoupper(preg_replace('/\s+/', '', (string) $request->input('nicNumber', '')))]);
 
+        $request->merge(['fullName' => is_string($request->input('fullName')) ? PersonName::clean($request->input('fullName')) : $request->input('fullName')]);
+
         $validated = $request->validate([
-            'fullName'  => 'required|string|max:150',
+            'fullName'  => ['required', 'string', 'max:150', 'regex:' . PersonName::REGEX],
             // rfc = proper address syntax; then the domain must be able to receive mail (dead and made-up domains).
             // Our own check, not Laravel's `dns` rule: it fails open if DNS itself is down (see EmailDomainCheck).
             'email'     => ['required', 'email:rfc', 'max:150', function ($attribute, $value, $fail) {
@@ -86,6 +89,7 @@ class RegisterController extends Controller
             'nicNumber' => ['required', 'string', 'max:20', 'regex:/^([0-9]{9}[VX]|[0-9]{12})$/'],
             'address'   => 'nullable|string|max:300',
         ], [
+            'fullName.regex'  => PersonName::MESSAGE,
             'nicNumber.regex' => 'Enter a valid NIC number, for example 861234567V or 198612345678.',
         ]);
 
