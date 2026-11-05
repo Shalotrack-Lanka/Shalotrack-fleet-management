@@ -73,7 +73,7 @@ class SecurityHeadersTest extends TestCase
 
         sort($hosts);
         $this->assertSame([
-            'https://maps.googleapis.com', 'https://maps.gstatic.com', 'https://www.google.com', 'https://www.gstatic.com',
+            'https://apis.google.com', 'https://maps.googleapis.com', 'https://maps.gstatic.com', 'https://www.google.com', 'https://www.gstatic.com',
         ], $hosts, 'A new script host is a supply-chain decision: add it here only after review.');
 
         $this->assertStringNotContainsString('*', $csp['script-src'], 'no wildcard script hosts');
