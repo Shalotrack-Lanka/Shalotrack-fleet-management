@@ -37,7 +37,25 @@ class SecurityHeaders
             $response->headers->set('Permissions-Policy', 'geolocation=(self), camera=(), microphone=(), payment=(), usb=()');
         }
 
+        // A signed-in customer's pages must never be kept by the browser. Without this, pressing Back after
+        // signing out shows the dashboard (names, plates, positions) again from the browser's own copy.
+        if ($this->isSignedInPage($request, $response)) {
+            $response->headers->set('Cache-Control', 'no-store, private');
+        }
+
         return $response;
+    }
+
+    /**
+     * Only HTML pages shown to a signed-in customer. Anything that already chose its own cache rule
+     * (downloads say no-store; the address lookup deliberately says private, max-age) is left alone.
+     */
+    private function isSignedInPage(Request $request, Response $response): bool
+    {
+        return $request->hasSession()
+            && $request->session()->has('firebase_token')
+            && str_contains(strtolower((string) $response->headers->get('Content-Type')), 'text/html')
+            && ! $response->headers->hasCacheControlDirective('no-store');
     }
 
     private function policy(): string
@@ -48,11 +66,14 @@ class SecurityHeaders
         $maps = 'https://maps.googleapis.com https://maps.gstatic.com';
         $firebase = 'https://www.gstatic.com https://www.google.com https://www.googleapis.com '
                   . 'https://identitytoolkit.googleapis.com https://securetoken.googleapis.com';
+        // The Firebase sign-in script loads Google's gapi loader from apis.google.com on /login and
+        // /register/password (seen as "CSP violation" in the server log). Scripts only, nothing else.
+        $gapi = 'https://apis.google.com';
 
         $directives = [
             "default-src 'self'",
             // 'unsafe-inline' is the known gap (inline handlers); see class docblock.
-            "script-src 'self' 'unsafe-inline' {$maps} https://www.gstatic.com https://www.google.com",
+            "script-src 'self' 'unsafe-inline' {$maps} https://www.gstatic.com https://www.google.com {$gapi}",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com",
             "img-src 'self' data: blob: https://maps.googleapis.com https://maps.gstatic.com https://*.ggpht.com https://*.googleusercontent.com",
