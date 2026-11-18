@@ -9,9 +9,10 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
 /**
- * Per-vehicle speed limit and idle alert. Thin proxy to the C# API, which owns the data, the
+ * Per-vehicle speed limit, idle alert and push on/off switches. Thin proxy to the C# API, which owns the data, the
  * allowed ranges and the ownership rules; this layer validates input shape and returns only
  * the fields the page needs. The ranges below mirror the API's (the API stays authoritative).
+ * Push switches mute only the push (the API enforces them before sending); SOS has no switch.
  */
 class VehicleAlertSettingsController extends Controller
 {
@@ -33,14 +34,22 @@ class VehicleAlertSettingsController extends Controller
             'speedLimitKmh'    => ['required', 'integer', 'between:20,200'],
             'idleAlertEnabled' => ['required', 'boolean'],
             'idleAlertMinutes' => ['required_if:idleAlertEnabled,true', 'nullable', 'integer', 'between:3,120'],
+            'pushPowerCut'      => ['sometimes', 'boolean'],
+            'pushIgnition'      => ['sometimes', 'boolean'],
+            'pushOverspeed'     => ['sometimes', 'boolean'],
+            'pushTrackerHealth' => ['sometimes', 'boolean'],
         ]);
+        $push = array_map('boolval', array_intersect_key($v, array_flip(
+            ['pushPowerCut', 'pushIgnition', 'pushOverspeed', 'pushTrackerHealth']
+        )));
 
         try {
             $res = $this->api->saveVehicleAlertSettings(
                 $id,
                 (int) $v['speedLimitKmh'],
                 (bool) $v['idleAlertEnabled'],
-                (int) ($v['idleAlertMinutes'] ?? 10)
+                (int) ($v['idleAlertMinutes'] ?? 10),
+                $push
             );
             return response()->json(['success' => true, 'settings' => $this->shape($res['data'] ?? [])]);
         } catch (\Exception $e) {
@@ -61,6 +70,11 @@ class VehicleAlertSettingsController extends Controller
             'maxSpeedLimitKmh'     => (int) ($r['maxSpeedLimitKmh'] ?? 200),
             'minIdleMinutes'       => (int) ($r['minIdleMinutes'] ?? 3),
             'maxIdleMinutes'       => (int) ($r['maxIdleMinutes'] ?? 120),
+            // Missing (an API from before the switches) reads as on, which is what the API does.
+            'pushPowerCut'         => (bool) ($r['pushPowerCut'] ?? true),
+            'pushIgnition'         => (bool) ($r['pushIgnition'] ?? true),
+            'pushOverspeed'        => (bool) ($r['pushOverspeed'] ?? true),
+            'pushTrackerHealth'    => (bool) ($r['pushTrackerHealth'] ?? true),
         ];
     }
 

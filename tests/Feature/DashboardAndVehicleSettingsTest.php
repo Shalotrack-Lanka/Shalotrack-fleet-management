@@ -264,7 +264,34 @@ class DashboardAndVehicleSettingsTest extends TestCase
 
         $res = $this->asCustomer()->getJson('/api/vehicles/' . self::UUID . '/alert-settings')->assertOk();
 
-        $this->assertSame(['speedLimitKmh' => 90, 'idleAlertEnabled' => true, 'idleAlertMinutes' => 10, 'defaultSpeedLimitKmh' => 80, 'minSpeedLimitKmh' => 20, 'maxSpeedLimitKmh' => 200, 'minIdleMinutes' => 3, 'maxIdleMinutes' => 120], $res->json('settings'));
+        $this->assertSame(['speedLimitKmh' => 90, 'idleAlertEnabled' => true, 'idleAlertMinutes' => 10, 'defaultSpeedLimitKmh' => 80, 'minSpeedLimitKmh' => 20, 'maxSpeedLimitKmh' => 200, 'minIdleMinutes' => 3, 'maxIdleMinutes' => 120, 'pushPowerCut' => true, 'pushIgnition' => true, 'pushOverspeed' => true, 'pushTrackerHealth' => true], $res->json('settings'));
+    }
+
+    public function test_push_switches_are_read_from_the_api(): void
+    {
+        $this->fakeApi(['VehicleAlertSettings/vehicle/*' => $this->ok(['data' => ['pushPowerCut' => false, 'pushIgnition' => false, 'pushOverspeed' => true]])]);
+
+        $res = $this->asCustomer()->getJson('/api/vehicles/' . self::UUID . '/alert-settings')->assertOk();
+
+        // A switch the API does not send (an older API) reads as on, because that is what the API does.
+        $this->assertSame([false, false, true, true], [
+            $res->json('settings.pushPowerCut'), $res->json('settings.pushIgnition'),
+            $res->json('settings.pushOverspeed'), $res->json('settings.pushTrackerHealth'),
+        ]);
+    }
+
+    public function test_push_switches_are_forwarded_only_when_sent(): void
+    {
+        $this->fakeApi(['VehicleAlertSettings/vehicle/*' => $this->ok(['data' => []])]);
+
+        $this->asCustomer()->putJson('/api/vehicles/' . self::UUID . '/alert-settings', ['speedLimitKmh' => 80, 'idleAlertEnabled' => false, 'pushPowerCut' => false, 'pushIgnition' => true])->assertOk();
+
+        $data = $this->sentTo('PUT', '/api/VehicleAlertSettings/vehicle/' . self::UUID)->data();
+        $this->assertFalse($data['pushPowerCut']);
+        $this->assertTrue($data['pushIgnition']);
+        // Left out: the API keeps the stored values instead of muting with a default false.
+        $this->assertArrayNotHasKey('pushOverspeed', $data);
+        $this->assertArrayNotHasKey('pushTrackerHealth', $data);
     }
 
     public function test_alert_limits_are_forwarded_exactly(): void
@@ -298,6 +325,8 @@ class DashboardAndVehicleSettingsTest extends TestCase
             'idle 2 min'          => [['idleAlertMinutes' => 2]],
             'idle 121 min'        => [['idleAlertMinutes' => 121]],
             'idle on, no minutes' => [['idleAlertEnabled' => true, 'idleAlertMinutes' => null]],
+            'push flag is text'   => [['pushPowerCut' => 'maybe']],
+            'push flag is array'  => [['pushIgnition' => ['x']]],
         ];
     }
 
