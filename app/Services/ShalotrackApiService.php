@@ -277,13 +277,24 @@ class ShalotrackApiService
         return $this->get("/api/VehicleAlertSettings/vehicle/{$vehicleId}");
     }
 
-    public function saveVehicleAlertSettings(string $vehicleId, int $speedLimitKmh, bool $idleEnabled, int $idleMinutes): array
+    /**
+     * @param array<string,bool> $push Push on/off switches to change (pushPowerCut, pushIgnition, pushOverspeed,
+     *                                 pushTrackerHealth). Keys left out are not sent, and the API keeps their stored value.
+     */
+    public function saveVehicleAlertSettings(string $vehicleId, int $speedLimitKmh, bool $idleEnabled, int $idleMinutes, array $push = []): array
     {
-        return $this->put("/api/VehicleAlertSettings/vehicle/{$vehicleId}", [
+        $allowed = ['pushPowerCut', 'pushIgnition', 'pushOverspeed', 'pushTrackerHealth'];
+        $body = [
             'speedLimitKmh'    => $speedLimitKmh,
             'idleAlertEnabled' => $idleEnabled,
             'idleAlertMinutes' => $idleMinutes,
-        ]);
+        ];
+        foreach ($allowed as $key) {
+            if (array_key_exists($key, $push)) {
+                $body[$key] = (bool) $push[$key];
+            }
+        }
+        return $this->put("/api/VehicleAlertSettings/vehicle/{$vehicleId}", $body);
     }
 
     // -------------------------------------------------------------------------

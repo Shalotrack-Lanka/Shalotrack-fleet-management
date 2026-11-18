@@ -111,7 +111,7 @@
         </div>
         @endif
 
-        {{-- Alert settings: speed limit + idle alert. Owner only, needs a GPS device (the API enforces ownership too). --}}
+        {{-- Alert settings: speed limit, idle alert and push on/off. Owner only, needs a GPS device (the API enforces ownership too). --}}
         @if(($vehicle['hasGpsDevice'] ?? false) && !($vehicle['isShared'] ?? false) && !($vehicle['isDemoVehicle'] ?? false))
         <div id="alert-settings-card" class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
             <h3 class="font-semibold text-gray-800 mb-1">Alert settings</h3>
@@ -133,6 +133,28 @@
                         <p id="as-idle-hint" class="text-xs text-gray-400 mt-1"></p>
                     </div>
                 </div>
+                <fieldset class="border-t border-gray-100 pt-4 space-y-3">
+                    <legend class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Push notifications</legend>
+                    <p class="text-xs text-gray-400">Turn one off and nobody following this vehicle gets that push. The alert still appears in Alerts.</p>
+                    <label class="flex items-start gap-3 text-sm text-gray-700">
+                        <input id="as-push-powercut" type="checkbox" class="mt-1 rounded border-gray-300" data-push="pushPowerCut">
+                        <span><span class="block font-medium text-gray-800">Power cut</span><span class="block text-xs text-gray-400">Tracker cut from the vehicle’s power</span></span>
+                    </label>
+                    <p id="as-powercut-warning" class="hidden text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2" role="status">A power cut is usually the first sign of theft. While this is off, nobody gets a push when it happens.</p>
+                    <label class="flex items-start gap-3 text-sm text-gray-700">
+                        <input id="as-push-ignition" type="checkbox" class="mt-1 rounded border-gray-300" data-push="pushIgnition">
+                        <span><span class="block font-medium text-gray-800">Ignition on and off</span><span class="block text-xs text-gray-400">Every start and stop</span></span>
+                    </label>
+                    <label class="flex items-start gap-3 text-sm text-gray-700">
+                        <input id="as-push-overspeed" type="checkbox" class="mt-1 rounded border-gray-300" data-push="pushOverspeed">
+                        <span><span class="block font-medium text-gray-800">Over-speed</span><span class="block text-xs text-gray-400">When it goes over your limit</span></span>
+                    </label>
+                    <label class="flex items-start gap-3 text-sm text-gray-700">
+                        <input id="as-push-health" type="checkbox" class="mt-1 rounded border-gray-300" data-push="pushTrackerHealth">
+                        <span><span class="block font-medium text-gray-800">Low battery and offline</span><span class="block text-xs text-gray-400">Tracker health</span></span>
+                    </label>
+                    <p class="text-xs text-gray-400">SOS always sends a push. Geofence and idling alerts have their own switches.</p>
+                </fieldset>
                 <p id="as-msg" class="hidden text-xs" role="status"></p>
                 <button id="as-save" type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50">Save</button>
             </form>
@@ -623,6 +645,26 @@
         document.getElementById('as-idle-hint').textContent =
             'Between ' + s.minIdleMinutes + ' and ' + s.maxIdleMinutes + ' minutes.';
         document.getElementById('as-idle-row').classList.toggle('hidden', !s.idleAlertEnabled);
+
+        document.querySelectorAll('#alert-settings-form [data-push]').forEach((box) => {
+            box.checked = s[box.dataset.push] !== false;
+        });
+        asPowerCutWarning();
+    }
+
+    // Power cut is the anti-theft signal: say so while its push is off.
+    function asPowerCutWarning() {
+        const box = document.getElementById('as-push-powercut');
+        const warn = document.getElementById('as-powercut-warning');
+        if (box && warn) warn.classList.toggle('hidden', box.checked);
+    }
+
+    function asPushValues() {
+        const out = {};
+        document.querySelectorAll('#alert-settings-form [data-push]').forEach((box) => {
+            out[box.dataset.push] = box.checked;
+        });
+        return out;
     }
 
     async function asFetch(url, options) {
@@ -643,6 +685,7 @@
         document.getElementById('as-idle-on').addEventListener('change', (e) => {
             document.getElementById('as-idle-row').classList.toggle('hidden', !e.target.checked);
         });
+        document.getElementById('as-push-powercut').addEventListener('change', asPowerCutWarning);
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -664,11 +707,11 @@
             try {
                 const res = await asFetch(`/api/vehicles/${vehicleId}/alert-settings`, {
                     method: 'PUT',
-                    body: JSON.stringify({
+                    body: JSON.stringify(Object.assign({
                         speedLimitKmh: speed,
                         idleAlertEnabled: idleOn,
                         idleAlertMinutes: idleOn ? idleMin : (s.idleAlertMinutes || 10),
-                    }),
+                    }, asPushValues())),
                 });
                 if (!res) return;
                 if (res.ok && res.body && res.body.settings) {
