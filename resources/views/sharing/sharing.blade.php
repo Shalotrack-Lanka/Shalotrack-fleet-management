@@ -854,17 +854,17 @@ $pendingCount = count($pendingInvites);
                     Their Phone Number <span class="req">*</span>
                 </label>
                 <input id="sh-phone-in" type="tel" class="sh-input"
-                    placeholder="e.g. +94 77 987 6543"
+                    placeholder="e.g. 077 987 6543"
                     autocomplete="off">
                 <div style="font-size:.75rem;color:var(--g-t2,#6b7280);margin-top:.35rem">
-                    Include country code · Must match their ShaloTrack account
+                    The Sri Lankan mobile number they sign in to ShaloTrack with
                 </div>
             </div>
             <div class="sh-modal-hint">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                The person must have the ShaloTrack app installed and registered with this phone number. They'll receive a push notification and can accept or decline the invite.
+                They'll see the invite in Sharing when they sign in to ShaloTrack with this number, and can accept or decline it. They can follow the vehicle but can't change anything, and you can revoke it any time. Invites expire after 14 days.
             </div>
         </div>
         <div class="sh-modal-foot">
@@ -1057,12 +1057,18 @@ $pendingCount = count($pendingInvites);
             const badge = st === 'accepted' ?
                 `<span class="sh-status accepted"><span class="sh-status-dot"></span>Active</span>` :
                 st === 'pending' ?
-                `<span class="sh-status pending"><span class="sh-status-dot"></span>Pending</span>` :
+                `<span class="sh-status pending"><span class="sh-status-dot"></span>Invited</span>` :
+                st === 'declined' ?
+                `<span class="sh-status revoked"><span class="sh-status-dot"></span>Declined</span>` :
+                st === 'expired' ?
+                `<span class="sh-status revoked"><span class="sh-status-dot"></span>Expired</span>` :
                 `<span class="sh-status revoked"><span class="sh-status-dot"></span>Revoked</span>`;
+            /* The name arrives only after they accept; until then the API sends just the number you typed. */
+            const who = s.otherPartyName ? s.otherPartyName : s.otherPartyPhoneNumber;
             const canRevoke = st === 'pending' || st === 'accepted';
             const revokeBtn = canRevoke ?
                 `<button class="sh-btn-revoke" id="sh-m-rev-${esc(s.shareId)}"
-                       data-share-id="${esc(s.shareId)}" data-name="${esc(s.otherPartyName)}" data-plate="${esc(s.vehicleNumber)}">
+                       data-share-id="${esc(s.shareId)}" data-name="${esc(who)}" data-plate="${esc(s.vehicleNumber)}">
                    Revoke
                </button>` : '';
             return `
@@ -1075,7 +1081,7 @@ $pendingCount = count($pendingInvites);
             </div>
             <div class="sh-card-body">
                 <div class="sh-card-vehicle">${vehicleLabel(s)}</div>
-                <div class="sh-card-person">Shared with: ${esc(s.otherPartyName)}</div>
+                <div class="sh-card-person">${s.otherPartyName ? 'Shared with: ' + esc(s.otherPartyName) : 'Invite sent to'}</div>
                 <div class="sh-card-phone">${esc(s.otherPartyPhoneNumber)}</div>
                 <div class="sh-card-meta">${badge} &nbsp;· Invited ${fmtDate(s.invitedAt)}</div>
             </div>
@@ -1321,7 +1327,7 @@ $pendingCount = count($pendingInvites);
             }
             renderMyShares();
             closeShare();
-            showToast('Invite sent — waiting for them to accept.');
+            showToast("Invite sent. If this number uses ShaloTrack, they'll see it in Sharing.");
             switchTab('myshares');
 
         } catch {
