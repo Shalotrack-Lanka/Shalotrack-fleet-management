@@ -79,12 +79,12 @@ class SharingController extends Controller
         elseif (strlen($phone) === 11 && str_starts_with($phone, '94')) $phone = '+' . $phone;
         else $phone = '+' . $phone;
 
-        // Checked here so a typo never costs an API call (and never probes for accounts with junk numbers).
-        if (! preg_match('/^\+[1-9]\d{8,14}$/', $phone)) {
+        // Sri Lankan mobiles only, the same rule as the API. Checked here so a typo never costs an API call.
+        if (! preg_match('/^\+947\d{8}$/', $phone)) {
             return response()->json([
                 'success' => false,
                 'code'    => 'INVALID_PHONE',
-                'message' => 'Enter a valid mobile number, for example 077 123 4567.',
+                'message' => 'Enter a Sri Lankan mobile number, for example 077 123 4567.',
             ], 422);
         }
 
@@ -92,8 +92,13 @@ class SharingController extends Controller
             $response = $this->api->inviteShare($request->input('vehicleId'), $phone);
             return response()->json(['success' => true, 'data' => $response['data'] ?? $response]);
         } catch (\Exception $e) {
+            // The API answers the same whether or not the number has an account, so nothing here can say so.
+            // 409 is "already shared with this number" or "too many invites waiting": both are the API's own words.
             return ApiErrors::json($e, 'sharing.invite', 'Failed to send invite. Please try again.', [
-                404 => 'No ShaloTrack account found with that phone number.',
+                404 => 'That vehicle is no longer available. Please refresh the page.',
+                409 => ApiErrors::isPlainMessage($e->getMessage())
+                    ? $e->getMessage()
+                    : "You've already shared this vehicle with this number.",
             ]);
         }
     }

@@ -8,8 +8,9 @@ use Tests\TestCase;
 
 /**
  * F3: sharing a vehicle with another customer by phone number.
- * An invite reveals whether a phone number has a ShaloTrack account, so it is an enumeration target: junk numbers
- * must never cost an API call, and invites are capped per minute and per day, per signed-in customer.
+ * The API answers an invite the same way whether or not the number has a ShaloTrack account. Each invite still
+ * pushes to a real person, so junk numbers never cost an API call, and invites are capped per minute and per day,
+ * per signed-in customer.
  */
 class SharingWriteTest extends TestCase
 {
@@ -31,7 +32,6 @@ class SharingWriteTest extends TestCase
             'spaces'               => ['077 123 4567', '+94771234567'],
             'dashes'               => ['077-123-4567', '+94771234567'],
             'brackets and spaces'  => ['+94 (77) 123 4567', '+94771234567'],
-            'foreign number'       => ['+44 7911 123456', '+447911123456'],
         ];
     }
 
@@ -55,6 +55,8 @@ class SharingWriteTest extends TestCase
             'eight digits'      => ['12345678'],
             'too long'          => ['+1234567890123456'],
             'symbols'           => ['+++---'],
+            'foreign number'    => ['+44 7911 123456'],
+            'sri lankan landline' => ['011 234 5678'],
         ];
     }
 
@@ -82,14 +84,31 @@ class SharingWriteTest extends TestCase
         Http::assertNothingSent();
     }
 
-    public function test_an_unknown_phone_gets_a_plain_message_and_the_api_text_is_not_passed_through(): void
+    public function test_a_missing_vehicle_gets_a_plain_message_and_the_api_text_is_not_passed_through(): void
     {
-        $this->fakeApi(['VehicleShares/invite' => Http::response(['message' => 'USER_NOT_FOUND:+94771234567'], 404)]);
+        $this->fakeApi(['VehicleShares/invite' => Http::response(['message' => 'VEHICLE_NOT_FOUND:abc'], 404)]);
 
         $res = $this->asCustomer()->postJson('/sharing', ['vehicleId' => self::UUID, 'phoneNumber' => '0771234567'])->assertStatus(422);
 
-        $this->assertSame('No ShaloTrack account found with that phone number.', $res->json('message'));
-        $this->assertStringNotContainsString('USER_NOT_FOUND', $res->getContent());
+        $this->assertSame('That vehicle is no longer available. Please refresh the page.', $res->json('message'));
+        $this->assertStringNotContainsString('VEHICLE_NOT_FOUND', $res->getContent());
+        $this->assertStringNotContainsString('account', $res->getContent());
+    }
+
+    public function test_a_duplicate_invite_shows_the_apis_plain_words(): void
+    {
+        $this->fakeApi(['VehicleShares/invite' => Http::response(['message' => "You've already shared this vehicle with this number."], 409)]);
+
+        $this->asCustomer()->postJson('/sharing', ['vehicleId' => self::UUID, 'phoneNumber' => '0771234567'])
+            ->assertStatus(422)->assertJsonPath('message', "You've already shared this vehicle with this number.");
+    }
+
+    public function test_a_409_with_a_machine_code_is_not_passed_through(): void
+    {
+        $this->fakeApi(['VehicleShares/invite' => Http::response(['message' => 'DUPLICATE_SHARE'], 409)]);
+
+        $this->asCustomer()->postJson('/sharing', ['vehicleId' => self::UUID, 'phoneNumber' => '0771234567'])
+            ->assertStatus(422)->assertJsonPath('message', "You've already shared this vehicle with this number.");
     }
 
     public function test_extra_browser_fields_are_not_forwarded_on_an_invite(): void
